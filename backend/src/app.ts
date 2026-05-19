@@ -31,7 +31,11 @@ app.use(helmet());
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin || env.isDev) return cb(null, true);
-    if (origin === env.frontendUrl || origin.endsWith(`.${env.baseDomain}`)) return cb(null, true);
+    if (
+      origin === env.frontendUrl ||
+      origin.endsWith(`.${env.baseDomain}`) ||
+      origin.endsWith('.vercel.app')
+    ) return cb(null, true);
     cb(new Error('Not allowed by CORS'));
   },
   credentials: true,

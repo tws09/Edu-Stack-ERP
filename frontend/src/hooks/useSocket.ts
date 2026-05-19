@@ -1,34 +1,39 @@
 import { useEffect, useRef } from 'react';
-import { io, type Socket } from 'socket.io-client';
 import { useAuthStore } from '../stores/authStore';
 import { useQueryClient } from '@tanstack/react-query';
 
 const SOCKET_URL = import.meta.env['VITE_API_URL']?.replace('/api', '') ?? 'http://localhost:5000';
+const SOCKETS_ENABLED = import.meta.env['VITE_SOCKETS_ENABLED'] === 'true';
 
 export function useSocket() {
   const accessToken = useAuthStore(s => s.accessToken);
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
   const qc = useQueryClient();
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<import('socket.io-client').Socket | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated || !accessToken) return;
+    if (!SOCKETS_ENABLED || !isAuthenticated || !accessToken) return;
 
-    const socket = io(SOCKET_URL, {
-      auth: { token: accessToken },
-      transports: ['websocket', 'polling'],
-    });
+    let socket: import('socket.io-client').Socket;
 
-    socketRef.current = socket;
+    import('socket.io-client').then(({ io }) => {
+      socket = io(SOCKET_URL, {
+        auth: { token: accessToken },
+        transports: ['websocket', 'polling'],
+      });
 
-    socket.on('notification', () => {
-      // Invalidate unread count so the bell badge updates
-      qc.invalidateQueries({ queryKey: ['notif-count'] });
-      qc.invalidateQueries({ queryKey: ['notifications'] });
+      socketRef.current = socket;
+
+      socket.on('notification', () => {
+        qc.invalidateQueries({ queryKey: ['notif-count'] });
+        qc.invalidateQueries({ queryKey: ['notifications'] });
+      });
+    }).catch(() => {
+      // Socket.io unavailable (e.g. serverless deployment) — notifications work via polling
     });
 
     return () => {
-      socket.disconnect();
+      socket?.disconnect();
       socketRef.current = null;
     };
   }, [isAuthenticated, accessToken, qc]);
