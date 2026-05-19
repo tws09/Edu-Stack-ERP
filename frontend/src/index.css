@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@layer components {
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold
+           text-white bg-emerald-600 rounded-xl shadow-sm
+           hover:bg-emerald-700 active:bg-emerald-800
+           focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed
+           transition-all duration-150;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold
+           text-gray-700 bg-white border border-gray-200 rounded-xl shadow-sm
+           hover:bg-gray-50 hover:border-gray-300
+           focus:outline-none focus:ring-2 focus:ring-gray-200
+           disabled:opacity-50 disabled:cursor-not-allowed
+           transition-all duration-150;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold
+           text-white bg-red-600 rounded-xl shadow-sm
+           hover:bg-red-700 active:bg-red-800
+           focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed
+           transition-all duration-150;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium
+           text-gray-600 rounded-xl
+           hover:bg-gray-100 hover:text-gray-900
+           focus:outline-none focus:ring-2 focus:ring-gray-200
+           transition-all duration-150;
+  }
+
+  /* ── Form ── */
+  .input {
+    @apply w-full rounded-xl border border-gray-200 px-4 py-3 text-sm
+           bg-gray-50 text-gray-900 placeholder-gray-400
+           focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent focus:bg-white
+           transition-all duration-150;
+  }
+  .label {
+    @apply block text-sm font-semibold text-gray-700 mb-1.5;
+  }
+
+  /* ── Cards ── */
+  .card {
+    @apply bg-white rounded-2xl border border-gray-100 shadow-sm;
+  }
+
+  /* ── Sidebar nav links ── */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150;
+  }
+  .sidebar-link-active {
+    @apply bg-amber-500/15 text-amber-400;
+  }
+  .sidebar-link-inactive {
+    @apply text-emerald-200 hover:bg-emerald-800 hover:text-white;
+  }
+}
+
+@layer base {
+  :root {
+    --sidebar-width: 256px;
+    --sidebar-collapsed: 64px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+
+  [dir="rtl"] {
+    font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', system-ui, sans-serif;
+  }
+
+  #root {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Slim, elegant scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+  /* Dark sidebar scrollbar */
+  .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(167, 243, 208, 0.2); }
+  .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(167, 243, 208, 0.4); }
+}

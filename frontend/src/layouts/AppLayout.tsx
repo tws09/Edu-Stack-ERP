@@ -1,0 +1,499 @@
+import { useState } from 'react';
+import { NavLink, useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '../stores/authStore';
+import type { UserRole } from '../types';
+import { cn, roleLabel, getInitials } from '../lib/utils';
+import { setLanguage } from '../i18n';
+import { notificationService } from '../services/notificationService';
+import { useSocket } from '../hooks/useSocket';
+
+interface NavItem {
+  label: string;
+  path: string;
+  icon: React.ReactNode;
+  roles: UserRole[];
+}
+
+const SvgIcon = ({ d, d2 }: { d: string; d2?: string }) => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+    <path strokeLinecap="round" strokeLinejoin="round" d={d} />
+    {d2 && <path strokeLinecap="round" strokeLinejoin="round" d={d2} />}
+  </svg>
+);
+
+const ALL_NAV: NavItem[] = [
+  {
+    label: 'nav.dashboard', path: '',
+    roles: ['group_admin', 'branch_principal', 'teacher', 'student', 'accountant', 'it_admin'],
+    icon: <SvgIcon d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />,
+  },
+  {
+    label: 'nav.branches', path: 'branches',
+    roles: ['group_admin'],
+    icon: <SvgIcon d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />,
+  },
+  {
+    label: 'nav.staff', path: 'staff',
+    roles: ['group_admin', 'branch_principal'],
+    icon: <SvgIcon d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zM7 13a3 3 0 100-6 3 3 0 000 6z" />,
+  },
+  {
+    label: 'nav.students', path: 'students',
+    roles: ['group_admin', 'branch_principal', 'teacher', 'student'],
+    icon: <SvgIcon d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />,
+  },
+  {
+    label: 'nav.attendance', path: 'attendance',
+    roles: ['group_admin', 'branch_principal', 'teacher', 'student'],
+    icon: <SvgIcon d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />,
+  },
+  {
+    label: 'nav.timetable', path: 'timetable',
+    roles: ['group_admin', 'branch_principal', 'teacher', 'student'],
+    icon: <SvgIcon d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />,
+  },
+  {
+    label: 'nav.exams', path: 'exams',
+    roles: ['group_admin', 'branch_principal', 'teacher', 'student'],
+    icon: <SvgIcon d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
+  },
+  {
+    label: 'nav.assignments', path: 'assignments',
+    roles: ['group_admin', 'branch_principal', 'teacher', 'student'],
+    icon: <SvgIcon d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />,
+  },
+  {
+    label: 'nav.fees', path: 'fees',
+    roles: ['group_admin', 'branch_principal', 'accountant', 'student'],
+    icon: <SvgIcon d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />,
+  },
+  {
+    label: 'nav.payroll', path: 'payroll',
+    roles: ['group_admin', 'branch_principal', 'accountant', 'teacher'],
+    icon: <SvgIcon d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
+  },
+  {
+    label: 'nav.sops', path: 'sops',
+    roles: ['group_admin', 'branch_principal', 'it_admin', 'teacher', 'student'],
+    icon: <SvgIcon d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6m-6 4h3" />,
+  },
+  {
+    label: 'nav.academic', path: 'academic',
+    roles: ['group_admin', 'branch_principal', 'it_admin'],
+    icon: <SvgIcon d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />,
+  },
+  {
+    label: 'nav.settings', path: 'settings',
+    roles: ['group_admin', 'branch_principal', 'it_admin'],
+    icon: <SvgIcon d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" d2="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />,
+  },
+];
+
+const BrandLogo = ({ size = 'sm' }: { size?: 'sm' | 'md' }) => (
+  <div className={cn(
+    'bg-amber-500 rounded-xl flex items-center justify-center text-emerald-900 shrink-0',
+    size === 'sm' ? 'w-8 h-8' : 'w-9 h-9'
+  )}>
+    <svg className={size === 'sm' ? 'w-4 h-4' : 'w-5 h-5'} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+    </svg>
+  </div>
+);
+
+const BellIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+  </svg>
+);
+
+export default function AppLayout() {
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, logout, activeBranch, setActiveBranch } = useAuthStore();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const base = location.pathname.startsWith('/group') ? '/group' : '/dashboard';
+
+  useSocket();
+
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['notif-count'],
+    queryFn: notificationService.getUnreadCount,
+    refetchInterval: 60_000,
+  });
+
+  const navItems = ALL_NAV.filter((n) => user?.role && n.roles.includes(user.role));
+  const primaryTabs = navItems.slice(0, 4);
+  const moreItems = navItems.slice(4);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
+
+  const toggleLang = () => setLanguage(i18n.language === 'en' ? 'ur' : 'en');
+
+  return (
+    <div className="flex h-screen bg-slate-50 overflow-hidden">
+
+      {/* ═══════════════════════════════════════
+          DESKTOP SIDEBAR  (hidden on mobile)
+      ═══════════════════════════════════════ */}
+      <aside className={cn(
+        'hidden md:flex flex-col bg-emerald-900 border-r border-emerald-800/40 shrink-0 transition-all duration-200',
+        sidebarOpen ? 'w-64' : 'w-16'
+      )}>
+
+        {/* Logo row */}
+        <div className={cn(
+          'flex items-center h-16 px-4 border-b border-emerald-800/40 gap-3',
+          !sidebarOpen && 'justify-center'
+        )}>
+          <BrandLogo />
+          {sidebarOpen && (
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-white text-sm leading-none">EduStack PK</p>
+              <p className="text-emerald-400 text-[10px] mt-0.5 font-medium">School Management</p>
+            </div>
+          )}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className={cn(
+              'shrink-0 text-emerald-400 hover:text-white p-1.5 rounded-lg hover:bg-emerald-800 transition-all',
+              !sidebarOpen && 'hidden'
+            )}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+          </button>
+          {!sidebarOpen && (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="shrink-0 text-emerald-400 hover:text-white p-1.5 rounded-lg hover:bg-emerald-800 transition-all"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
+
+        {/* Notification link */}
+        <div className="px-2 pt-3 pb-1">
+          <Link
+            to={`${base}/notifications`}
+            className={cn(
+              'sidebar-link sidebar-link-inactive relative',
+              !sidebarOpen && 'justify-center px-0'
+            )}
+          >
+            <span className="shrink-0 relative">
+              <BellIcon />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1.5 min-w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </span>
+            {sidebarOpen && (
+              <>
+                <span className="flex-1">Notifications</span>
+                {unreadCount > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+                    {unreadCount}
+                  </span>
+                )}
+              </>
+            )}
+          </Link>
+          <div className="border-t border-emerald-800/40 mt-2 mb-2" />
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto sidebar-scroll px-2 pb-2 space-y-0.5">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path ? `${base}/${item.path}` : base}
+              end={item.path === ''}
+              className={({ isActive }) =>
+                cn(
+                  'sidebar-link',
+                  !sidebarOpen && 'justify-center px-0',
+                  isActive ? 'sidebar-link-active' : 'sidebar-link-inactive'
+                )
+              }
+              title={!sidebarOpen ? t(item.label) : undefined}
+            >
+              <span className="shrink-0">{item.icon}</span>
+              {sidebarOpen && <span className="truncate">{t(item.label)}</span>}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* User footer */}
+        <div className="border-t border-emerald-800/40 p-3 shrink-0">
+          {sidebarOpen ? (
+            <>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="shrink-0 w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center text-emerald-900 text-xs font-bold">
+                  {getInitials(user?.name ?? '?')}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{user?.name}</p>
+                  <p className="text-xs text-emerald-400 truncate">{roleLabel(user?.role ?? '')}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={toggleLang}
+                  className="flex-1 text-xs text-emerald-300 hover:text-white py-1.5 rounded-lg border border-emerald-700/60 hover:bg-emerald-800 transition-colors"
+                >
+                  {i18n.language === 'en' ? 'اردو' : 'English'}
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="flex-1 text-xs text-red-400 hover:text-red-300 py-1.5 rounded-lg border border-red-800/40 hover:bg-red-900/20 transition-colors"
+                >
+                  {t('auth.logout')}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex justify-center">
+              <div className="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center text-emerald-900 text-xs font-bold cursor-pointer" title={user?.name}>
+                {getInitials(user?.name ?? '?')}
+              </div>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* ═══════════════════════════════════════
+          CONTENT COLUMN  (full width on mobile)
+      ═══════════════════════════════════════ */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        {/* MOBILE TOP BAR (hidden on desktop) */}
+        <header className="md:hidden flex items-center h-14 px-4 gap-3 bg-emerald-900 border-b border-emerald-800/40 shrink-0">
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="text-emerald-300 hover:text-white p-1 rounded-lg transition-colors"
+            aria-label="Open menu"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+            <BrandLogo />
+            <span className="font-bold text-white text-sm truncate">EduStack PK</span>
+          </div>
+
+          <Link
+            to={`${base}/notifications`}
+            className="relative text-emerald-300 hover:text-white transition-colors p-1"
+            aria-label="Notifications"
+          >
+            <BellIcon />
+            {unreadCount > 0 && (
+              <span className="absolute top-0 right-0 min-w-3.5 h-3.5 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center px-0.5 leading-none">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </Link>
+
+          <div className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center text-emerald-900 text-xs font-bold shrink-0">
+            {getInitials(user?.name ?? '?')}
+          </div>
+        </header>
+
+        {/* ACTIVE BRANCH CONTEXT BANNER */}
+        {activeBranch && user?.role === 'group_admin' && (
+          <div className="shrink-0 flex items-center gap-3 px-4 py-2 bg-amber-50 border-b border-amber-200">
+            <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <span className="text-xs text-amber-800 font-medium flex-1">
+              Viewing branch: <span className="font-bold">{activeBranch.name}</span>
+            </span>
+            <button
+              onClick={() => setActiveBranch(null)}
+              className="text-xs text-amber-700 hover:text-amber-900 font-medium flex items-center gap-1 transition-colors"
+            >
+              Exit view
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+
+        {/* MAIN SCROLLABLE CONTENT */}
+        <main className="flex-1 overflow-y-auto">
+          <Outlet />
+        </main>
+
+        {/* MOBILE BOTTOM TAB BAR (hidden on desktop) */}
+        <nav className="md:hidden flex items-stretch h-16 bg-white border-t border-gray-100 shrink-0">
+          {primaryTabs.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path ? `${base}/${item.path}` : base}
+              end={item.path === ''}
+              className={({ isActive }) =>
+                cn(
+                  'flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors duration-150 select-none',
+                  isActive ? 'text-emerald-600' : 'text-gray-400'
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <span className={cn(
+                    'flex items-center justify-center w-9 h-7 rounded-xl transition-all duration-150',
+                    isActive ? 'bg-emerald-50 text-emerald-600' : 'text-gray-400'
+                  )}>
+                    {item.icon}
+                  </span>
+                  <span className="text-[10px] font-semibold leading-none">
+                    {t(item.label)}
+                  </span>
+                </>
+              )}
+            </NavLink>
+          ))}
+
+          {/* More button — shows when nav items overflow the 4 primary tabs */}
+          {moreItems.length > 0 && (
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="flex-1 flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-gray-600 transition-colors select-none"
+            >
+              <span className="flex items-center justify-center w-9 h-7 rounded-xl">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                </svg>
+              </span>
+              <span className="text-[10px] font-semibold leading-none">More</span>
+            </button>
+          )}
+        </nav>
+      </div>
+
+      {/* ═══════════════════════════════════════
+          MOBILE DRAWER  (slide-in from left)
+      ═══════════════════════════════════════ */}
+      {drawerOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setDrawerOpen(false)}
+          />
+
+          {/* Drawer panel */}
+          <div className="relative w-72 max-w-[85vw] bg-emerald-900 flex flex-col h-full shadow-2xl">
+            {/* Drawer header */}
+            <div className="flex items-center justify-between h-14 px-4 border-b border-emerald-800/40 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <BrandLogo />
+                <div>
+                  <p className="font-bold text-white text-sm leading-none">EduStack PK</p>
+                  <p className="text-emerald-400 text-[10px] mt-0.5">School Management</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setDrawerOpen(false)}
+                className="text-emerald-400 hover:text-white p-1.5 rounded-lg hover:bg-emerald-800 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Notification shortcut */}
+            <div className="px-2 pt-3 pb-1">
+              <Link
+                to={`${base}/notifications`}
+                onClick={() => setDrawerOpen(false)}
+                className="sidebar-link sidebar-link-inactive relative"
+              >
+                <span className="shrink-0 relative">
+                  <BellIcon />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1.5 min-w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </span>
+                <span className="flex-1">Notifications</span>
+                {unreadCount > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+                    {unreadCount}
+                  </span>
+                )}
+              </Link>
+              <div className="border-t border-emerald-800/40 mt-2 mb-2" />
+            </div>
+
+            {/* All nav items */}
+            <nav className="flex-1 overflow-y-auto sidebar-scroll px-2 pb-2 space-y-0.5">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path ? `${base}/${item.path}` : base}
+                  end={item.path === ''}
+                  onClick={() => setDrawerOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      'sidebar-link',
+                      isActive ? 'sidebar-link-active' : 'sidebar-link-inactive'
+                    )
+                  }
+                >
+                  <span className="shrink-0">{item.icon}</span>
+                  <span>{t(item.label)}</span>
+                </NavLink>
+              ))}
+            </nav>
+
+            {/* User footer */}
+            <div className="border-t border-emerald-800/40 p-4 shrink-0">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-emerald-900 text-sm font-bold shrink-0">
+                  {getInitials(user?.name ?? '?')}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{user?.name}</p>
+                  <p className="text-xs text-emerald-400">{roleLabel(user?.role ?? '')}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { toggleLang(); setDrawerOpen(false); }}
+                  className="flex-1 text-xs text-emerald-300 hover:text-white py-2 rounded-lg border border-emerald-700/60 hover:bg-emerald-800 transition-colors"
+                >
+                  {i18n.language === 'en' ? 'اردو' : 'English'}
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="flex-1 text-xs text-red-400 hover:text-red-300 py-2 rounded-lg border border-red-800/40 hover:bg-red-900/20 transition-colors"
+                >
+                  {t('auth.logout')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
