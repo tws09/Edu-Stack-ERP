@@ -239,7 +239,7 @@ function AdmissionForm({ classes, sections, years, selectedClassId, onClassChang
     sectionId: '',
     academicYearId: years.find(y => y.isCurrent)?._id ?? years[0]?._id ?? '',
     previousSchool: '',
-    profile: { name: '', dateOfBirth: '', gender: 'male' as const, cnicOrBForm: '', address: '' },
+    profile: { name: '', dateOfBirth: '', gender: 'male' as 'male' | 'female' | 'other', cnicOrBForm: '', address: '' },
     guardianInfo: { fatherName: '', fatherPhone: '', fatherCnic: '', motherName: '', motherPhone: '' },
   });
 

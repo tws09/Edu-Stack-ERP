@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { academicService } from '../../services/academicService';
 import { assignmentService } from '../../services/assignmentService';
 import type { AssignmentDoc, SubmissionDoc } from '../../services/assignmentService';
-import { studentService } from '../../services/studentService';
 import PageHeader from '../../components/ui/PageHeader';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
@@ -19,8 +18,6 @@ export default function AssignmentsPage() {
   const user = useAuthStore(s => s.user);
   const qc = useQueryClient();
   const isStudent = user?.role === 'student';
-  const isTeacher = user?.role === 'teacher';
-
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
   const [panel, setPanel] = useState<Panel>('list');

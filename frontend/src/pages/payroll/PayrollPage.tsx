@@ -7,7 +7,7 @@ import PageHeader from '../../components/ui/PageHeader';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import { useAuthStore } from '../../stores/authStore';
-import { cn, formatCurrency } from '../../lib/utils';
+import { formatCurrency } from '../../lib/utils';
 
 const today = new Date();
 const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
@@ -204,7 +204,7 @@ export default function PayrollPage() {
               <label className="label">Staff Member</label>
               <select className="input" value={newStaffId} onChange={e => setNewStaffId(e.target.value)}>
                 <option value="">Select staff...</option>
-                {staff.map((s: { _id: string; name: string; role: string }) => <option key={s._id} value={s._id}>{s.name} ({s.role})</option>)}
+                {staff.map(s => <option key={s._id} value={s._id}>{s.profile.name} ({s.role})</option>)}
               </select>
             </div>
           )}

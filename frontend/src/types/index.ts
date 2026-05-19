@@ -27,7 +27,7 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   message?: string;
   errors?: { msg: string; path: string }[];
-  meta?: { total: number; page: number; limit?: number };
+  meta?: { total: number; page: number; limit?: number; unreadCount?: number };
 }
 
 export interface Organization {

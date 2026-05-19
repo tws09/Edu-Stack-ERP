@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { academicService } from '../../services/academicService';
 import type { AcademicYear, ClassDoc, SectionDoc, SubjectDoc } from '../../services/academicService';
 import PageHeader from '../../components/ui/PageHeader';
@@ -20,7 +19,6 @@ const CLASS_LEVELS = [
 type Tab = 'years' | 'classes' | 'sections' | 'subjects';
 
 export default function AcademicSetupPage() {
-  const { t } = useTranslation();
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>('years');
   const [modal, setModal] = useState<{ type: string; data?: Record<string, unknown> } | null>(null);
@@ -30,7 +28,7 @@ export default function AcademicSetupPage() {
   const { data: years = [] } = useQuery({ queryKey: ['years'], queryFn: academicService.getYears });
   const { data: classes = [] } = useQuery({ queryKey: ['classes', selectedYearId], queryFn: () => academicService.getClasses(selectedYearId || undefined) });
   const { data: sections = [] } = useQuery({ queryKey: ['sections', selectedClassId], queryFn: () => academicService.getSections(selectedClassId || undefined) });
-  const { data: subjects = [] } = useQuery({ queryKey: ['subjects'], queryFn: academicService.getSubjects });
+  const { data: subjects = [] } = useQuery({ queryKey: ['subjects'], queryFn: () => academicService.getSubjects() });
 
   const createYear = useMutation({ mutationFn: academicService.createYear, onSuccess: () => { qc.invalidateQueries({ queryKey: ['years'] }); setModal(null); } });
   const createClass = useMutation({ mutationFn: academicService.createClass, onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); setModal(null); } });
