@@ -51,11 +51,11 @@ export default function SuperAdminLayout() {
   return (
     <div className="flex h-screen overflow-hidden bg-slate-950">
       {/* Dark sidebar */}
-      <aside className="w-64 flex flex-col bg-emerald-950 border-r border-emerald-900/60 shrink-0">
+      <aside className="w-64 flex flex-col bg-navy-950 border-r border-white/6 shrink-0">
 
         {/* Logo */}
-        <div className="flex items-center gap-3 h-16 px-5 border-b border-emerald-900/60">
-          <div className="w-9 h-9 bg-amber-500 rounded-xl flex items-center justify-center text-emerald-950 shrink-0">
+        <div className="flex items-center gap-3 h-16 px-5 border-b border-white/6">
+          <div className="w-9 h-9 bg-amber-500 rounded-xl flex items-center justify-center text-navy-950 shrink-0">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
             </svg>
@@ -81,8 +81,8 @@ export default function SuperAdminLayout() {
                 cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
                   isActive
-                    ? 'bg-amber-500/15 text-amber-400'
-                    : 'text-emerald-300 hover:bg-emerald-900 hover:text-white'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-white/55 hover:bg-white/[0.07] hover:text-white'
                 )
               }
             >
@@ -93,23 +93,23 @@ export default function SuperAdminLayout() {
         </nav>
 
         {/* Platform status strip */}
-        <div className="mx-3 mb-3 px-3 py-2.5 rounded-xl bg-emerald-900/60 border border-emerald-800/40">
+        <div className="mx-3 mb-3 px-3 py-2.5 rounded-xl bg-white/4 border border-white/6">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-            <p className="text-xs text-emerald-400 font-medium">Platform Online</p>
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />
+            <p className="text-xs text-green-400 font-medium">Platform Online</p>
           </div>
-          <p className="text-[10px] text-emerald-600 mt-0.5">All systems operational</p>
+          <p className="text-[10px] text-white/30 mt-0.5">All systems operational</p>
         </div>
 
         {/* User footer */}
-        <div className="border-t border-emerald-900/60 p-4 shrink-0">
+        <div className="border-t border-white/6 p-4 shrink-0">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center text-emerald-950 text-xs font-bold shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center text-navy-950 text-xs font-bold shrink-0">
               {getInitials(user?.name ?? 'SA')}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-white truncate">{user?.name}</p>
-              <p className="text-xs text-emerald-500">WolfStack Admin</p>
+              <p className="text-xs text-white/40">WolfStack Admin</p>
             </div>
           </div>
           <button

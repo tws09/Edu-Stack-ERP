@@ -93,7 +93,7 @@ const ALL_NAV: NavItem[] = [
 
 const BrandLogo = ({ size = 'sm' }: { size?: 'sm' | 'md' }) => (
   <div className={cn(
-    'bg-amber-500 rounded-xl flex items-center justify-center text-emerald-900 shrink-0',
+    'bg-amber-500 rounded-xl flex items-center justify-center text-navy-950 shrink-0',
     size === 'sm' ? 'w-8 h-8' : 'w-9 h-9'
   )}>
     <svg className={size === 'sm' ? 'w-4 h-4' : 'w-5 h-5'} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -144,26 +144,26 @@ export default function AppLayout() {
           DESKTOP SIDEBAR  (hidden on mobile)
       ═══════════════════════════════════════ */}
       <aside className={cn(
-        'hidden md:flex flex-col bg-emerald-900 border-r border-emerald-800/40 shrink-0 transition-all duration-200',
+        'hidden md:flex flex-col bg-navy-950 border-r border-white/6 shrink-0 transition-all duration-200',
         sidebarOpen ? 'w-64' : 'w-16'
       )}>
 
         {/* Logo row */}
         <div className={cn(
-          'flex items-center h-16 px-4 border-b border-emerald-800/40 gap-3',
+          'flex items-center h-16 px-4 border-b border-white/6 gap-3',
           !sidebarOpen && 'justify-center'
         )}>
           <BrandLogo />
           {sidebarOpen && (
             <div className="flex-1 min-w-0">
               <p className="font-bold text-white text-sm leading-none">EduStack PK</p>
-              <p className="text-emerald-400 text-[10px] mt-0.5 font-medium">School Management</p>
+              <p className="text-blue-200 text-[10px] mt-0.5 font-medium">School Management</p>
             </div>
           )}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className={cn(
-              'shrink-0 text-emerald-400 hover:text-white p-1.5 rounded-lg hover:bg-emerald-800 transition-all',
+              'shrink-0 text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-navy-900 transition-all',
               !sidebarOpen && 'hidden'
             )}
           >
@@ -174,7 +174,7 @@ export default function AppLayout() {
           {!sidebarOpen && (
             <button
               onClick={() => setSidebarOpen(true)}
-              className="shrink-0 text-emerald-400 hover:text-white p-1.5 rounded-lg hover:bg-emerald-800 transition-all"
+              className="shrink-0 text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-navy-900 transition-all"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
@@ -211,7 +211,7 @@ export default function AppLayout() {
               </>
             )}
           </Link>
-          <div className="border-t border-emerald-800/40 mt-2 mb-2" />
+          <div className="border-t border-white/6 mt-2 mb-2" />
         </div>
 
         {/* Nav */}
@@ -237,22 +237,22 @@ export default function AppLayout() {
         </nav>
 
         {/* User footer */}
-        <div className="border-t border-emerald-800/40 p-3 shrink-0">
+        <div className="border-t border-white/6 p-3 shrink-0">
           {sidebarOpen ? (
             <>
               <div className="flex items-center gap-3 mb-3">
-                <div className="shrink-0 w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center text-emerald-900 text-xs font-bold">
+                <div className="shrink-0 w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center text-navy-950 text-xs font-bold">
                   {getInitials(user?.name ?? '?')}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white truncate">{user?.name}</p>
-                  <p className="text-xs text-emerald-400 truncate">{roleLabel(user?.role ?? '')}</p>
+                  <p className="text-xs text-blue-200 truncate">{roleLabel(user?.role ?? '')}</p>
                 </div>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={toggleLang}
-                  className="flex-1 text-xs text-emerald-300 hover:text-white py-1.5 rounded-lg border border-emerald-700/60 hover:bg-emerald-800 transition-colors"
+                  className="flex-1 text-xs text-slate-300 hover:text-white py-1.5 rounded-lg border border-white/15 hover:bg-navy-900 transition-colors"
                 >
                   {i18n.language === 'en' ? 'اردو' : 'English'}
                 </button>
@@ -266,7 +266,7 @@ export default function AppLayout() {
             </>
           ) : (
             <div className="flex justify-center">
-              <div className="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center text-emerald-900 text-xs font-bold cursor-pointer" title={user?.name}>
+              <div className="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center text-navy-950 text-xs font-bold cursor-pointer" title={user?.name}>
                 {getInitials(user?.name ?? '?')}
               </div>
             </div>
@@ -280,10 +280,10 @@ export default function AppLayout() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* MOBILE TOP BAR (hidden on desktop) */}
-        <header className="md:hidden flex items-center h-14 px-4 gap-3 bg-emerald-900 border-b border-emerald-800/40 shrink-0">
+        <header className="md:hidden flex items-center h-14 px-4 gap-3 bg-navy-950 border-b border-white/6 shrink-0">
           <button
             onClick={() => setDrawerOpen(true)}
-            className="text-emerald-300 hover:text-white p-1 rounded-lg transition-colors"
+            className="text-slate-300 hover:text-white p-1 rounded-lg transition-colors"
             aria-label="Open menu"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -298,7 +298,7 @@ export default function AppLayout() {
 
           <Link
             to={`${base}/notifications`}
-            className="relative text-emerald-300 hover:text-white transition-colors p-1"
+            className="relative text-slate-300 hover:text-white transition-colors p-1"
             aria-label="Notifications"
           >
             <BellIcon />
@@ -309,7 +309,7 @@ export default function AppLayout() {
             )}
           </Link>
 
-          <div className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center text-emerald-900 text-xs font-bold shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center text-navy-950 text-xs font-bold shrink-0">
             {getInitials(user?.name ?? '?')}
           </div>
         </header>
@@ -399,19 +399,19 @@ export default function AppLayout() {
           />
 
           {/* Drawer panel */}
-          <div className="relative w-72 max-w-[85vw] bg-emerald-900 flex flex-col h-full shadow-2xl">
+          <div className="relative w-72 max-w-[85vw] bg-navy-950 flex flex-col h-full shadow-2xl">
             {/* Drawer header */}
-            <div className="flex items-center justify-between h-14 px-4 border-b border-emerald-800/40 shrink-0">
+            <div className="flex items-center justify-between h-14 px-4 border-b border-white/6 shrink-0">
               <div className="flex items-center gap-2.5">
                 <BrandLogo />
                 <div>
                   <p className="font-bold text-white text-sm leading-none">EduStack PK</p>
-                  <p className="text-emerald-400 text-[10px] mt-0.5">School Management</p>
+                  <p className="text-blue-200 text-[10px] mt-0.5">School Management</p>
                 </div>
               </div>
               <button
                 onClick={() => setDrawerOpen(false)}
-                className="text-emerald-400 hover:text-white p-1.5 rounded-lg hover:bg-emerald-800 transition-colors"
+                className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-navy-900 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -441,7 +441,7 @@ export default function AppLayout() {
                   </span>
                 )}
               </Link>
-              <div className="border-t border-emerald-800/40 mt-2 mb-2" />
+              <div className="border-t border-white/6 mt-2 mb-2" />
             </div>
 
             {/* All nav items */}
@@ -466,20 +466,20 @@ export default function AppLayout() {
             </nav>
 
             {/* User footer */}
-            <div className="border-t border-emerald-800/40 p-4 shrink-0">
+            <div className="border-t border-white/6 p-4 shrink-0">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-emerald-900 text-sm font-bold shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-navy-950 text-sm font-bold shrink-0">
                   {getInitials(user?.name ?? '?')}
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-white truncate">{user?.name}</p>
-                  <p className="text-xs text-emerald-400">{roleLabel(user?.role ?? '')}</p>
+                  <p className="text-xs text-blue-200">{roleLabel(user?.role ?? '')}</p>
                 </div>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => { toggleLang(); setDrawerOpen(false); }}
-                  className="flex-1 text-xs text-emerald-300 hover:text-white py-2 rounded-lg border border-emerald-700/60 hover:bg-emerald-800 transition-colors"
+                  className="flex-1 text-xs text-slate-300 hover:text-white py-2 rounded-lg border border-white/15 hover:bg-navy-900 transition-colors"
                 >
                   {i18n.language === 'en' ? 'اردو' : 'English'}
                 </button>
