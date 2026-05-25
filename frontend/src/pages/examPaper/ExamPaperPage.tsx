@@ -900,7 +900,7 @@ function QuestionBankTab() {
               {questions.map((q, idx) => {
                 const subjectName = typeof q.subjectId === 'object' ? q.subjectId.name : '';
                 const cls = typeof q.classId === 'object' ? q.classId.name : '';
-                const isOwn = typeof q.createdById === 'object' ? q.createdById._id === user?._id : q.createdById === user?.id;
+                const isOwn = typeof q.createdById === 'object' ? q.createdById._id === user?.id : q.createdById === user?.id;
                 const canEdit = user?.role !== 'teacher' || isOwn;
 
                 const typeStyle: Record<string, string> = {
@@ -1522,8 +1522,6 @@ function PaperWizard({ onClose, onCreated, editPaperId }: { onClose: () => void;
   const [sections, setSections] = useState<PaperSection[]>([]);
   const [bankFilters, setBankFilters] = useState({ type: '' as '' | 'MCQ' | 'SQ' | 'LQ' });
   const [activeSectionIdx, setActiveSectionIdx] = useState(0);
-  const [_editingSectionIdx, setEditingSectionIdx] = useState<number | null>(null);
-  const [editingSectionName, _setEditingSectionName] = useState('');
   const [editingQ, setEditingQ] = useState<{ si: number; qi: number } | null>(null);
   const [editingQText, setEditingQText] = useState('');
   const [editLoaded, setEditLoaded] = useState(false);
@@ -1647,32 +1645,6 @@ function PaperWizard({ onClose, onCreated, editPaperId }: { onClose: () => void;
       ...s,
       questions: s.questions.map((q, qi) => qi !== qIdx ? q : { ...q, marks, isOverridden: true }),
     }));
-  };
-
-  const _moveQuestion = (sectionIdx: number, qIdx: number, dir: -1 | 1) => {
-    setSections(prev => prev.map((s, i) => {
-      if (i !== sectionIdx) return s;
-      const qs = [...s.questions];
-      const target = qIdx + dir;
-      if (target < 0 || target >= qs.length) return s;
-      [qs[qIdx], qs[target]] = [qs[target], qs[qIdx]];
-      return { ...s, questions: qs };
-    }));
-  };
-
-  const _removeQuestion = (sectionIdx: number, qIdx: number) => {
-    setSections(prev => prev.map((s, i) => i !== sectionIdx ? s : {
-      ...s,
-      questions: s.questions.filter((_, qi) => qi !== qIdx),
-    }));
-  };
-
-  const _commitSectionName = (sectionIdx: number) => {
-    const name = editingSectionName.trim();
-    if (name) {
-      setSections(prev => prev.map((s, i) => i !== sectionIdx ? s : { ...s, name }));
-    }
-    setEditingSectionIdx(null);
   };
 
   const commitQuestionText = () => {
