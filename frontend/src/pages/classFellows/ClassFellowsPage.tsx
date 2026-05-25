@@ -11,30 +11,6 @@ interface EnrichedStudent extends StudentDoc {
   result?: ResultDoc;
 }
 
-function RankBadge({ rank }: { rank?: number }) {
-  if (!rank) return null;
-  if (rank === 1) return (
-    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
-      🥇 #1
-    </span>
-  );
-  if (rank === 2) return (
-    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-      🥈 #2
-    </span>
-  );
-  if (rank === 3) return (
-    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400">
-      🥉 #3
-    </span>
-  );
-  return (
-    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400">
-      #{rank}
-    </span>
-  );
-}
-
 function GradeBadge({ grade, isPassed }: { grade: string; isPassed: boolean }) {
   const color = isPassed
     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'

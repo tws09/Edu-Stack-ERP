@@ -21,10 +21,10 @@ export default function OrgDetailPage() {
   const [form, setForm] = useState({ name: '', contactEmail: '', contactPhone: '', plan: '', status: '' });
   const [saveErr, setSaveErr] = useState('');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<Organization>({
     queryKey: ['admin', 'org', id],
-    queryFn: () => api.get<ApiResponse<Organization>>(`/organizations/${id}`).then(r => r.data.data!),
-    onSuccess: (org: Organization) => {
+    queryFn: () => api.get<ApiResponse<Organization>>(`/organizations/${id}`).then(r => {
+      const org = r.data.data!;
       setForm({
         name: org.name,
         contactEmail: org.contactEmail,
@@ -32,8 +32,9 @@ export default function OrgDetailPage() {
         plan: org.plan,
         status: org.status,
       });
-    },
-  } as any);
+      return org;
+    }),
+  });
 
   const update = useMutation({
     mutationFn: (body: typeof form) => api.put<ApiResponse<Organization>>(`/organizations/${id}`, body),

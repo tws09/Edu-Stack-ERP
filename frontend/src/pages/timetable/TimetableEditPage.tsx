@@ -154,7 +154,7 @@ function SlotEditorPanel({
             className="w-full text-sm border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">— No teacher —</option>
-            {teachers.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+            {teachers.map(t => <option key={t._id} value={t._id}>{t.profile?.name ?? t._id}</option>)}
           </select>
         </div>
 

@@ -6,7 +6,6 @@ import { examService } from '../../services/examService';
 import { studentService } from '../../services/studentService';
 import { examScheduleService, type ExamScheduleDoc, type ExamScheduleSlot } from '../../services/examScheduleService';
 import { useAuthStore } from '../../stores/authStore';
-import { cn } from '../../lib/utils';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

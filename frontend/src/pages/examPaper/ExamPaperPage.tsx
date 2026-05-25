@@ -568,13 +568,14 @@ function QuestionBankTab() {
   const isMcqEdit = editQ?.type === 'MCQ';
 
   const saveMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: async (): Promise<QuestionDoc[]> => {
       if (editQ) {
-        return questionBankService.update(editQ._id, {
+        const result = await questionBankService.update(editQ._id, {
           text: editForm.text, chapter: editForm.chapter,
           difficulty: editForm.difficulty, language: editForm.language,
           ...(isMcqEdit ? { options: editForm.options, correctAnswer: editForm.correctAnswer } : {}),
         });
+        return [result];
       }
       // Bulk save — fire all rows in parallel
       return Promise.all(
@@ -899,7 +900,7 @@ function QuestionBankTab() {
               {questions.map((q, idx) => {
                 const subjectName = typeof q.subjectId === 'object' ? q.subjectId.name : '';
                 const cls = typeof q.classId === 'object' ? q.classId.name : '';
-                const isOwn = typeof q.createdById === 'object' ? q.createdById._id === user?._id : q.createdById === user?._id;
+                const isOwn = typeof q.createdById === 'object' ? q.createdById._id === user?._id : q.createdById === user?.id;
                 const canEdit = user?.role !== 'teacher' || isOwn;
 
                 const typeStyle: Record<string, string> = {
@@ -1293,10 +1294,8 @@ function PaperPrintView({ paperId, onClose, autoAction }: { paperId: string; onC
     );
   }
 
-  const examName = typeof paper.examId === 'object' ? paper.examId.name : '';
   const subjectName = typeof paper.subjectId === 'object' ? paper.subjectId.name : '';
   const className = typeof paper.classId === 'object' ? paper.classId.name : '';
-  const examTypeName = typeof paper.examTypeId === 'object' ? (paper.examTypeId as { name: string }).name : '';
   const examDate = typeof paper.examId === 'object' ? new Date(paper.examId.startDate).toLocaleDateString('en-PK') : '';
   const isUrdu = subjectName.toLowerCase().includes('urdu');
 
@@ -1523,8 +1522,8 @@ function PaperWizard({ onClose, onCreated, editPaperId }: { onClose: () => void;
   const [sections, setSections] = useState<PaperSection[]>([]);
   const [bankFilters, setBankFilters] = useState({ type: '' as '' | 'MCQ' | 'SQ' | 'LQ' });
   const [activeSectionIdx, setActiveSectionIdx] = useState(0);
-  const [editingSectionIdx, setEditingSectionIdx] = useState<number | null>(null);
-  const [editingSectionName, setEditingSectionName] = useState('');
+  const [_editingSectionIdx, setEditingSectionIdx] = useState<number | null>(null);
+  const [editingSectionName, _setEditingSectionName] = useState('');
   const [editingQ, setEditingQ] = useState<{ si: number; qi: number } | null>(null);
   const [editingQText, setEditingQText] = useState('');
   const [editLoaded, setEditLoaded] = useState(false);
@@ -1553,7 +1552,7 @@ function PaperWizard({ onClose, onCreated, editPaperId }: { onClose: () => void;
   const { data: examTypes = [] } = useQuery({ queryKey: ['exam-types'], queryFn: examTypeService.list });
   const { data: subjects = [] } = useQuery({ queryKey: ['subjects'], queryFn: () => academicService.getSubjects() });
   const { data: classes = [] } = useQuery({ queryKey: ['classes'], queryFn: () => academicService.getClasses() });
-  const { data: wizardHeaderCfg } = useQuery({ queryKey: ['branch-header'], queryFn: branchHeaderService.get });
+  const { data: _wizardHeaderCfg } = useQuery({ queryKey: ['branch-header'], queryFn: branchHeaderService.get });
 
   const selectedExamType = examTypes.find(t => t._id === setup.examTypeId);
 
@@ -1650,7 +1649,7 @@ function PaperWizard({ onClose, onCreated, editPaperId }: { onClose: () => void;
     }));
   };
 
-  const moveQuestion = (sectionIdx: number, qIdx: number, dir: -1 | 1) => {
+  const _moveQuestion = (sectionIdx: number, qIdx: number, dir: -1 | 1) => {
     setSections(prev => prev.map((s, i) => {
       if (i !== sectionIdx) return s;
       const qs = [...s.questions];
@@ -1661,14 +1660,14 @@ function PaperWizard({ onClose, onCreated, editPaperId }: { onClose: () => void;
     }));
   };
 
-  const removeQuestion = (sectionIdx: number, qIdx: number) => {
+  const _removeQuestion = (sectionIdx: number, qIdx: number) => {
     setSections(prev => prev.map((s, i) => i !== sectionIdx ? s : {
       ...s,
       questions: s.questions.filter((_, qi) => qi !== qIdx),
     }));
   };
 
-  const commitSectionName = (sectionIdx: number) => {
+  const _commitSectionName = (sectionIdx: number) => {
     const name = editingSectionName.trim();
     if (name) {
       setSections(prev => prev.map((s, i) => i !== sectionIdx ? s : { ...s, name }));

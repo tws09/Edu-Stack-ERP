@@ -177,7 +177,7 @@ function AccessBadge({ access }: { access: Access }) {
 }
 
 // ── Tree node component ───────────────────────────────────────────────
-function TreeNodeCard({ node, isLast = false }: { node: TreeNode; isLast?: boolean }) {
+function TreeNodeCard({ node, isLast: _isLast = false }: { node: TreeNode; isLast?: boolean }) {
   return (
     <div className="flex flex-col items-center">
       <div className={cn(
@@ -231,7 +231,7 @@ const AVATAR_COLORS: Record<string, string> = {
 
 // ── Main page ─────────────────────────────────────────────────────────
 export default function RolesHierarchyPage() {
-  const { slug } = useParams<{ slug: string }>();
+  useParams<{ slug: string }>();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState<string>('');

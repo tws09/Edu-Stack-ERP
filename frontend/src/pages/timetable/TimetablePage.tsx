@@ -28,7 +28,7 @@ const SUBJECT_COLORS = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function slotKey(day: number, period: number) { return `${day}-${period}`; }
+function _slotKey(day: number, period: number) { return `${day}-${period}`; }
 
 function getSubjectColor(subjectId: string, subjects: { _id: string }[]) {
   const idx = subjects.findIndex(s => s._id === subjectId);
