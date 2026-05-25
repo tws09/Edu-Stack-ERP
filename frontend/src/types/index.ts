@@ -2,6 +2,7 @@ export type UserRole =
   | 'super_admin'
   | 'group_admin'
   | 'branch_principal'
+  | 'coordinator'
   | 'teacher'
   | 'student'
   | 'accountant'
@@ -56,6 +57,32 @@ export interface Branch {
     periodsPerDay: number;
     workingDays: number[];
   };
+}
+
+export type ResourceType = 'notes' | 'book' | 'past_paper' | 'video_link' | 'other';
+
+export interface LearningResource {
+  _id: string;
+  orgId: string;
+  branchId: string;
+  classId: { _id: string; name: string; level: string } | string;
+  subjectId?: { _id: string; name: string; code: string } | string;
+  uploadedBy: { _id: string; name: string } | string;
+  title: string;
+  description?: string;
+  type: ResourceType;
+  fileUrl?: string;
+  fileKey?: string;
+  fileName?: string;
+  fileSize?: number;
+  mimeType?: string;
+  externalUrl?: string;
+  tags: string[];
+  isPublished: boolean;
+  isBookmarked?: boolean;
+  downloadCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface User {

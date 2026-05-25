@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/api';
 import type { Branch, ApiResponse } from '../../types';
 import { useAuthStore } from '../../stores/authStore';
+import { useThemeStore } from '../../stores/themeStore';
 import PageHeader from '../../components/ui/PageHeader';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -10,6 +11,7 @@ const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
 export default function SettingsPage() {
   const qc = useQueryClient();
   const user = useAuthStore(s => s.user);
+  const { isDark, toggle: toggleDark } = useThemeStore();
 
   const { data, isLoading } = useQuery({
     queryKey: ['branch', user?.branchId],
@@ -72,11 +74,16 @@ export default function SettingsPage() {
     }));
   };
 
+  const inputCls = 'w-full border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors';
+  const labelCls = 'block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1';
+  const cardCls = 'bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5';
+  const headingCls = 'font-semibold text-gray-900 dark:text-slate-100 mb-4';
+
   if (!user?.branchId) {
     return (
       <div className="p-6 max-w-2xl mx-auto">
         <PageHeader title="Settings" />
-        <div className="bg-white rounded-xl border border-gray-200 px-5 py-12 text-center text-gray-400 text-sm">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 px-5 py-12 text-center text-gray-400 dark:text-slate-500 text-sm">
           Settings are available for branch-level users only.
         </div>
       </div>
@@ -88,87 +95,87 @@ export default function SettingsPage() {
       <PageHeader title="Branch Settings" subtitle="Configure your branch's operational parameters" />
 
       {isLoading ? (
-        <div className="text-center py-12 text-gray-400 text-sm">Loading settings...</div>
+        <div className="text-center py-12 text-gray-400 dark:text-slate-500 text-sm">Loading settings...</div>
       ) : (
         <form onSubmit={e => { e.preventDefault(); update.mutate(form); }} className="space-y-6">
           {saved && (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-sm text-green-700">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700/50 rounded-xl p-3 text-sm text-green-700 dark:text-green-400">
               ✓ Settings saved successfully.
             </div>
           )}
 
           {/* Branch Info */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="font-semibold text-gray-900 mb-4">Branch Information</h2>
+          <div className={cardCls}>
+            <h2 className={headingCls}>Branch Information</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Branch Name</label>
-                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" value={form.name}
+                <label className={labelCls}>Branch Name</label>
+                <input className={inputCls} value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Principal Name</label>
-                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" value={form.principalName}
+                <label className={labelCls}>Principal Name</label>
+                <input className={inputCls} value={form.principalName}
                   onChange={e => setForm(f => ({ ...f, principalName: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
-                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" value={form.phone}
+                <label className={labelCls}>Phone</label>
+                <input className={inputCls} value={form.phone}
                   onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" value={form.email}
+                <label className={labelCls}>Email</label>
+                <input type="email" className={inputCls} value={form.email}
                   onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">City</label>
-                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" value={form.city}
+                <label className={labelCls}>City</label>
+                <input className={inputCls} value={form.city}
                   onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
               </div>
               <div className="col-span-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Address</label>
-                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" value={form.address}
+                <label className={labelCls}>Address</label>
+                <input className={inputCls} value={form.address}
                   onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
               </div>
             </div>
           </div>
 
           {/* Academic Settings */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="font-semibold text-gray-900 mb-4">Academic Settings</h2>
+          <div className={cardCls}>
+            <h2 className={headingCls}>Academic Settings</h2>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Attendance Threshold</p>
-                  <p className="text-xs text-gray-400">Minimum attendance % before shortage alert</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-slate-100">Attendance Threshold</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500">Minimum attendance % before shortage alert</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
                     type="number" min={0} max={100}
-                    className="w-20 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-center"
+                    className="w-20 border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-1.5 text-sm text-center bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={form.settings.attendanceThreshold}
                     onChange={e => setForm(f => ({ ...f, settings: { ...f.settings, attendanceThreshold: Number(e.target.value) } }))}
                   />
-                  <span className="text-sm text-gray-500">%</span>
+                  <span className="text-sm text-gray-500 dark:text-slate-400">%</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Periods Per Day</p>
-                  <p className="text-xs text-gray-400">Number of class periods in a school day</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-slate-100">Periods Per Day</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500">Number of class periods in a school day</p>
                 </div>
                 <input
                   type="number" min={1} max={16}
-                  className="w-20 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-center"
+                  className="w-20 border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-1.5 text-sm text-center bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={form.settings.periodsPerDay}
                   onChange={e => setForm(f => ({ ...f, settings: { ...f.settings, periodsPerDay: Number(e.target.value) } }))}
                 />
               </div>
 
               <div>
-                <p className="text-sm font-medium text-gray-900 mb-2">Working Days</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-slate-100 mb-2">Working Days</p>
                 <div className="flex gap-2 flex-wrap">
                   {DAYS.map((day, i) => (
                     <button
@@ -178,15 +185,37 @@ export default function SettingsPage() {
                       className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
                         form.settings.workingDays.includes(i)
                           ? 'bg-blue-600 text-white border-blue-600'
-                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                          : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700'
                       }`}
                     >
                       {day.slice(0, 3)}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-gray-400 mt-1">0 = Sunday, 6 = Saturday</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">0 = Sunday, 6 = Saturday</p>
               </div>
+            </div>
+          </div>
+
+          {/* Appearance */}
+          <div className={cardCls}>
+            <h2 className={headingCls}>Appearance</h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-900 dark:text-slate-100">Dark Mode</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500">Switch to a darker color scheme</p>
+              </div>
+              <button
+                type="button"
+                onClick={toggleDark}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 ${
+                  isDark ? 'bg-blue-600' : 'bg-gray-200'
+                }`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                  isDark ? 'translate-x-6' : 'translate-x-1'
+                }`} />
+              </button>
             </div>
           </div>
 

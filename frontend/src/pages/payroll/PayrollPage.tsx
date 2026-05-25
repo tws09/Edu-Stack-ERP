@@ -116,15 +116,15 @@ export default function PayrollPage() {
       {/* Summary */}
       <div className="grid grid-cols-3 gap-4 mb-5">
         <div className="card p-4">
-          <p className="text-xs text-gray-500">Total Payable</p>
-          <p className="text-xl font-bold mt-1">{formatCurrency(totalNetPay)}</p>
+          <p className="text-xs text-gray-500 dark:text-slate-400">Total Payable</p>
+          <p className="text-xl font-bold mt-1 dark:text-slate-100">{formatCurrency(totalNetPay)}</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs text-gray-500">Paid Out</p>
+          <p className="text-xs text-gray-500 dark:text-slate-400">Paid Out</p>
           <p className="text-xl font-bold text-green-600 mt-1">{formatCurrency(totalPaid)}</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs text-gray-500">Pending</p>
+          <p className="text-xs text-gray-500 dark:text-slate-400">Pending</p>
           <p className="text-xl font-bold text-orange-500 mt-1">{formatCurrency(totalNetPay - totalPaid)}</p>
         </div>
       </div>
@@ -140,28 +140,28 @@ export default function PayrollPage() {
       <div className="card overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Staff</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-500">Basic</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-500">Gross</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-500">Deductions</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-500">Net Pay</th>
-              <th className="text-center px-4 py-3 font-medium text-gray-500">Status</th>
-              {canManage && <th className="text-center px-4 py-3 font-medium text-gray-500">Actions</th>}
+            <tr className="bg-gray-50 border-b border-gray-100 dark:bg-slate-700/50 dark:border-slate-700">
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Staff</th>
+              <th className="text-right px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Basic</th>
+              <th className="text-right px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Gross</th>
+              <th className="text-right px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Deductions</th>
+              <th className="text-right px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Net Pay</th>
+              <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
+              {canManage && <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Actions</th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
-            {isLoading && <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400 text-sm">Loading...</td></tr>}
+          <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+            {isLoading && <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500 text-sm">Loading...</td></tr>}
             {!isLoading && payrolls.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400 text-sm">No payroll records. Click "Bulk Process" to auto-generate.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500 text-sm">No payroll records. Click "Bulk Process" to auto-generate.</td></tr>
             )}
             {payrolls.map(p => {
               const staffMember = typeof p.staffId === 'object' ? p.staffId : null;
               return (
-                <tr key={p._id} className="hover:bg-gray-50">
+                <tr key={p._id} className="hover:bg-gray-50 dark:hover:bg-slate-700/40">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{staffMember?.name ?? '—'}</p>
-                    <p className="text-xs text-gray-400 capitalize">{staffMember?.role?.replace('_', ' ')}</p>
+                    <p className="font-medium text-gray-900 dark:text-slate-100">{staffMember?.name ?? '—'}</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500 capitalize">{staffMember?.role?.replace('_', ' ')}</p>
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums">{formatCurrency(p.basicSalary)}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{formatCurrency(p.grossSalary)}</td>
@@ -178,12 +178,12 @@ export default function PayrollPage() {
                       <div className="flex gap-1 justify-center">
                         {p.status === 'draft' && (
                           <>
-                            <button onClick={() => openEdit(p)} className="text-xs px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 transition-colors">Edit</button>
-                            <button onClick={() => approveMutation.mutate(p._id)} className="text-xs px-2 py-1 rounded border border-blue-200 text-blue-700 hover:bg-blue-50 transition-colors">Approve</button>
+                            <button onClick={() => openEdit(p)} className="text-xs px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700 transition-colors">Edit</button>
+                            <button onClick={() => approveMutation.mutate(p._id)} className="text-xs px-2 py-1 rounded border border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20 transition-colors">Approve</button>
                           </>
                         )}
                         {p.status === 'approved' && (
-                          <button onClick={() => { setPayTarget(p); setPayMethod('bank_transfer'); setPayMethodOpen(true); }} className="text-xs px-2 py-1 rounded border border-green-200 text-green-700 hover:bg-green-50 transition-colors">Mark Paid</button>
+                          <button onClick={() => { setPayTarget(p); setPayMethod('bank_transfer'); setPayMethodOpen(true); }} className="text-xs px-2 py-1 rounded border border-green-200 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/20 transition-colors">Mark Paid</button>
                         )}
                       </div>
                     </td>
@@ -204,7 +204,7 @@ export default function PayrollPage() {
               <label className="label">Staff Member</label>
               <select className="input" value={newStaffId} onChange={e => setNewStaffId(e.target.value)}>
                 <option value="">Select staff...</option>
-                {staff.map(s => <option key={s._id} value={s._id}>{s.profile.name} ({s.role})</option>)}
+                {staff.map(s => <option key={s._id} value={s._id}>{s.name} ({s.role})</option>)}
               </select>
             </div>
           )}
@@ -239,7 +239,7 @@ export default function PayrollPage() {
             ))}
           </div>
           {newBasic && (
-            <div className="bg-blue-50 rounded-lg p-3 text-sm text-blue-800">
+            <div className="bg-blue-50 rounded-lg p-3 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
               Net Pay ≈ {formatCurrency(
                 Number(newBasic) +
                 allowances.reduce((s, a) => s + (Number(a.amount) || 0), 0) -
@@ -260,7 +260,7 @@ export default function PayrollPage() {
       <Modal open={bulkOpen} onClose={() => setBulkOpen(false)} title="Bulk Process Payroll" size="sm">
         <div className="space-y-4">
           {apiError && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">{apiError}</div>}
-          <p className="text-sm text-gray-600">Creates draft payroll records for all active branch staff for the selected month. Existing records are skipped.</p>
+          <p className="text-sm text-gray-600 dark:text-slate-400">Creates draft payroll records for all active branch staff for the selected month. Existing records are skipped.</p>
           <div>
             <label className="label">Month</label>
             <input type="month" className="input" value={bulkMonth} onChange={e => setBulkMonth(e.target.value)} />
@@ -278,7 +278,7 @@ export default function PayrollPage() {
       <Modal open={payMethodOpen} onClose={() => setPayMethodOpen(false)} title="Mark Payroll as Paid" size="sm">
         <div className="space-y-4">
           {payTarget && (
-            <div className="bg-gray-50 rounded-lg p-3 text-sm">
+            <div className="bg-gray-50 rounded-lg p-3 text-sm dark:bg-slate-700/50 dark:text-slate-300">
               Net Pay: <span className="font-semibold">{formatCurrency(payTarget.netPay)}</span>
             </div>
           )}

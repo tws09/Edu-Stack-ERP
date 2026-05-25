@@ -28,12 +28,12 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  teacher: 'bg-blue-100 text-blue-700',
-  student: 'bg-green-100 text-green-700',
-  accountant: 'bg-amber-100 text-amber-700',
-  branch_principal: 'bg-purple-100 text-purple-700',
-  it_admin: 'bg-gray-100 text-gray-700',
-  group_admin: 'bg-indigo-100 text-indigo-700',
+  teacher: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+  student: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+  accountant: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
+  branch_principal: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400',
+  it_admin: 'bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-400',
+  group_admin: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400',
 };
 
 const ADMIN_ROLES = ['branch_principal', 'it_admin', 'group_admin'];
@@ -62,7 +62,7 @@ function RoleBadge({ role }: { role: string }) {
 
 function ContentBlock({ content }: { content: string }) {
   return (
-    <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+    <div className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
       {content}
     </div>
   );
@@ -173,7 +173,7 @@ export default function SopsPage() {
         <div className="flex gap-2 flex-wrap mb-5">
           <button
             onClick={() => setCatFilter('')}
-            className={cn('px-3 py-1 text-sm rounded-full border transition-colors', !catFilter ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50')}
+            className={cn('px-3 py-1 text-sm rounded-full border transition-colors', !catFilter ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700')}
           >
             All
           </button>
@@ -181,7 +181,7 @@ export default function SopsPage() {
             <button
               key={cat}
               onClick={() => setCatFilter(cat)}
-              className={cn('px-3 py-1 text-sm rounded-full border transition-colors', catFilter === cat ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50')}
+              className={cn('px-3 py-1 text-sm rounded-full border transition-colors', catFilter === cat ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700')}
             >
               {cat}
             </button>
@@ -190,15 +190,15 @@ export default function SopsPage() {
       )}
 
       {isLoading && (
-        <div className="text-center py-16 text-gray-400 text-sm">Loading procedures...</div>
+        <div className="text-center py-16 text-gray-400 dark:text-slate-500 text-sm">Loading procedures...</div>
       )}
 
       {!isLoading && sops.length === 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 px-5 py-16 text-center">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 px-5 py-16 text-center">
           <div className="text-4xl mb-3">📋</div>
-          <p className="text-gray-500 font-medium">No SOPs yet</p>
+          <p className="text-gray-500 dark:text-slate-400 font-medium">No SOPs yet</p>
           {isAdmin && (
-            <p className="text-sm text-gray-400 mt-1">Click "New SOP" to create the first procedure.</p>
+            <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">Click "New SOP" to create the first procedure.</p>
           )}
         </div>
       )}
@@ -207,28 +207,28 @@ export default function SopsPage() {
       <div className="space-y-6">
         {Object.entries(grouped).map(([category, items]) => (
           <div key={category}>
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1">{category}</h2>
-            <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
+            <h2 className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2 px-1">{category}</h2>
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 divide-y divide-gray-100 dark:divide-slate-700 overflow-hidden">
               {items.filter(s => s.isPublished || isAdmin).map(sop => (
                 <div key={sop._id}>
                   <button
-                    className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors group"
+                    className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/40 transition-colors group"
                     onClick={() => setOpenId(openId === sop._id ? null : sop._id)}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span className={cn(
                         'shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs transition-colors',
-                        openId === sop._id ? 'border-blue-600 text-blue-600' : 'border-gray-300 text-gray-400'
+                        openId === sop._id ? 'border-blue-600 text-blue-600' : 'border-gray-300 text-gray-400 dark:border-slate-600 dark:text-slate-500'
                       )}>
                         {openId === sop._id ? '−' : '+'}
                       </span>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{sop.title}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate">{sop.title}</p>
                         {isAdmin && (
                           <div className="flex gap-1 mt-0.5 flex-wrap">
                             {sop.targetRoles.map(r => <RoleBadge key={r} role={r} />)}
                             {!sop.isPublished && (
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 italic">draft</span>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-slate-400 italic">draft</span>
                             )}
                           </div>
                         )}
@@ -238,7 +238,7 @@ export default function SopsPage() {
                       <div className="flex items-center gap-2 ml-3 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
                         <button
                           onClick={() => openEdit(sop)}
-                          className="text-xs px-2.5 py-1 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100"
+                          className="text-xs px-2.5 py-1 border border-gray-200 dark:border-slate-600 rounded-lg text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700"
                         >
                           Edit
                         </button>
@@ -253,7 +253,7 @@ export default function SopsPage() {
                   </button>
 
                   {openId === sop._id && (
-                    <div className="px-5 pb-5 pt-1 border-t border-gray-100 bg-gray-50">
+                    <div className="px-5 pb-5 pt-1 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/30">
                       <ContentBlock content={sop.content} />
                     </div>
                   )}
@@ -274,9 +274,9 @@ export default function SopsPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Title *</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Title *</label>
               <input
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="e.g. How to mark daily attendance"
                 value={form.title}
                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
@@ -285,9 +285,9 @@ export default function SopsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Category *</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Category *</label>
               <input
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="e.g. Attendance, Exams, Fees"
                 value={form.category}
                 onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
@@ -300,10 +300,10 @@ export default function SopsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Display Order</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Display Order</label>
               <input
                 type="number"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={form.order}
                 onChange={e => setForm(f => ({ ...f, order: Number(e.target.value) }))}
                 min={0}
@@ -311,9 +311,9 @@ export default function SopsPage() {
             </div>
 
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Content *</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Content *</label>
               <textarea
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
                 rows={10}
                 placeholder={`Step 1: Go to Attendance in the sidebar.\nStep 2: Select your class and section.\nStep 3: ...`}
                 value={form.content}
@@ -335,7 +335,7 @@ export default function SopsPage() {
                       'px-3 py-1.5 text-xs rounded-lg border font-medium transition-colors',
                       form.targetRoles.includes(role)
                         ? 'bg-blue-600 text-white border-blue-600'
-                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                        : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700'
                     )}
                   >
                     {ROLE_LABELS[role]}
@@ -349,8 +349,8 @@ export default function SopsPage() {
 
             <div className="col-span-2 flex items-center justify-between py-1">
               <div>
-                <p className="text-sm font-medium text-gray-900">Published</p>
-                <p className="text-xs text-gray-400">Unpublished SOPs are only visible to admins</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-slate-100">Published</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500">Unpublished SOPs are only visible to admins</p>
               </div>
               <button
                 type="button"
@@ -363,7 +363,7 @@ export default function SopsPage() {
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={closeForm} className="flex-1 py-2.5 border border-gray-200 text-gray-600 text-sm rounded-lg hover:bg-gray-50">
+            <button type="button" onClick={closeForm} className="flex-1 py-2.5 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700">
               Cancel
             </button>
             <button

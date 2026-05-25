@@ -17,10 +17,10 @@ interface UsageMetric {
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-      {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+      <p className="text-sm text-gray-500 dark:text-slate-400">{label}</p>
+      <p className="text-2xl font-bold text-gray-900 dark:text-slate-100 mt-1">{value}</p>
+      {sub && <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{sub}</p>}
     </div>
   );
 }
@@ -60,13 +60,13 @@ export default function BillingPage() {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Usage & Billing</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Per-student billing metrics</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">Usage & Billing</h1>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Per-student billing metrics</p>
         </div>
         <select
           value={month}
           onChange={e => setMonth(e.target.value)}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5"
+          className="text-sm border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 rounded-lg px-3 py-1.5"
         >
           {months.map(m => <option key={m} value={m}>{m}</option>)}
         </select>
@@ -78,46 +78,46 @@ export default function BillingPage() {
         <StatCard label="Billing Orgs" value={uniqueOrgs} sub="with active usage" />
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900">Usage Breakdown — {month}</h2>
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-700">
+          <h2 className="font-semibold text-gray-900 dark:text-slate-100">Usage Breakdown — {month}</h2>
         </div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Organization</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Plan</th>
-              <th className="text-center px-4 py-3 font-medium text-gray-500">Students</th>
-              <th className="text-center px-4 py-3 font-medium text-gray-500">Rate/Student</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-500">Amount</th>
+            <tr className="bg-gray-50 dark:bg-slate-700/50 border-b border-gray-100 dark:border-slate-700">
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Organization</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Plan</th>
+              <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Students</th>
+              <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Rate/Student</th>
+              <th className="text-right px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Amount</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
             {isLoading && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">Loading...</td></tr>
             )}
             {!isLoading && metrics.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">No billing data for {month}.</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">No billing data for {month}.</td></tr>
             )}
             {metrics.map(m => {
               const org = orgMap[m.orgId];
               return (
-                <tr key={m._id} className="hover:bg-gray-50">
+                <tr key={m._id} className="hover:bg-gray-50 dark:hover:bg-slate-700/40">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{org?.name ?? m.orgId}</p>
-                    {org && <p className="text-xs text-gray-400">{org.slug}.edustack.pk</p>}
+                    <p className="font-medium text-gray-900 dark:text-slate-100">{org?.name ?? m.orgId}</p>
+                    {org && <p className="text-xs text-gray-400 dark:text-slate-500">{org.slug}.edustack.pk</p>}
                   </td>
-                  <td className="px-4 py-3 text-gray-600 capitalize">{m.plan}</td>
-                  <td className="px-4 py-3 text-center text-gray-600">{m.activeStudents}</td>
-                  <td className="px-4 py-3 text-center text-gray-600">{formatCurrency(m.pricePerStudent)}</td>
-                  <td className="px-4 py-3 text-right font-medium text-gray-900">{formatCurrency(m.totalAmount)}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-slate-400 capitalize">{m.plan}</td>
+                  <td className="px-4 py-3 text-center text-gray-600 dark:text-slate-400">{m.activeStudents}</td>
+                  <td className="px-4 py-3 text-center text-gray-600 dark:text-slate-400">{formatCurrency(m.pricePerStudent)}</td>
+                  <td className="px-4 py-3 text-right font-medium text-gray-900 dark:text-slate-100">{formatCurrency(m.totalAmount)}</td>
                 </tr>
               );
             })}
             {metrics.length > 0 && (
-              <tr className="bg-gray-50 border-t border-gray-200">
-                <td colSpan={4} className="px-4 py-3 font-semibold text-gray-900 text-right">Total</td>
-                <td className="px-4 py-3 font-bold text-gray-900 text-right">{formatCurrency(totalRevenue)}</td>
+              <tr className="bg-gray-50 dark:bg-slate-700/50 border-t border-gray-200 dark:border-slate-700">
+                <td colSpan={4} className="px-4 py-3 font-semibold text-gray-900 dark:text-slate-100 text-right">Total</td>
+                <td className="px-4 py-3 font-bold text-gray-900 dark:text-slate-100 text-right">{formatCurrency(totalRevenue)}</td>
               </tr>
             )}
           </tbody>
@@ -126,30 +126,30 @@ export default function BillingPage() {
 
       {/* Per-org summary */}
       {orgs.length > 0 && (
-        <div className="mt-6 bg-white rounded-xl border border-gray-200">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900">All Organizations</h2>
+        <div className="mt-6 bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700">
+          <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-700">
+            <h2 className="font-semibold text-gray-900 dark:text-slate-100">All Organizations</h2>
           </div>
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-slate-700">
             {orgs.map(org => (
               <div key={org._id} className="flex items-center justify-between px-5 py-3">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{org.name}</p>
-                  <p className="text-xs text-gray-400">{org.slug} · {org.plan} plan</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{org.name}</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500">{org.slug} · {org.plan} plan</p>
                 </div>
                 <div className="flex items-center gap-6 text-sm">
                   <div className="text-right">
-                    <p className="font-medium text-gray-900">{org.usageBilling.activeStudents ?? 0}</p>
-                    <p className="text-xs text-gray-400">active students</p>
+                    <p className="font-medium text-gray-900 dark:text-slate-100">{org.usageBilling.activeStudents ?? 0}</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500">active students</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-400">last counted</p>
-                    <p className="text-xs text-gray-500">{org.usageBilling.lastCountedAt ? formatDate(org.usageBilling.lastCountedAt) : '—'}</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500">last counted</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">{org.usageBilling.lastCountedAt ? formatDate(org.usageBilling.lastCountedAt) : '—'}</p>
                   </div>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    org.status === 'active' ? 'bg-green-100 text-green-700' :
-                    org.status === 'trial' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-red-100 text-red-700'
+                    org.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' :
+                    org.status === 'trial' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400' :
+                    'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
                   }`}>
                     {org.status}
                   </span>

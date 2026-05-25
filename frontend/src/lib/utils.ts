@@ -29,6 +29,7 @@ export function roleLabel(role: string): string {
     super_admin: 'Super Admin',
     group_admin: 'Group Admin',
     branch_principal: 'Principal',
+    coordinator: 'Coordinator',
     teacher: 'Teacher',
     student: 'Student',
     accountant: 'Accountant',

@@ -104,33 +104,33 @@ export default function BranchesPage() {
     <div className="p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Branches</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">Branches</h1>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">
             {branches.length} campus{branches.length !== 1 ? 'es' : ''} in your organization
           </p>
         </div>
         <button
           onClick={() => { setShowCreate(true); setForm(EMPTY_CREATE); setCreateError(''); }}
-          className="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors"
+          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
         >
           + New Branch
         </button>
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12 text-gray-400 text-sm">Loading branches...</div>
+        <div className="text-center py-12 text-gray-400 dark:text-slate-500 text-sm">Loading branches...</div>
       ) : branches.length === 0 ? (
-        <div className="bg-white rounded-xl border border-dashed border-gray-300 px-6 py-16 text-center">
-          <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-dashed border-gray-300 dark:border-slate-600 px-6 py-16 text-center">
+          <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
           </div>
-          <p className="text-gray-900 font-semibold mb-1">No branches yet</p>
-          <p className="text-gray-400 text-sm mb-4">Add your first campus to get started</p>
+          <p className="text-gray-900 dark:text-slate-100 font-semibold mb-1">No branches yet</p>
+          <p className="text-gray-400 dark:text-slate-500 text-sm mb-4">Add your first campus to get started</p>
           <button
             onClick={() => setShowCreate(true)}
-            className="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700"
+            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
           >
             + New Branch
           </button>
@@ -140,30 +140,30 @@ export default function BranchesPage() {
           {branches.map(branch => (
             <div
               key={branch._id}
-              className={`bg-white rounded-xl border p-5 flex flex-col gap-4 ${branch.status === 'inactive' ? 'border-gray-200 opacity-60' : 'border-gray-200'}`}
+              className={`bg-white dark:bg-slate-800 rounded-xl border p-5 flex flex-col gap-4 ${branch.status === 'inactive' ? 'border-gray-200 dark:border-slate-700 opacity-60' : 'border-gray-200 dark:border-slate-700'}`}
             >
               {/* Branch header */}
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0">
-                    <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center shrink-0">
+                    <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 leading-tight">{branch.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{branch.city} · {branch.code}</p>
+                    <p className="font-semibold text-gray-900 dark:text-slate-100 leading-tight">{branch.name}</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{branch.city} · {branch.code}</p>
                   </div>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${branch.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${branch.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-slate-400'}`}>
                   {branch.status}
                 </span>
               </div>
 
               {/* Branch meta */}
-              <div className="text-xs text-gray-500 space-y-1">
+              <div className="text-xs text-gray-500 dark:text-slate-400 space-y-1">
                 {(branch as any).principalName && (
-                  <p>Principal: <span className="text-gray-700 font-medium">{(branch as any).principalName}</span></p>
+                  <p>Principal: <span className="text-gray-700 dark:text-slate-300 font-medium">{(branch as any).principalName}</span></p>
                 )}
                 {branch.address && branch.address !== '-' && (
                   <p>{branch.address}</p>
@@ -171,17 +171,17 @@ export default function BranchesPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2 pt-1 border-t border-gray-100">
+              <div className="flex gap-2 pt-1 border-t border-gray-100 dark:border-slate-700">
                 <button
                   onClick={() => handleEnterBranch(branch)}
                   disabled={branch.status === 'inactive'}
-                  className="flex-1 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex-1 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Enter Branch View →
                 </button>
                 <button
                   onClick={() => openEdit(branch)}
-                  className="px-3 py-1.5 text-xs text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-3 py-1.5 text-xs text-gray-600 dark:text-slate-400 border border-gray-200 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   Edit
                 </button>
@@ -213,9 +213,9 @@ export default function BranchesPage() {
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{createError}</div>
           )}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Branch Name *</label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Branch Name *</label>
             <input
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
               value={form.name}
               onChange={e => handleNameChange(e.target.value)}
               placeholder="e.g. Gulshan Campus"
@@ -224,9 +224,9 @@ export default function BranchesPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">City *</label>
               <input
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
                 value={form.city}
                 onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
                 placeholder="Karachi"
@@ -234,9 +234,9 @@ export default function BranchesPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Short Code</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Short Code</label>
               <input
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono"
+                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm font-mono"
                 value={form.code}
                 onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
                 placeholder="Auto-generated"
@@ -245,9 +245,9 @@ export default function BranchesPage() {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Address</label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Address</label>
             <input
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
               value={form.address}
               onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
               placeholder="Can be filled later"
@@ -255,18 +255,18 @@ export default function BranchesPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Phone</label>
               <input
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
                 value={form.phone}
                 onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Email</label>
               <input
                 type="email"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
                 value={form.email}
                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
               />
@@ -275,7 +275,7 @@ export default function BranchesPage() {
           <button
             type="submit"
             disabled={createBranch.isPending}
-            className="w-full py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+            className="w-full py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
             {createBranch.isPending ? 'Creating...' : 'Create Branch'}
           </button>
@@ -296,9 +296,9 @@ export default function BranchesPage() {
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{editError}</div>
           )}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Branch Name *</label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Branch Name *</label>
             <input
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
               value={editForm.name}
               onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
               required
@@ -306,45 +306,45 @@ export default function BranchesPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">City *</label>
               <input
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
                 value={editForm.city}
                 onChange={e => setEditForm(f => ({ ...f, city: e.target.value }))}
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Principal Name</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Principal Name</label>
               <input
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
                 value={editForm.principalName}
                 onChange={e => setEditForm(f => ({ ...f, principalName: e.target.value }))}
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Address</label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Address</label>
             <input
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
               value={editForm.address}
               onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Phone</label>
               <input
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
                 value={editForm.phone}
                 onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Email</label>
               <input
                 type="email"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
                 value={editForm.email}
                 onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
               />
@@ -353,7 +353,7 @@ export default function BranchesPage() {
           <button
             type="submit"
             disabled={updateBranch.isPending}
-            className="w-full py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+            className="w-full py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
             {updateBranch.isPending ? 'Saving...' : 'Save Changes'}
           </button>

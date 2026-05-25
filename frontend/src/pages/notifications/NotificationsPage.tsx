@@ -8,12 +8,12 @@ import { useAuthStore } from '../../stores/authStore';
 import { cn } from '../../lib/utils';
 
 const TYPE_COLORS: Record<string, string> = {
-  fee_due: 'bg-red-100 text-red-700',
-  result_published: 'bg-green-100 text-green-700',
-  assignment_graded: 'bg-blue-100 text-blue-700',
-  assignment_created: 'bg-purple-100 text-purple-700',
-  broadcast: 'bg-yellow-100 text-yellow-700',
-  system: 'bg-gray-100 text-gray-600',
+  fee_due: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
+  result_published: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+  assignment_graded: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+  assignment_created: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400',
+  broadcast: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
+  system: 'bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-400',
 };
 
 function timeAgo(date: string) {
@@ -88,19 +88,19 @@ export default function NotificationsPage() {
 
       {/* Filter */}
       <div className="flex items-center gap-4 mb-4">
-        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400 cursor-pointer">
           <input type="checkbox" checked={unreadOnly} onChange={e => setUnreadOnly(e.target.checked)} className="w-4 h-4 rounded" />
           Unread only
         </label>
         {unreadCount > 0 && (
-          <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{unreadCount} unread</span>
+          <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full dark:bg-blue-900/30 dark:text-blue-400">{unreadCount} unread</span>
         )}
       </div>
 
-      <div className="card divide-y divide-gray-100">
-        {isLoading && <div className="px-5 py-10 text-center text-gray-400 text-sm">Loading...</div>}
+      <div className="card divide-y divide-gray-100 dark:divide-slate-700">
+        {isLoading && <div className="px-5 py-10 text-center text-gray-400 dark:text-slate-500 text-sm">Loading...</div>}
         {!isLoading && notifications.length === 0 && (
-          <div className="px-5 py-12 text-center text-gray-400">
+          <div className="px-5 py-12 text-center text-gray-400 dark:text-slate-500">
             <div className="text-4xl mb-2">🔔</div>
             <p className="text-sm">{unreadOnly ? 'No unread notifications.' : 'No notifications yet.'}</p>
           </div>
@@ -111,18 +111,18 @@ export default function NotificationsPage() {
             onClick={() => handleNotifClick(n)}
             className={cn(
               'flex items-start gap-4 px-4 py-4 cursor-pointer transition-colors',
-              n.isRead ? 'hover:bg-gray-50' : 'bg-blue-50 hover:bg-blue-100'
+              n.isRead ? 'hover:bg-gray-50 dark:hover:bg-slate-700/40' : 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30'
             )}
           >
-            <div className={cn('text-xs px-2 py-0.5 rounded-full font-medium shrink-0 mt-0.5', TYPE_COLORS[n.type] ?? 'bg-gray-100 text-gray-600')}>
+            <div className={cn('text-xs px-2 py-0.5 rounded-full font-medium shrink-0 mt-0.5', TYPE_COLORS[n.type] ?? 'bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-400')}>
               {n.type.replace('_', ' ')}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <p className={cn('text-sm', n.isRead ? 'text-gray-700' : 'font-semibold text-gray-900')}>{n.title}</p>
-                <span className="text-xs text-gray-400 whitespace-nowrap shrink-0">{timeAgo(n.createdAt)}</span>
+                <p className={cn('text-sm', n.isRead ? 'text-gray-700 dark:text-slate-300' : 'font-semibold text-gray-900 dark:text-slate-100')}>{n.title}</p>
+                <span className="text-xs text-gray-400 dark:text-slate-500 whitespace-nowrap shrink-0">{timeAgo(n.createdAt)}</span>
               </div>
-              <p className="text-sm text-gray-500 mt-0.5">{n.message}</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">{n.message}</p>
             </div>
             {!n.isRead && <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-2" />}
           </div>

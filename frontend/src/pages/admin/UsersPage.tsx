@@ -47,14 +47,14 @@ export default function UsersPage() {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Group Admins</h1>
-        <p className="text-sm text-gray-500 mt-0.5">One group admin per organization — auto-created on org registration</p>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">Group Admins</h1>
+        <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">One group admin per organization — auto-created on org registration</p>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-5">
-        <label className="block text-xs font-medium text-gray-700 mb-2">Filter by Organization</label>
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4 mb-5">
+        <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-2">Filter by Organization</label>
         <select
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 rounded-lg px-3 py-2 text-sm"
           value={orgFilter}
           onChange={e => setOrgFilter(e.target.value)}
         >
@@ -63,32 +63,32 @@ export default function UsersPage() {
         </select>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-100 text-xs text-gray-500">{total} group admins</div>
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
+        <div className="px-5 py-3 border-b border-gray-100 dark:border-slate-700 text-xs text-gray-500 dark:text-slate-400">{total} group admins</div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Email</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Organization</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Status</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-500">Actions</th>
+            <tr className="bg-gray-50 dark:bg-slate-700/50 border-b border-gray-100 dark:border-slate-700">
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Name</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Email</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Organization</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
+              <th className="text-right px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
             {isLoading && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">Loading...</td></tr>
             )}
             {!isLoading && users.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">No group admins found.</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">No group admins found.</td></tr>
             )}
             {users.map(u => (
-              <tr key={u._id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-900">{u.name}</td>
-                <td className="px-4 py-3 text-gray-600">{u.email}</td>
-                <td className="px-4 py-3 text-gray-600 text-sm">{orgName(u.orgId)}</td>
+              <tr key={u._id} className="hover:bg-gray-50 dark:hover:bg-slate-700/40">
+                <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{u.name}</td>
+                <td className="px-4 py-3 text-gray-600 dark:text-slate-400">{u.email}</td>
+                <td className="px-4 py-3 text-gray-600 dark:text-slate-400 text-sm">{orgName(u.orgId)}</td>
                 <td className="px-4 py-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${u.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${u.active ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-slate-400'}`}>
                     {u.active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
@@ -96,13 +96,13 @@ export default function UsersPage() {
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => toggleActive.mutate({ id: u._id, active: !u.active })}
-                      className="text-xs px-2 py-1 border rounded border-gray-200 text-gray-600 hover:bg-gray-50"
+                      className="text-xs px-2 py-1 border rounded border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700"
                     >
                       {u.active ? 'Deactivate' : 'Activate'}
                     </button>
                     <button
                       onClick={() => { setResetId(u._id); setNewPassword(''); }}
-                      className="text-xs px-2 py-1 border rounded border-blue-200 text-blue-600 hover:bg-blue-50"
+                      className="text-xs px-2 py-1 border rounded border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                     >
                       Reset PW
                     </button>
@@ -117,10 +117,10 @@ export default function UsersPage() {
       <Modal open={!!resetId} onClose={() => setResetId('')} title="Reset Password">
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">New Password *</label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">New Password *</label>
             <input
               type="password"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
               minLength={8}

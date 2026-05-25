@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { NavLink, useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate, Outlet, Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
+import { useThemeStore } from '../stores/themeStore';
 import type { UserRole } from '../types';
 import { cn, roleLabel, getInitials } from '../lib/utils';
 import { setLanguage } from '../i18n';
@@ -26,7 +27,7 @@ const SvgIcon = ({ d, d2 }: { d: string; d2?: string }) => (
 const ALL_NAV: NavItem[] = [
   {
     label: 'nav.dashboard', path: '',
-    roles: ['group_admin', 'branch_principal', 'teacher', 'student', 'accountant', 'it_admin'],
+    roles: ['group_admin', 'branch_principal', 'coordinator', 'teacher', 'student', 'accountant', 'it_admin'],
     icon: <SvgIcon d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />,
   },
   {
@@ -41,28 +42,43 @@ const ALL_NAV: NavItem[] = [
   },
   {
     label: 'nav.students', path: 'students',
-    roles: ['group_admin', 'branch_principal', 'teacher', 'student'],
+    roles: ['group_admin', 'branch_principal', 'coordinator', 'teacher'],
     icon: <SvgIcon d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />,
   },
   {
+    label: 'nav.classFellows', path: 'class-fellows',
+    roles: ['student'],
+    icon: <SvgIcon d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm-9 8a3 3 0 100-6 3 3 0 000 6z" />,
+  },
+  {
     label: 'nav.attendance', path: 'attendance',
-    roles: ['group_admin', 'branch_principal', 'teacher', 'student'],
+    roles: ['group_admin', 'branch_principal', 'coordinator', 'teacher', 'student'],
     icon: <SvgIcon d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />,
   },
   {
     label: 'nav.timetable', path: 'timetable',
-    roles: ['group_admin', 'branch_principal', 'teacher', 'student'],
+    roles: ['group_admin', 'branch_principal', 'coordinator', 'teacher', 'student'],
     icon: <SvgIcon d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />,
   },
   {
     label: 'nav.exams', path: 'exams',
-    roles: ['group_admin', 'branch_principal', 'teacher', 'student'],
+    roles: ['group_admin', 'branch_principal', 'coordinator', 'teacher', 'student'],
     icon: <SvgIcon d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
   },
   {
     label: 'nav.assignments', path: 'assignments',
-    roles: ['group_admin', 'branch_principal', 'teacher', 'student'],
+    roles: ['group_admin', 'branch_principal', 'coordinator', 'teacher', 'student'],
     icon: <SvgIcon d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />,
+  },
+  {
+    label: 'nav.examPaper', path: 'exam-paper',
+    roles: ['branch_principal', 'coordinator', 'teacher', 'it_admin'],
+    icon: <SvgIcon d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" d2="M13 2v6h6" />,
+  },
+  {
+    label: 'nav.resources', path: 'resources',
+    roles: ['group_admin', 'branch_principal', 'it_admin', 'teacher', 'student'],
+    icon: <SvgIcon d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />,
   },
   {
     label: 'nav.fees', path: 'fees',
@@ -83,6 +99,11 @@ const ALL_NAV: NavItem[] = [
     label: 'nav.academic', path: 'academic',
     roles: ['group_admin', 'branch_principal', 'it_admin'],
     icon: <SvgIcon d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />,
+  },
+  {
+    label: 'nav.roles', path: 'roles',
+    roles: ['group_admin'],
+    icon: <SvgIcon d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />,
   },
   {
     label: 'nav.settings', path: 'settings',
@@ -111,12 +132,21 @@ const BellIcon = () => (
 export default function AppLayout() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation();
+
   const { user, logout, activeBranch, setActiveBranch } = useAuthStore();
+  const { isDark, toggle: toggleDark } = useThemeStore();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const base = location.pathname.startsWith('/group') ? '/group' : '/dashboard';
+  const { slug } = useParams<{ slug?: string }>();
+  const prefix = slug ? `/${slug}` : '';
+  const base = (() => {
+    if (user?.role === 'group_admin') return `${prefix}/group`;
+    if (user?.role === 'coordinator') return `${prefix}/coordinator`;
+    if (user?.role === 'teacher') return `${prefix}/teacher`;
+    if (user?.role === 'student') return `${prefix}/student`;
+    return `${prefix}/dashboard`;
+  })();
 
   useSocket();
 
@@ -132,13 +162,13 @@ export default function AppLayout() {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login', { replace: true });
+    navigate(slug ? `/${slug}/login` : '/register', { replace: true });
   };
 
   const toggleLang = () => setLanguage(i18n.language === 'en' ? 'ur' : 'en');
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden">
 
       {/* ═══════════════════════════════════════
           DESKTOP SIDEBAR  (hidden on mobile)
@@ -257,6 +287,21 @@ export default function AppLayout() {
                   {i18n.language === 'en' ? 'اردو' : 'English'}
                 </button>
                 <button
+                  onClick={toggleDark}
+                  title={isDark ? 'Light mode' : 'Dark mode'}
+                  className="shrink-0 px-2.5 text-slate-300 hover:text-white py-1.5 rounded-lg border border-white/15 hover:bg-navy-900 transition-colors flex items-center justify-center"
+                >
+                  {isDark ? (
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  )}
+                </button>
+                <button
                   onClick={handleLogout}
                   className="flex-1 text-xs text-red-400 hover:text-red-300 py-1.5 rounded-lg border border-red-800/40 hover:bg-red-900/20 transition-colors"
                 >
@@ -265,10 +310,25 @@ export default function AppLayout() {
               </div>
             </>
           ) : (
-            <div className="flex justify-center">
+            <div className="flex flex-col items-center gap-2">
               <div className="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center text-navy-950 text-xs font-bold cursor-pointer" title={user?.name}>
                 {getInitials(user?.name ?? '?')}
               </div>
+              <button
+                onClick={toggleDark}
+                title={isDark ? 'Light mode' : 'Dark mode'}
+                className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-navy-900 transition-colors"
+              >
+                {isDark ? (
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                )}
+              </button>
             </div>
           )}
         </div>
@@ -316,16 +376,16 @@ export default function AppLayout() {
 
         {/* ACTIVE BRANCH CONTEXT BANNER */}
         {activeBranch && user?.role === 'group_admin' && (
-          <div className="shrink-0 flex items-center gap-3 px-4 py-2 bg-amber-50 border-b border-amber-200">
-            <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="shrink-0 flex items-center gap-3 px-4 py-2 bg-amber-50 border-b border-amber-200 dark:bg-amber-900/20 dark:border-amber-700/40">
+            <svg className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
-            <span className="text-xs text-amber-800 font-medium flex-1">
+            <span className="text-xs text-amber-800 dark:text-amber-300 font-medium flex-1">
               Viewing branch: <span className="font-bold">{activeBranch.name}</span>
             </span>
             <button
               onClick={() => setActiveBranch(null)}
-              className="text-xs text-amber-700 hover:text-amber-900 font-medium flex items-center gap-1 transition-colors"
+              className="text-xs text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-200 font-medium flex items-center gap-1 transition-colors"
             >
               Exit view
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -336,12 +396,12 @@ export default function AppLayout() {
         )}
 
         {/* MAIN SCROLLABLE CONTENT */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto dark:bg-slate-900">
           <Outlet />
         </main>
 
         {/* MOBILE BOTTOM TAB BAR (hidden on desktop) */}
-        <nav className="md:hidden flex items-stretch h-16 bg-white border-t border-gray-100 shrink-0">
+        <nav className="md:hidden flex items-stretch h-16 bg-white dark:bg-slate-800 border-t border-gray-100 dark:border-slate-700 shrink-0">
           {primaryTabs.map((item) => (
             <NavLink
               key={item.path}
@@ -350,7 +410,7 @@ export default function AppLayout() {
               className={({ isActive }) =>
                 cn(
                   'flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors duration-150 select-none',
-                  isActive ? 'text-emerald-600' : 'text-gray-400'
+                  isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-500'
                 )
               }
             >
@@ -358,7 +418,7 @@ export default function AppLayout() {
                 <>
                   <span className={cn(
                     'flex items-center justify-center w-9 h-7 rounded-xl transition-all duration-150',
-                    isActive ? 'bg-emerald-50 text-emerald-600' : 'text-gray-400'
+                    isActive ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-400 dark:text-slate-500'
                   )}>
                     {item.icon}
                   </span>
@@ -482,6 +542,21 @@ export default function AppLayout() {
                   className="flex-1 text-xs text-slate-300 hover:text-white py-2 rounded-lg border border-white/15 hover:bg-navy-900 transition-colors"
                 >
                   {i18n.language === 'en' ? 'اردو' : 'English'}
+                </button>
+                <button
+                  onClick={toggleDark}
+                  title={isDark ? 'Light mode' : 'Dark mode'}
+                  className="shrink-0 px-3 text-slate-300 hover:text-white py-2 rounded-lg border border-white/15 hover:bg-navy-900 transition-colors flex items-center justify-center"
+                >
+                  {isDark ? (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  )}
                 </button>
                 <button
                   onClick={handleLogout}

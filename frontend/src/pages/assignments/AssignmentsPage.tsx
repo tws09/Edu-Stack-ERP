@@ -164,44 +164,44 @@ export default function AssignmentsPage() {
       )}
 
       {selected && (
-        <div className="mb-4 flex items-center gap-2 text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+        <div className="mb-4 flex items-center gap-2 text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 dark:bg-blue-900/20 dark:border-blue-700/50 dark:text-blue-300">
           <span className="font-medium">{selected.title}</span>
-          <span className="text-blue-400">Due {formatDate(selected.dueDate)}</span>
+          <span className="text-blue-400 dark:text-blue-500">Due {formatDate(selected.dueDate)}</span>
           <button
             onClick={() => setPanel(panel === 'list' ? 'submissions' : 'list')}
             className={cn('ml-auto text-xs px-3 py-1 rounded-lg border transition-colors',
-              panel === 'submissions' ? 'bg-blue-600 text-white border-blue-600' : 'border-blue-200 text-blue-600 hover:bg-blue-50')}
+              panel === 'submissions' ? 'bg-blue-600 text-white border-blue-600' : 'border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20')}
           >
             {panel === 'submissions' ? 'Back to List' : 'View Submissions'}
           </button>
-          <button onClick={() => { setSelected(null); setPanel('list'); }} className="text-gray-400 hover:text-gray-600">✕</button>
+          <button onClick={() => { setSelected(null); setPanel('list'); }} className="text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300">✕</button>
         </div>
       )}
 
       {/* Assignment list */}
       {panel === 'list' && (
-        <div className="card divide-y divide-gray-100">
-          {isLoading && <div className="px-5 py-10 text-center text-gray-400 text-sm">Loading...</div>}
+        <div className="card divide-y divide-gray-100 dark:divide-slate-700">
+          {isLoading && <div className="px-5 py-10 text-center text-gray-400 dark:text-slate-500 text-sm">Loading...</div>}
           {!isLoading && !isStudent && (!classId || !sectionId) && (
-            <div className="px-5 py-10 text-center text-gray-400 text-sm">Select a class and section.</div>
+            <div className="px-5 py-10 text-center text-gray-400 dark:text-slate-500 text-sm">Select a class and section.</div>
           )}
           {!isLoading && assignments.length === 0 && (isStudent || (classId && sectionId)) && (
-            <div className="px-5 py-10 text-center text-gray-400 text-sm">No assignments yet.</div>
+            <div className="px-5 py-10 text-center text-gray-400 dark:text-slate-500 text-sm">No assignments yet.</div>
           )}
           {assignments.map(a => {
             const pastDue = isPastDue(a.dueDate);
             const subject = typeof a.subjectId === 'object' ? a.subjectId : null;
             const creator = typeof a.createdById === 'object' ? a.createdById : null;
             return (
-              <div key={a._id} className="flex items-start justify-between px-4 py-4 hover:bg-gray-50 gap-4">
+              <div key={a._id} className="flex items-start justify-between px-4 py-4 hover:bg-gray-50 dark:hover:bg-slate-700/40 gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-medium text-gray-900 text-sm">{a.title}</p>
+                    <p className="font-medium text-gray-900 dark:text-slate-100 text-sm">{a.title}</p>
                     {subject && <Badge variant="info">{subject.name}</Badge>}
                     {pastDue && !isStudent && <Badge variant="warning">Past Due</Badge>}
                   </div>
-                  {a.description && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{a.description}</p>}
-                  <p className="text-xs text-gray-400 mt-1">
+                  {a.description && <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 line-clamp-2">{a.description}</p>}
+                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
                     Due {formatDate(a.dueDate)}
                     {a.totalMarks && ` · ${a.totalMarks} marks`}
                     {creator && ` · by ${creator.name}`}
@@ -239,35 +239,35 @@ export default function AssignmentsPage() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Student</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Submitted</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Status</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Marks</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Action</th>
+                <tr className="bg-gray-50 border-b border-gray-100 dark:bg-slate-700/50 dark:border-slate-700">
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Student</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Submitted</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Marks</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                 {submissions.map(sub => {
                   const student = typeof sub.studentId === 'object' ? sub.studentId : null;
                   return (
                     <tr key={sub._id}>
                       <td className="px-4 py-3">
-                        <p className="font-medium text-gray-900">{student?.profile.name ?? '—'}</p>
-                        <p className="text-xs text-gray-400">{student?.rollNo}</p>
+                        <p className="font-medium text-gray-900 dark:text-slate-100">{student?.profile.name ?? '—'}</p>
+                        <p className="text-xs text-gray-400 dark:text-slate-500">{student?.rollNo}</p>
                       </td>
-                      <td className="px-4 py-3 text-center text-gray-500 text-xs">{formatDate(sub.submittedAt)}</td>
+                      <td className="px-4 py-3 text-center text-gray-500 dark:text-slate-400 text-xs">{formatDate(sub.submittedAt)}</td>
                       <td className="px-4 py-3 text-center">{statusBadge(sub)}</td>
                       <td className="px-4 py-3 text-center font-medium">
                         {sub.marksAwarded != null ? `${sub.marksAwarded}/${selected.totalMarks ?? '—'}` : '—'}
                       </td>
                       <td className="px-4 py-3 text-center">
                         {sub.textResponse && (
-                          <span className="text-xs text-gray-500 mr-2 italic">"{sub.textResponse.slice(0, 40)}…"</span>
+                          <span className="text-xs text-gray-500 dark:text-slate-400 mr-2 italic">"{sub.textResponse.slice(0, 40)}…"</span>
                         )}
                         <button
                           onClick={() => { setGradeSubmission(sub); setGradeMarks(String(sub.marksAwarded ?? '')); setGradeFeedback(sub.feedback ?? ''); setApiError(''); setGradeOpen(true); }}
-                          className="text-xs px-3 py-1 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 transition-colors"
+                          className="text-xs px-3 py-1 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20 transition-colors"
                         >
                           Grade
                         </button>
@@ -323,9 +323,9 @@ export default function AssignmentsPage() {
       <Modal open={submitOpen} onClose={() => setSubmitOpen(false)} title="Submit Assignment">
         <div className="space-y-4">
           {submitTarget && (
-            <div className="text-sm text-gray-600">
-              <span className="font-medium">{submitTarget.title}</span>
-              {submitTarget.totalMarks && <span className="text-gray-400"> · {submitTarget.totalMarks} marks</span>}
+            <div className="text-sm text-gray-600 dark:text-slate-400">
+              <span className="font-medium dark:text-slate-200">{submitTarget.title}</span>
+              {submitTarget.totalMarks && <span className="text-gray-400 dark:text-slate-500"> · {submitTarget.totalMarks} marks</span>}
             </div>
           )}
           {apiError && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">{apiError}</div>}
@@ -346,8 +346,8 @@ export default function AssignmentsPage() {
       <Modal open={gradeOpen} onClose={() => setGradeOpen(false)} title="Grade Submission">
         <div className="space-y-4">
           {gradeSubmission?.textResponse && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700">
-              <p className="text-xs text-gray-400 mb-1">Student response:</p>
+            <div className="bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-lg p-3 text-sm text-gray-700 dark:text-slate-300">
+              <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">Student response:</p>
               {gradeSubmission.textResponse}
             </div>
           )}

@@ -56,14 +56,14 @@ export default function AdminSettingsPage() {
   });
 
   if (isLoading) {
-    return <div className="p-6 text-center text-gray-400 text-sm">Loading settings...</div>;
+    return <div className="p-6 text-center text-gray-400 dark:text-slate-500 text-sm">Loading settings...</div>;
   }
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Platform Settings</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Global configuration for EduStack PK</p>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">Platform Settings</h1>
+        <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Global configuration for EduStack PK</p>
       </div>
 
       <form onSubmit={e => { e.preventDefault(); save.mutate(form); }} className="space-y-5">
@@ -74,26 +74,26 @@ export default function AdminSettingsPage() {
         )}
 
         {/* Plan Pricing */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="font-semibold text-gray-900 mb-1">Plan Pricing</h2>
-          <p className="text-xs text-gray-400 mb-4">Price per active student per month (PKR)</p>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+          <h2 className="font-semibold text-gray-900 dark:text-slate-100 mb-1">Plan Pricing</h2>
+          <p className="text-xs text-gray-400 dark:text-slate-500 mb-4">Price per active student per month (PKR)</p>
           <div className="space-y-3">
             {(['starter', 'growth', 'scale'] as const).map(plan => (
               <div key={plan} className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{PLAN_LABELS[plan]}</p>
-                  <p className="text-xs text-gray-400">{PLAN_DESCS[plan]}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{PLAN_LABELS[plan]}</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500">{PLAN_DESCS[plan]}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">PKR</span>
+                  <span className="text-sm text-gray-500 dark:text-slate-400">PKR</span>
                   <input
                     type="number"
                     min={0}
-                    className="w-24 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-right"
+                    className="w-24 border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-1.5 text-sm text-right"
                     value={form.planPricing[plan]}
                     onChange={e => setForm(f => ({ ...f, planPricing: { ...f.planPricing, [plan]: Number(e.target.value) } }))}
                   />
-                  <span className="text-xs text-gray-400">/ student</span>
+                  <span className="text-xs text-gray-400 dark:text-slate-500">/ student</span>
                 </div>
               </div>
             ))}
@@ -101,34 +101,34 @@ export default function AdminSettingsPage() {
         </div>
 
         {/* Trial & Support */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="font-semibold text-gray-900 mb-4">General</h2>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+          <h2 className="font-semibold text-gray-900 dark:text-slate-100 mb-4">General</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-900">Trial Period</p>
-                <p className="text-xs text-gray-400">Days granted on new organization signup</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-slate-100">Trial Period</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500">Days granted on new organization signup</p>
               </div>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   min={1}
                   max={365}
-                  className="w-20 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-center"
+                  className="w-20 border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-1.5 text-sm text-center"
                   value={form.trialDays}
                   onChange={e => setForm(f => ({ ...f, trialDays: Number(e.target.value) }))}
                 />
-                <span className="text-xs text-gray-400">days</span>
+                <span className="text-xs text-gray-400 dark:text-slate-500">days</span>
               </div>
             </div>
 
             <div className="flex items-start gap-4">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-900 mb-1">Support Email</label>
-                <p className="text-xs text-gray-400 mb-1">Shown to school admins in the app</p>
+                <label className="block text-sm font-medium text-gray-900 dark:text-slate-100 mb-1">Support Email</label>
+                <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">Shown to school admins in the app</p>
                 <input
                   type="email"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                  className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
                   value={form.supportEmail}
                   onChange={e => setForm(f => ({ ...f, supportEmail: e.target.value }))}
                 />
@@ -138,22 +138,22 @@ export default function AdminSettingsPage() {
         </div>
 
         {/* Maintenance Mode */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-semibold text-gray-900">Maintenance Mode</h2>
-              <p className="text-xs text-gray-400 mt-0.5">When enabled, all non-super-admin logins are blocked</p>
+              <h2 className="font-semibold text-gray-900 dark:text-slate-100">Maintenance Mode</h2>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">When enabled, all non-super-admin logins are blocked</p>
             </div>
             <button
               type="button"
               onClick={() => setForm(f => ({ ...f, maintenanceMode: !f.maintenanceMode }))}
-              className={`relative w-11 h-6 rounded-full transition-colors ${form.maintenanceMode ? 'bg-red-500' : 'bg-gray-200'}`}
+              className={`relative w-11 h-6 rounded-full transition-colors ${form.maintenanceMode ? 'bg-red-500' : 'bg-gray-200 dark:bg-slate-600'}`}
             >
               <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.maintenanceMode ? 'translate-x-5' : ''}`} />
             </button>
           </div>
           {form.maintenanceMode && (
-            <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">
+            <div className="mt-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-lg p-3 text-xs text-red-700 dark:text-red-400">
               Warning: enabling maintenance mode will immediately log out all active school users.
             </div>
           )}
@@ -161,7 +161,7 @@ export default function AdminSettingsPage() {
 
         {/* Last saved */}
         {data?.updatedAt && (
-          <p className="text-xs text-gray-400 text-right">
+          <p className="text-xs text-gray-400 dark:text-slate-500 text-right">
             Last saved: {new Date(data.updatedAt).toLocaleString('en-PK')}
           </p>
         )}

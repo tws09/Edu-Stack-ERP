@@ -60,7 +60,7 @@ function StudentExamsView() {
         <div>
           <button
             onClick={() => setSelectedExamId(null)}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-4"
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 mb-4"
           >
             ← Back to exams
           </button>
@@ -69,61 +69,61 @@ function StudentExamsView() {
           <div className="card p-5 mb-4">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">{selectedExam.name}</h2>
-                <p className="text-sm text-gray-400 mt-0.5">{selectedExam.startDate} → {selectedExam.endDate}</p>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{selectedExam.name}</h2>
+                <p className="text-sm text-gray-400 dark:text-slate-500 mt-0.5">{selectedExam.startDate} → {selectedExam.endDate}</p>
               </div>
               <div className="text-right">
                 <div className={cn('text-3xl font-bold', selectedResult.isPassed ? 'text-green-600' : 'text-red-600')}>
                   {selectedResult.grade}
                 </div>
-                <div className="text-sm text-gray-500">{selectedResult.percentage}%</div>
+                <div className="text-sm text-gray-500 dark:text-slate-400">{selectedResult.percentage}%</div>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-gray-100">
+            <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
               <div className="text-center">
-                <div className="text-lg font-bold text-gray-900">{selectedResult.totalMarksObtained}/{selectedResult.totalMarks}</div>
-                <div className="text-xs text-gray-400 mt-0.5">Total Marks</div>
+                <div className="text-lg font-bold text-gray-900 dark:text-slate-100">{selectedResult.totalMarksObtained}/{selectedResult.totalMarks}</div>
+                <div className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Total Marks</div>
               </div>
               <div className="text-center">
                 <div className={cn('text-lg font-bold', selectedResult.isPassed ? 'text-green-600' : 'text-red-600')}>
                   {selectedResult.isPassed ? 'Pass' : 'Fail'}
                 </div>
-                <div className="text-xs text-gray-400 mt-0.5">Status</div>
+                <div className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Status</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-gray-900">
+                <div className="text-lg font-bold text-gray-900 dark:text-slate-100">
                   {selectedResult.classPosition ? `#${selectedResult.classPosition}` : '—'}
                 </div>
-                <div className="text-xs text-gray-400 mt-0.5">Class Position</div>
+                <div className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Class Position</div>
               </div>
             </div>
           </div>
 
           {/* Subject-wise marks */}
           <div className="card overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-700">Subject-wise Marks</h3>
+            <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300">Subject-wise Marks</h3>
             </div>
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Subject</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Obtained</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Total</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Status</th>
+                <tr className="bg-gray-50 border-b border-gray-100 dark:bg-slate-700/50 dark:border-slate-700">
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Subject</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Obtained</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Total</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                 {selectedResult.subjectMarks.map((sm, i) => {
                   const subName = typeof sm.subjectId === 'object' ? sm.subjectId.name : sm.subjectId;
                   return (
-                    <tr key={i} className={cn(!sm.isPassed && !sm.isAbsent && 'bg-red-50')}>
-                      <td className="px-4 py-3 font-medium text-gray-900">{subName}</td>
+                    <tr key={i} className={cn(!sm.isPassed && !sm.isAbsent && 'bg-red-50 dark:bg-red-900/20')}>
+                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{subName}</td>
                       <td className="px-4 py-3 text-center">
-                        {sm.isAbsent ? <span className="text-gray-400 text-xs">Absent</span> : sm.marksObtained}
+                        {sm.isAbsent ? <span className="text-gray-400 dark:text-slate-500 text-xs">Absent</span> : sm.marksObtained}
                       </td>
-                      <td className="px-4 py-3 text-center text-gray-500">{sm.totalMarks}</td>
+                      <td className="px-4 py-3 text-center text-gray-500 dark:text-slate-400">{sm.totalMarks}</td>
                       <td className="px-4 py-3 text-center">
                         {sm.isAbsent ? (
                           <Badge variant="warning">Absent</Badge>
@@ -144,9 +144,9 @@ function StudentExamsView() {
         /* ── Exam list ── */
         <div>
           {loadingExams || loadingResults ? (
-            <div className="card px-5 py-12 text-center text-gray-400 text-sm">Loading exams...</div>
+            <div className="card px-5 py-12 text-center text-gray-400 dark:text-slate-500 text-sm">Loading exams...</div>
           ) : exams.length === 0 ? (
-            <div className="card px-5 py-12 text-center text-gray-400 text-sm">No published exams yet.</div>
+            <div className="card px-5 py-12 text-center text-gray-400 dark:text-slate-500 text-sm">No published exams yet.</div>
           ) : (
             <div className="space-y-3">
               {exams.map(exam => {
@@ -158,8 +158,8 @@ function StudentExamsView() {
                     onClick={() => result && setSelectedExamId(exam._id)}
                   >
                     <div>
-                      <p className="font-medium text-gray-900">{exam.name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="font-medium text-gray-900 dark:text-slate-100">{exam.name}</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
                         {exam.startDate} → {exam.endDate} · {exam.subjects.length} subjects
                       </p>
                     </div>
@@ -169,11 +169,11 @@ function StudentExamsView() {
                           <span className={cn('text-lg font-bold', result.isPassed ? 'text-green-600' : 'text-red-600')}>
                             {result.grade}
                           </span>
-                          <span className="text-sm text-gray-500">{result.percentage}%</span>
+                          <span className="text-sm text-gray-500 dark:text-slate-400">{result.percentage}%</span>
                           <Badge variant={result.isPassed ? 'success' : 'danger'}>
                             {result.isPassed ? 'Pass' : 'Fail'}
                           </Badge>
-                          <span className="text-gray-300 text-xs">›</span>
+                          <span className="text-gray-300 dark:text-slate-600 text-xs">›</span>
                         </>
                       ) : (
                         <Badge variant="warning">Result Pending</Badge>
@@ -360,7 +360,7 @@ function StaffExamsView() {
                 onClick={() => setView(v)}
                 disabled={v !== 'list' && !selectedExam}
                 className={cn('flex-1 py-2 text-sm rounded-lg border transition-colors disabled:opacity-40 disabled:cursor-not-allowed capitalize',
-                  view === v ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50')}
+                  view === v ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700')}
               >
                 {v === 'marks' ? 'Enter Marks' : v === 'results' ? 'Results' : 'Exams'}
               </button>
@@ -368,29 +368,29 @@ function StaffExamsView() {
           </div>
         </div>
         {selectedExam && (
-          <div className="mt-3 flex items-center gap-2 text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+          <div className="mt-3 flex items-center gap-2 text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 dark:bg-blue-900/20 dark:border-blue-700/50 dark:text-blue-300">
             <span className="font-medium">{selectedExam.name}</span>
-            <span className="text-blue-400">{selectedExam.startDate} → {selectedExam.endDate}</span>
+            <span className="text-blue-400 dark:text-blue-500">{selectedExam.startDate} → {selectedExam.endDate}</span>
             {selectedExam.isPublished && <Badge variant="success">Published</Badge>}
-            <button onClick={() => { setSelectedExam(null); setView('list'); }} className="ml-auto text-gray-400 hover:text-gray-600 text-xs">✕ Clear</button>
+            <button onClick={() => { setSelectedExam(null); setView('list'); }} className="ml-auto text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 text-xs">✕ Clear</button>
           </div>
         )}
       </div>
 
       {/* Exam list */}
       {view === 'list' && (
-        <div className="card divide-y divide-gray-100">
+        <div className="card divide-y divide-gray-100 dark:divide-slate-700">
           {!classId || !sectionId ? (
-            <div className="px-5 py-10 text-center text-gray-400 text-sm">Select a class and section.</div>
+            <div className="px-5 py-10 text-center text-gray-400 dark:text-slate-500 text-sm">Select a class and section.</div>
           ) : loadingExams ? (
-            <div className="px-5 py-10 text-center text-gray-400 text-sm">Loading...</div>
+            <div className="px-5 py-10 text-center text-gray-400 dark:text-slate-500 text-sm">Loading...</div>
           ) : exams.length === 0 ? (
-            <div className="px-5 py-10 text-center text-gray-400 text-sm">No exams created yet.</div>
+            <div className="px-5 py-10 text-center text-gray-400 dark:text-slate-500 text-sm">No exams created yet.</div>
           ) : exams.map(exam => (
-            <div key={exam._id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
+            <div key={exam._id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700/40">
               <div>
-                <p className="font-medium text-gray-900 text-sm">{exam.name}</p>
-                <p className="text-xs text-gray-400">{exam.startDate} → {exam.endDate} · {exam.subjects.length} subjects</p>
+                <p className="font-medium text-gray-900 dark:text-slate-100 text-sm">{exam.name}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500">{exam.startDate} → {exam.endDate} · {exam.subjects.length} subjects</p>
               </div>
               <div className="flex items-center gap-2">
                 {exam.isPublished ? (
@@ -400,7 +400,7 @@ function StaffExamsView() {
                     <button
                       onClick={() => publishMutation.mutate(exam._id)}
                       disabled={publishMutation.isPending}
-                      className="text-xs px-3 py-1 rounded-lg border border-green-200 text-green-700 hover:bg-green-50 transition-colors"
+                      className="text-xs px-3 py-1 rounded-lg border border-green-200 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/20 transition-colors"
                     >
                       Publish
                     </button>
@@ -445,18 +445,18 @@ function StaffExamsView() {
 
           {selectedStudentId && (
             <div className="card overflow-hidden">
-              {apiError && <div className="px-4 py-3 text-sm text-red-600 bg-red-50 border-b border-red-100">{apiError}</div>}
+              {apiError && <div className="px-4 py-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-800">{apiError}</div>}
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">Subject</th>
-                    <th className="text-center px-4 py-3 font-medium text-gray-500">Total</th>
-                    <th className="text-center px-4 py-3 font-medium text-gray-500">Pass</th>
-                    <th className="text-center px-4 py-3 font-medium text-gray-500">Obtained</th>
-                    <th className="text-center px-4 py-3 font-medium text-gray-500">Absent</th>
+                  <tr className="bg-gray-50 border-b border-gray-100 dark:bg-slate-700/50 dark:border-slate-700">
+                    <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Subject</th>
+                    <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Total</th>
+                    <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Pass</th>
+                    <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Obtained</th>
+                    <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Absent</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                   {selectedExam.subjects.map(sub => {
                     const subId = sub.subjectId as string;
                     const subjectName = subjects.find((s: { _id: string; name: string }) => s._id === subId)?.name ?? subId;
@@ -465,12 +465,12 @@ function StaffExamsView() {
                     const savedMark = result?.subjectMarks.find(m => m.subjectId === subId);
                     return (
                       <tr key={subId}>
-                        <td className="px-4 py-3 font-medium text-gray-900">{subjectName}</td>
-                        <td className="px-4 py-3 text-center text-gray-500">{sub.totalMarks}</td>
-                        <td className="px-4 py-3 text-center text-gray-500">{sub.passingMarks}</td>
+                        <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{subjectName}</td>
+                        <td className="px-4 py-3 text-center text-gray-500 dark:text-slate-400">{sub.totalMarks}</td>
+                        <td className="px-4 py-3 text-center text-gray-500 dark:text-slate-400">{sub.passingMarks}</td>
                         <td className="px-4 py-3 text-center">
                           {isAbsent ? (
-                            <span className="text-gray-300 text-xs">—</span>
+                            <span className="text-gray-300 dark:text-slate-600 text-xs">—</span>
                           ) : (
                             <input
                               type="number"
@@ -478,7 +478,7 @@ function StaffExamsView() {
                               max={sub.totalMarks}
                               value={marksInput[subId] ?? (savedMark && !savedMark.isAbsent ? String(savedMark.marksObtained) : '')}
                               onChange={e => setMarksInput(prev => ({ ...prev, [subId]: e.target.value }))}
-                              className="w-20 text-center border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-20 text-center border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                               placeholder="0"
                             />
                           )}
@@ -496,7 +496,7 @@ function StaffExamsView() {
                   })}
                 </tbody>
               </table>
-              <div className="px-4 py-3 border-t border-gray-100 flex justify-end">
+              <div className="px-4 py-3 border-t border-gray-100 dark:border-slate-700 flex justify-end">
                 <button onClick={handleSaveMarks} disabled={marksMutation.isPending} className="btn-primary">
                   {marksMutation.isPending ? 'Saving...' : 'Save Marks'}
                 </button>
@@ -516,24 +516,24 @@ function StaffExamsView() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Pos</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Roll</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Name</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Marks</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">%</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Grade</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Status</th>
+                <tr className="bg-gray-50 border-b border-gray-100 dark:bg-slate-700/50 dark:border-slate-700">
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Pos</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Roll</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Name</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Marks</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">%</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Grade</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                 {(results as ResultDoc[]).sort((a, b) => (a.classPosition ?? 999) - (b.classPosition ?? 999)).map(r => {
                   const student = typeof r.studentId === 'object' ? r.studentId : null;
                   return (
-                    <tr key={r._id} className={cn(!r.isPassed && 'bg-red-50')}>
-                      <td className="px-4 py-3 font-mono text-gray-400">{r.classPosition ?? '—'}</td>
-                      <td className="px-4 py-3 font-mono text-gray-500">{student?.rollNo ?? '—'}</td>
-                      <td className="px-4 py-3 font-medium text-gray-900">{student?.profile.name ?? '—'}</td>
+                    <tr key={r._id} className={cn(!r.isPassed && 'bg-red-50 dark:bg-red-900/20')}>
+                      <td className="px-4 py-3 font-mono text-gray-400 dark:text-slate-500">{r.classPosition ?? '—'}</td>
+                      <td className="px-4 py-3 font-mono text-gray-500 dark:text-slate-400">{student?.rollNo ?? '—'}</td>
+                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{student?.profile.name ?? '—'}</td>
                       <td className="px-4 py-3 text-center">{r.totalMarksObtained}/{r.totalMarks}</td>
                       <td className="px-4 py-3 text-center">
                         <span className={cn('font-medium', r.isPassed ? 'text-green-600' : 'text-red-600')}>{r.percentage}%</span>

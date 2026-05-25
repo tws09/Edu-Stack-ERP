@@ -15,8 +15,8 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-gray-400 uppercase tracking-wide font-medium">{label}</span>
-      <span className="text-sm text-gray-800">{value}</span>
+      <span className="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium">{label}</span>
+      <span className="text-sm text-gray-800 dark:text-slate-200">{value}</span>
     </div>
   );
 }
@@ -131,15 +131,15 @@ function StaffStudentsView() {
 
       {/* Filters */}
       <div className="flex gap-3 mb-5">
-        <select value={classFilter} onChange={e => { setClassFilter(e.target.value); setSectionFilter(''); }} className="text-sm border border-gray-200 rounded-lg px-3 py-1.5">
+        <select value={classFilter} onChange={e => { setClassFilter(e.target.value); setSectionFilter(''); }} className="text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200">
           <option value="">All Classes</option>
           {classes.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
         </select>
-        <select value={sectionFilter} onChange={e => setSectionFilter(e.target.value)} disabled={!classFilter} className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 disabled:opacity-50">
+        <select value={sectionFilter} onChange={e => setSectionFilter(e.target.value)} disabled={!classFilter} className="text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 disabled:opacity-50">
           <option value="">All Sections</option>
           {sections.map(s => <option key={s._id} value={s._id}>Section {s.name}</option>)}
         </select>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="text-sm border border-gray-200 rounded-lg px-3 py-1.5">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200">
           <option value="">All Status</option>
           {['applied', 'enrolled', 'active', 'graduated', 'transferred', 'withdrawn'].map(s => (
             <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
@@ -151,35 +151,35 @@ function StaffStudentsView() {
       <div className="card overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Roll No</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Class / Section</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Guardian</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Admitted</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Status</th>
+            <tr className="bg-gray-50 dark:bg-slate-700/50 border-b border-gray-100 dark:border-slate-700">
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Roll No</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Name</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Class / Section</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Guardian</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Admitted</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
             {isLoading && (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">Loading...</td></tr>
             )}
             {!isLoading && students.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No students found.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">No students found.</td></tr>
             )}
             {students.map((s) => (
-              <tr key={s._id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-3 font-mono text-gray-600">{s.rollNo}</td>
-                <td className="px-4 py-3 font-medium text-gray-900">{s.profile.name}</td>
-                <td className="px-4 py-3 text-gray-600">
+              <tr key={s._id} className="hover:bg-gray-50 dark:hover:bg-slate-700/40 transition-colors">
+                <td className="px-4 py-3 font-mono text-gray-600 dark:text-slate-300">{s.rollNo}</td>
+                <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{s.profile.name}</td>
+                <td className="px-4 py-3 text-gray-600 dark:text-slate-300">
                   {typeof s.classId === 'object' ? s.classId.name : '—'}
                   {typeof s.sectionId === 'object' ? ` / ${s.sectionId.name}` : ''}
                 </td>
-                <td className="px-4 py-3 text-gray-600">
+                <td className="px-4 py-3 text-gray-600 dark:text-slate-300">
                   <p>{s.guardianInfo.fatherName}</p>
-                  <p className="text-xs text-gray-400">{s.guardianInfo.fatherPhone}</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500">{s.guardianInfo.fatherPhone}</p>
                 </td>
-                <td className="px-4 py-3 text-gray-500">{formatDate(s.admissionDate)}</td>
+                <td className="px-4 py-3 text-gray-500 dark:text-slate-400">{formatDate(s.admissionDate)}</td>
                 <td className="px-4 py-3">
                   <Badge variant={STATUS_VARIANTS[s.status as keyof typeof STATUS_VARIANTS] ?? 'default'}>
                     {s.status}
@@ -251,7 +251,7 @@ function AdmissionForm({ classes, sections, years, selectedClassId, onClassChang
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Student Information</p></div>
+        <div className="col-span-2"><p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">Student Information</p></div>
 
         <div><label className="label">Full Name *</label><input className="input" value={form.profile.name} onChange={e => setForm(f => ({ ...f, profile: { ...f.profile, name: e.target.value } }))} required /></div>
         <div><label className="label">Login Email *</label><input type="email" className="input" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required /></div>
@@ -265,7 +265,7 @@ function AdmissionForm({ classes, sections, years, selectedClassId, onClassChang
         <div><label className="label">CNIC / B-Form *</label><input className="input" value={form.profile.cnicOrBForm} onChange={e => setForm(f => ({ ...f, profile: { ...f.profile, cnicOrBForm: e.target.value } }))} required /></div>
         <div><label className="label">Previous School</label><input className="input" value={form.previousSchool} onChange={e => setForm(f => ({ ...f, previousSchool: e.target.value }))} /></div>
 
-        <div className="col-span-2 border-t border-gray-100 pt-4"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Enrollment</p></div>
+        <div className="col-span-2 border-t border-gray-100 dark:border-slate-700 pt-4"><p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">Enrollment</p></div>
 
         <div>
           <label className="label">Academic Year *</label>
@@ -288,7 +288,7 @@ function AdmissionForm({ classes, sections, years, selectedClassId, onClassChang
           </select>
         </div>
 
-        <div className="col-span-2 border-t border-gray-100 pt-4"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Guardian Information</p></div>
+        <div className="col-span-2 border-t border-gray-100 dark:border-slate-700 pt-4"><p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">Guardian Information</p></div>
 
         <div><label className="label">Father's Name *</label><input className="input" value={form.guardianInfo.fatherName} onChange={e => setForm(f => ({ ...f, guardianInfo: { ...f.guardianInfo, fatherName: e.target.value } }))} required /></div>
         <div><label className="label">Father's Phone *</label><input className="input" value={form.guardianInfo.fatherPhone} onChange={e => setForm(f => ({ ...f, guardianInfo: { ...f.guardianInfo, fatherPhone: e.target.value } }))} required /></div>

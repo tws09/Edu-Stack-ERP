@@ -1,66 +1,126 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { academicService } from '../../services/academicService';
-import { timetableService } from '../../services/timetableService';
-import type { TimetableSlot } from '../../services/timetableService';
+import { timetableService, type TimetableSlot } from '../../services/timetableService';
 import { userService } from '../../services/userService';
 import { studentService } from '../../services/studentService';
 import PageHeader from '../../components/ui/PageHeader';
-import Modal from '../../components/ui/Modal';
 import { useAuthStore } from '../../stores/authStore';
 import { cn } from '../../lib/utils';
+import { ExamScheduleTab, StudentExamScheduleTab } from './ExamScheduleTab';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+const SUBJECT_COLORS = [
+  { cell: 'bg-blue-50 border-blue-200 dark:bg-blue-900/30 dark:border-blue-700/50', text: 'text-blue-800 dark:text-blue-300', sub: 'text-blue-500 dark:text-blue-400' },
+  { cell: 'bg-violet-50 border-violet-200 dark:bg-violet-900/30 dark:border-violet-700/50', text: 'text-violet-800 dark:text-violet-300', sub: 'text-violet-500 dark:text-violet-400' },
+  { cell: 'bg-green-50 border-green-200 dark:bg-green-900/30 dark:border-green-700/50', text: 'text-green-800 dark:text-green-300', sub: 'text-green-500 dark:text-green-400' },
+  { cell: 'bg-orange-50 border-orange-200 dark:bg-orange-900/30 dark:border-orange-700/50', text: 'text-orange-800 dark:text-orange-300', sub: 'text-orange-500 dark:text-orange-400' },
+  { cell: 'bg-pink-50 border-pink-200 dark:bg-pink-900/30 dark:border-pink-700/50', text: 'text-pink-800 dark:text-pink-300', sub: 'text-pink-500 dark:text-pink-400' },
+  { cell: 'bg-teal-50 border-teal-200 dark:bg-teal-900/30 dark:border-teal-700/50', text: 'text-teal-800 dark:text-teal-300', sub: 'text-teal-500 dark:text-teal-400' },
+  { cell: 'bg-amber-50 border-amber-200 dark:bg-amber-900/30 dark:border-amber-700/50', text: 'text-amber-800 dark:text-amber-300', sub: 'text-amber-500 dark:text-amber-400' },
+  { cell: 'bg-rose-50 border-rose-200 dark:bg-rose-900/30 dark:border-rose-700/50', text: 'text-rose-800 dark:text-rose-300', sub: 'text-rose-500 dark:text-rose-400' },
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function slotKey(day: number, period: number) { return `${day}-${period}`; }
 
-function TimetableGrid({ timetable, periods }: { timetable: import('../../services/timetableService').TimetableDoc; periods: number }) {
+function getSubjectColor(subjectId: string, subjects: { _id: string }[]) {
+  const idx = subjects.findIndex(s => s._id === subjectId);
+  return SUBJECT_COLORS[(idx < 0 ? 0 : idx) % SUBJECT_COLORS.length];
+}
+
+// ─── Read-only grid (shared between student + staff view mode) ────────────────
+
+function TimetableGrid({
+  slots,
+  periods,
+  periodTimings = [],
+  showTeacher = true,
+  subjects = [],
+}: {
+  slots: TimetableSlot[];
+  periods: number;
+  periodTimings?: { periodNo: number; startTime: string; endTime: string }[];
+  showTeacher?: boolean;
+  subjects?: { _id: string }[];
+}) {
   const getSlot = (day: number, period: number) =>
-    timetable.slots.find(s => s.dayOfWeek === day && s.periodNo === period);
+    slots.find(s => s.dayOfWeek === day && s.periodNo === period);
+
+  const getTiming = (periodNo: number) =>
+    periodTimings.find(t => t.periodNo === periodNo);
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm border-collapse">
         <thead>
-          <tr className="bg-gray-50 border-b border-gray-100">
-            <th className="text-left px-3 py-3 font-medium text-gray-500 w-20">Period</th>
+          <tr className="border-b border-gray-100 dark:border-slate-700">
+            <th className="w-16 px-3 py-3 text-left text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide">Period</th>
             {DAYS.map((d, i) => (
-              <th key={i} className="text-center px-3 py-3 font-medium text-gray-500">{d}</th>
+              <th key={i} className="px-2 py-3 text-center text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide min-w-27.5">
+                <span className="hidden sm:inline">{d}</span>
+                <span className="sm:hidden">{DAY_SHORT[i]}</span>
+              </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
-          {Array.from({ length: periods }, (_, p) => (
-            <tr key={p} className="hover:bg-gray-50">
-              <td className="px-3 py-3 font-mono text-gray-400 text-xs">{p + 1}</td>
+        <tbody>
+          {Array.from({ length: periods }, (_, p) => {
+            const timing = getTiming(p + 1);
+            return (
+            <tr key={p} className="border-b border-gray-50 dark:border-slate-800 last:border-0">
+              <td className="px-3 py-2 text-center">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-slate-700 text-xs font-semibold text-gray-500 dark:text-slate-400">{p + 1}</span>
+                {timing && (
+                  <div className="mt-1 space-y-0.5">
+                    <div className="text-xs text-gray-400 dark:text-slate-500 leading-none">{timing.startTime}</div>
+                    <div className="text-xs text-gray-300 dark:text-slate-600 leading-none">{timing.endTime}</div>
+                  </div>
+                )}
+              </td>
               {DAYS.map((_, d) => {
                 const slot = getSlot(d + 1, p + 1);
+                const subId = typeof slot?.subjectId === 'object' ? slot.subjectId._id : slot?.subjectId;
+                const color = subId ? getSubjectColor(subId, subjects.length > 0 ? subjects : (slot?.subjectId && typeof slot.subjectId === 'object' ? [slot.subjectId] : [])) : null;
                 const subject = typeof slot?.subjectId === 'object' ? slot.subjectId : null;
                 const teacher = typeof slot?.teacherId === 'object' ? slot.teacherId : null;
                 return (
-                  <td key={d} className="px-2 py-2 text-center">
-                    {slot ? (
-                      <div className="bg-blue-50 border border-blue-100 rounded-lg p-1.5 text-xs">
-                        <div className="font-medium text-blue-800">{subject?.name ?? '—'}</div>
-                        <div className="text-blue-500 mt-0.5">{teacher?.profile?.name?.split(' ')[0] ?? '—'}</div>
-                        {slot.roomNo && <div className="text-gray-400">{slot.roomNo}</div>}
+                  <td key={d} className="px-1.5 py-1.5">
+                    {slot && color ? (
+                      <div className={cn('rounded-lg border px-2 py-1.5 text-center', color.cell)}>
+                        <div className={cn('text-xs font-semibold leading-tight truncate', color.text)}>{subject?.name ?? '—'}</div>
+                        {showTeacher && teacher && (
+                          <div className={cn('text-xs mt-0.5 truncate', color.sub)}>
+                            {(teacher as any).name?.split(' ')[0] ?? '—'}
+                          </div>
+                        )}
+                        {slot.roomNo && <div className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{slot.roomNo}</div>}
                       </div>
                     ) : (
-                      <div className="text-gray-200">—</div>
+                      <div className="h-10 flex items-center justify-center text-gray-200 dark:text-slate-800 text-xs">—</div>
                     )}
                   </td>
                 );
               })}
             </tr>
-          ))}
+          );})}
         </tbody>
       </table>
     </div>
   );
 }
 
+// ─── Student view ─────────────────────────────────────────────────────────────
+
 function StudentTimetableView() {
+  const [tab, setTab] = useState<'class' | 'exam'>('class');
+
   const { data: student, isLoading: loadingProfile } = useQuery({
     queryKey: ['my-profile'],
     queryFn: studentService.getMe,
@@ -68,7 +128,6 @@ function StudentTimetableView() {
 
   const { data: years = [] } = useQuery({ queryKey: ['years'], queryFn: academicService.getYears });
   const currentYear = years.find(y => y.isCurrent) ?? years[0];
-
   const sectionId = typeof student?.sectionId === 'object' ? student.sectionId._id : student?.sectionId ?? '';
 
   const { data: timetables = [], isLoading } = useQuery({
@@ -78,33 +137,60 @@ function StudentTimetableView() {
   });
 
   const timetable = timetables[0] ?? null;
-  const periods = timetable
-    ? Math.max(...timetable.slots.map(s => s.periodNo), 8)
-    : 8;
-
-  const className = typeof student?.classId === 'object' ? student.classId.name : '';
+  const periods = timetable ? Math.max(...timetable.slots.map(s => s.periodNo), 8) : 8;
+  const studentClassName = typeof student?.classId === 'object' ? student.classId.name : '';
   const sectionName = typeof student?.sectionId === 'object' ? student.sectionId.name : '';
 
-  if (loadingProfile || isLoading) {
-    return <div className="p-6 text-center text-gray-400 text-sm py-20">Loading timetable...</div>;
+  if (loadingProfile) {
+    return <div className="p-6 text-center text-gray-400 dark:text-slate-500 text-sm py-20">Loading timetable...</div>;
   }
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <PageHeader
-        title="My Timetable"
-        subtitle={className && sectionName ? `${className} — Section ${sectionName}` : undefined}
+        title="Timetable"
+        subtitle={studentClassName && sectionName ? `${studentClassName} — Section ${sectionName}` : undefined}
       />
-      <div className="card overflow-hidden">
-        {!timetable ? (
-          <div className="px-5 py-12 text-center text-gray-400 text-sm">No timetable has been set up for your class yet.</div>
-        ) : (
-          <TimetableGrid timetable={timetable} periods={periods} />
-        )}
+
+      {/* Tab bar */}
+      <div className="flex gap-1 rounded-xl border border-gray-200 dark:border-gray-600 p-1 mb-5 w-fit">
+        <button
+          onClick={() => setTab('class')}
+          className={cn('px-4 py-1.5 text-sm rounded-lg transition-colors font-medium', tab === 'class' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700')}
+        >
+          Class Schedule
+        </button>
+        <button
+          onClick={() => setTab('exam')}
+          className={cn('px-4 py-1.5 text-sm rounded-lg transition-colors font-medium', tab === 'exam' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700')}
+        >
+          Exam Schedule
+        </button>
       </div>
+
+      {tab === 'class' && (
+        <>
+          {isLoading && <div className="text-center py-12 text-gray-400 dark:text-slate-500 text-sm">Loading...</div>}
+          {!isLoading && (
+            <div className="card overflow-hidden">
+              {!timetable ? (
+                <div className="px-5 py-12 text-center text-gray-400 dark:text-slate-500 text-sm">
+                  No timetable has been set up for your class yet.
+                </div>
+              ) : (
+                <TimetableGrid slots={timetable.slots} periods={periods} periodTimings={timetable.periodTimings ?? []} />
+              )}
+            </div>
+          )}
+        </>
+      )}
+
+      {tab === 'exam' && <StudentExamScheduleTab />}
     </div>
   );
 }
+
+// ─── Staff view ───────────────────────────────────────────────────────────────
 
 export default function TimetablePage() {
   const user = useAuthStore(s => s.user);
@@ -114,17 +200,13 @@ export default function TimetablePage() {
 
 function StaffTimetableView() {
   const user = useAuthStore(s => s.user);
-  const qc = useQueryClient();
+  const navigate = useNavigate();
 
+  const [mainTab, setMainTab] = useState<'class-schedule' | 'exam-schedule'>('class-schedule');
   const [view, setView] = useState<'class' | 'teacher'>('class');
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
   const [teacherFilter, setTeacherFilter] = useState('');
-  const [editOpen, setEditOpen] = useState(false);
-  const [editSlots, setEditSlots] = useState<TimetableSlot[]>([]);
-  const [editTimetableId, setEditTimetableId] = useState<string | null>(null);
-  const [periods, setPeriods] = useState(8);
-  const [apiError, setApiError] = useState('');
 
   const { data: years = [] } = useQuery({ queryKey: ['years'], queryFn: academicService.getYears });
   const currentYear = years.find(y => y.isCurrent) ?? years[0];
@@ -163,79 +245,52 @@ function StaffTimetableView() {
   });
 
   const timetable = timetables[0] ?? null;
+  const viewPeriods = timetable ? Math.max(...timetable.slots.map(s => s.periodNo), 8) : 8;
 
-  const createMutation = useMutation({
-    mutationFn: (slots: TimetableSlot[]) =>
-      timetableService.create({ classId, sectionId, academicYearId: currentYear!._id, slots }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['timetable'] }); setEditOpen(false); setApiError(''); },
-    onError: (e: { response?: { data?: { message?: string } } }) => setApiError(e?.response?.data?.message ?? 'Failed to save timetable'),
-  });
+  const canEdit = ['branch_principal', 'it_admin', 'group_admin'].includes(user?.role ?? '');
+  const basePath = user?.role === 'group_admin' ? '/group' : '/dashboard';
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, slots }: { id: string; slots: TimetableSlot[] }) => timetableService.update(id, { slots }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['timetable'] }); setEditOpen(false); setApiError(''); },
-    onError: (e: { response?: { data?: { message?: string } } }) => setApiError(e?.response?.data?.message ?? 'Failed to save timetable'),
-  });
-
-  const openEdit = () => {
-    const slots: TimetableSlot[] = timetable
-      ? timetable.slots.map(s => ({
-          dayOfWeek: s.dayOfWeek,
-          periodNo: s.periodNo,
-          subjectId: typeof s.subjectId === 'object' ? s.subjectId._id : s.subjectId,
-          teacherId: typeof s.teacherId === 'object' ? s.teacherId._id : s.teacherId,
-          roomNo: s.roomNo,
-        }))
-      : [];
-    setEditSlots(slots);
-    setEditTimetableId(timetable?._id ?? null);
-    setApiError('');
-    setEditOpen(true);
+  const goToEdit = () => {
+    navigate(`${basePath}/timetable/edit?classId=${classId}&sectionId=${sectionId}`);
   };
-
-  const setSlot = (day: number, period: number, field: keyof TimetableSlot, value: string) => {
-    setEditSlots(prev => {
-      const key = slotKey(day, period);
-      const existing = prev.find(s => slotKey(s.dayOfWeek, s.periodNo) === key);
-      if (!value) return prev.filter(s => slotKey(s.dayOfWeek, s.periodNo) !== key);
-      if (existing) return prev.map(s => slotKey(s.dayOfWeek, s.periodNo) === key ? { ...s, [field]: value } : s);
-      const newSlot: TimetableSlot = { dayOfWeek: day, periodNo: period, subjectId: '', teacherId: '', [field]: value };
-      return [...prev, newSlot];
-    });
-  };
-
-  const getSlot = (day: number, period: number) =>
-    editSlots.find(s => slotKey(s.dayOfWeek, s.periodNo) === slotKey(day, period));
-
-  const getTimetableSlot = (day: number, period: number) =>
-    timetable?.slots.find(s => s.dayOfWeek === day && s.periodNo === period);
-
-  const handleSave = () => {
-    const validSlots = editSlots.filter(s => s.subjectId && s.teacherId);
-    if (editTimetableId) updateMutation.mutate({ id: editTimetableId, slots: validSlots });
-    else createMutation.mutate(validSlots);
-  };
-
-  const isPending = createMutation.isPending || updateMutation.isPending;
-  const canEdit = user?.role === 'branch_principal' || user?.role === 'it_admin' || user?.role === 'group_admin';
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <PageHeader
         title="Timetable"
-        actions={canEdit && view === 'class' && sectionId ? (
-          <button onClick={openEdit} className="btn-primary text-sm">
+        actions={canEdit && mainTab === 'class-schedule' && view === 'class' && sectionId ? (
+          <button onClick={goToEdit} className="btn-primary text-sm">
             {timetable ? 'Edit Timetable' : 'Create Timetable'}
           </button>
         ) : undefined}
       />
 
+      {/* Main tabs */}
+      <div className="flex gap-1 rounded-xl border border-gray-200 dark:border-gray-600 p-1 mb-5 w-fit">
+        <button
+          onClick={() => setMainTab('class-schedule')}
+          className={cn('px-4 py-1.5 text-sm rounded-lg transition-colors font-medium', mainTab === 'class-schedule' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700')}
+        >
+          Class Schedule
+        </button>
+        <button
+          onClick={() => setMainTab('exam-schedule')}
+          className={cn('px-4 py-1.5 text-sm rounded-lg transition-colors font-medium', mainTab === 'exam-schedule' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700')}
+        >
+          Exam Schedule
+        </button>
+      </div>
+
+      {mainTab === 'exam-schedule' && <ExamScheduleTab />}
+
+      {mainTab === 'class-schedule' && <>
+
       {/* Controls */}
       <div className="card p-4 mb-5">
         <div className="flex gap-3 flex-wrap items-end">
-          <div className="flex gap-1 rounded-lg border border-gray-200 p-1">
-            <button onClick={() => setView('class')} className={cn('px-3 py-1.5 text-sm rounded-md transition-colors', view === 'class' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50')}>Class View</button>
-            <button onClick={() => setView('teacher')} className={cn('px-3 py-1.5 text-sm rounded-md transition-colors', view === 'teacher' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50')}>Teacher View</button>
+          <div className="flex gap-1 rounded-lg border border-gray-200 dark:border-slate-600 p-1">
+            <button onClick={() => setView('class')} className={cn('px-3 py-1.5 text-sm rounded-md transition-colors', view === 'class' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50 dark:text-slate-400 dark:hover:bg-slate-700')}>Class View</button>
+            <button onClick={() => setView('teacher')} className={cn('px-3 py-1.5 text-sm rounded-md transition-colors', view === 'teacher' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50 dark:text-slate-400 dark:hover:bg-slate-700')}>Teacher View</button>
           </div>
 
           {view === 'class' && (
@@ -262,8 +317,8 @@ function StaffTimetableView() {
               <label className="label">Teacher</label>
               <select className="input" value={teacherFilter} onChange={e => setTeacherFilter(e.target.value)}>
                 <option value="">Select teacher...</option>
-                {teachers.map((t: { _id: string; profile?: { name: string } }) => (
-                  <option key={t._id} value={t._id}>{t.profile?.name ?? t._id}</option>
+                {teachers.map((t: { _id: string; name: string }) => (
+                  <option key={t._id} value={t._id}>{t.name}</option>
                 ))}
               </select>
             </div>
@@ -272,127 +327,34 @@ function StaffTimetableView() {
       </div>
 
       {/* Grid */}
-      {isLoading && <div className="text-center py-12 text-gray-400 text-sm">Loading...</div>}
+      {isLoading && <div className="text-center py-12 text-gray-400 dark:text-slate-500 text-sm">Loading...</div>}
 
       {!isLoading && (view === 'class' ? !sectionId : !teacherFilter) && (
-        <div className="text-center py-12 text-gray-400 text-sm">
-          {view === 'class' ? 'Select a class and section to view timetable.' : 'Select a teacher to view their schedule.'}
+        <div className="text-center py-16">
+          <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3 text-2xl">📅</div>
+          <p className="text-sm text-gray-400 dark:text-slate-500">
+            {view === 'class' ? 'Select a class and section to view the timetable.' : 'Select a teacher to view their schedule.'}
+          </p>
         </div>
       )}
 
       {!isLoading && ((view === 'class' && sectionId) || (view === 'teacher' && teacherFilter)) && (
         <div className="card overflow-hidden">
           {!timetable ? (
-            <div className="px-5 py-12 text-center text-gray-400 text-sm">
-              No timetable found.{canEdit && view === 'class' && ' Click "Create Timetable" to set one up.'}
+            <div className="px-5 py-12 text-center">
+              <div className="text-3xl mb-3">🗓️</div>
+              <p className="text-sm font-medium text-gray-500 dark:text-slate-400">No timetable set up yet</p>
+              {canEdit && view === 'class' && (
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Click "Create Timetable" to build one.</p>
+              )}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="text-left px-3 py-3 font-medium text-gray-500 w-20">Period</th>
-                    {DAYS.map((d, i) => (
-                      <th key={i} className="text-center px-3 py-3 font-medium text-gray-500">{d}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {Array.from({ length: periods }, (_, p) => (
-                    <tr key={p} className="hover:bg-gray-50">
-                      <td className="px-3 py-3 font-mono text-gray-400 text-xs">{p + 1}</td>
-                      {DAYS.map((_, d) => {
-                        const slot = getTimetableSlot(d + 1, p + 1);
-                        const subject = typeof slot?.subjectId === 'object' ? slot.subjectId : null;
-                        const teacher = typeof slot?.teacherId === 'object' ? slot.teacherId : null;
-                        return (
-                          <td key={d} className="px-2 py-2 text-center">
-                            {slot ? (
-                              <div className="bg-blue-50 border border-blue-100 rounded-lg p-1.5 text-xs">
-                                <div className="font-medium text-blue-800">{subject?.name ?? '—'}</div>
-                                {view === 'class' && <div className="text-blue-500 mt-0.5">{teacher?.profile?.name?.split(' ')[0] ?? '—'}</div>}
-                                {slot.roomNo && <div className="text-gray-400">{slot.roomNo}</div>}
-                              </div>
-                            ) : (
-                              <div className="text-gray-200">—</div>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <TimetableGrid slots={timetable.slots} periods={viewPeriods} periodTimings={timetable.periodTimings ?? []} showTeacher={view === 'class'} subjects={subjects} />
           )}
         </div>
       )}
 
-      {/* Edit Modal */}
-      <Modal open={editOpen} onClose={() => setEditOpen(false)} title={editTimetableId ? 'Edit Timetable' : 'Create Timetable'} size="xl">
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <label className="text-sm text-gray-600">Periods per day:</label>
-            <select value={periods} onChange={e => setPeriods(Number(e.target.value))} className="text-sm border border-gray-200 rounded-lg px-2 py-1">
-              {[6, 7, 8, 9, 10].map(n => <option key={n} value={n}>{n}</option>)}
-            </select>
-          </div>
-
-          {apiError && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">{apiError}</div>}
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="text-left px-2 py-2 font-medium text-gray-500 w-14">Period</th>
-                  {DAY_SHORT.map((d, i) => (
-                    <th key={i} className="text-center px-1 py-2 font-medium text-gray-500 min-w-35">{d}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {Array.from({ length: periods }, (_, p) => (
-                  <tr key={p}>
-                    <td className="px-2 py-1.5 font-mono text-gray-400">{p + 1}</td>
-                    {DAYS.map((_, d) => {
-                      const slot = getSlot(d + 1, p + 1);
-                      return (
-                        <td key={d} className="px-1 py-1.5">
-                          <div className="space-y-1">
-                            <select
-                              value={typeof slot?.subjectId === 'string' ? slot.subjectId : ''}
-                              onChange={e => setSlot(d + 1, p + 1, 'subjectId', e.target.value)}
-                              className="w-full text-xs border border-gray-200 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                            >
-                              <option value="">Subject</option>
-                              {subjects.map((s: { _id: string; name: string }) => <option key={s._id} value={s._id}>{s.name}</option>)}
-                            </select>
-                            <select
-                              value={typeof slot?.teacherId === 'string' ? slot.teacherId : ''}
-                              onChange={e => setSlot(d + 1, p + 1, 'teacherId', e.target.value)}
-                              className="w-full text-xs border border-gray-200 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                            >
-                              <option value="">Teacher</option>
-                              {teachers.map((t: { _id: string; profile?: { name: string } }) => <option key={t._id} value={t._id}>{t.profile?.name ?? t._id}</option>)}
-                            </select>
-                          </div>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="flex gap-3 justify-end pt-2">
-            <button onClick={() => setEditOpen(false)} className="btn-secondary">Cancel</button>
-            <button onClick={handleSave} disabled={isPending} className="btn-primary">
-              {isPending ? 'Saving...' : 'Save Timetable'}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      </>}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
+import { useThemeStore } from '../stores/themeStore';
 import { cn, getInitials } from '../lib/utils';
 
 const NavIcon = ({ d, d2 }: { d: string; d2?: string }) => (
@@ -42,14 +43,15 @@ export default function SuperAdminLayout() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const { isDark, toggle: toggleDark } = useThemeStore();
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login', { replace: true });
+    navigate('/admin/login', { replace: true });
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-950">
+    <div className="flex h-screen overflow-hidden bg-slate-950 dark:bg-slate-900">
       {/* Dark sidebar */}
       <aside className="w-64 flex flex-col bg-navy-950 border-r border-white/6 shrink-0">
 
@@ -112,17 +114,34 @@ export default function SuperAdminLayout() {
               <p className="text-xs text-white/40">WolfStack Admin</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="w-full text-xs text-red-400 hover:text-red-300 py-2 rounded-lg border border-red-900/40 hover:bg-red-900/20 transition-colors"
-          >
-            {t('auth.logout')}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={toggleDark}
+              title={isDark ? 'Light mode' : 'Dark mode'}
+              className="shrink-0 px-2.5 py-2 text-slate-400 hover:text-white rounded-lg border border-white/15 hover:bg-navy-900 transition-colors flex items-center justify-center"
+            >
+              {isDark ? (
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              ) : (
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              )}
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex-1 text-xs text-red-400 hover:text-red-300 py-2 rounded-lg border border-red-900/40 hover:bg-red-900/20 transition-colors"
+            >
+              {t('auth.logout')}
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto bg-slate-50">
+      <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900">
         <Outlet />
       </main>
     </div>

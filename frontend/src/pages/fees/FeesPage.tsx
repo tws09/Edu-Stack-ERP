@@ -108,13 +108,13 @@ export default function FeesPage() {
 
   const paymentMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: { amount: number; method: string; transactionRef?: string } }) => feeService.recordPayment(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['challans'] }); qc.invalidateQueries({ queryKey: ['fee-summary'] }); setPayOpen(false); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['challans'] }); qc.invalidateQueries({ queryKey: ['fee-summary'] }); qc.invalidateQueries({ queryKey: ['fee-history'] }); setPayOpen(false); },
     onError: (e: { response?: { data?: { message?: string } } }) => setApiError(e?.response?.data?.message ?? 'Error'),
   });
 
   const waiverMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: { discount?: number; waiver?: number } }) => feeService.applyWaiver(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['challans'] }); setWaiverOpen(false); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['challans'] }); qc.invalidateQueries({ queryKey: ['fee-summary'] }); qc.invalidateQueries({ queryKey: ['fee-history'] }); setWaiverOpen(false); },
     onError: (e: { response?: { data?: { message?: string } } }) => setApiError(e?.response?.data?.message ?? 'Error'),
   });
 
@@ -173,10 +173,10 @@ export default function FeesPage() {
       />
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg border border-gray-200 p-1 mb-5 w-fit">
+      <div className="flex gap-1 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 mb-5 w-fit">
         {(['challans', 'structures'] as Tab[]).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={cn('px-4 py-1.5 text-sm rounded-md transition-colors capitalize', tab === t ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50')}>
+            className={cn('px-4 py-1.5 text-sm rounded-md transition-colors capitalize', tab === t ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700')}>
             {t === 'challans' ? 'Fee Challans' : 'Fee Structures'}
           </button>
         ))}
@@ -231,38 +231,38 @@ export default function FeesPage() {
           <div className="card overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Challan #</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Student</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Class</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-500">Net</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-500">Paid</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Status</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Due</th>
-                  {isAccountant && <th className="text-center px-4 py-3 font-medium text-gray-500">Actions</th>}
+                <tr className="bg-gray-50 dark:bg-slate-700/50 border-b border-gray-100 dark:border-slate-700">
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Challan #</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Student</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Class</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Net</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Paid</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Due</th>
+                  {isAccountant && <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Actions</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                 {loadingChallans && (
-                  <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400 text-sm">Loading...</td></tr>
+                  <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500 text-sm">Loading...</td></tr>
                 )}
                 {!loadingChallans && challans.length === 0 && (
-                  <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400 text-sm">No challans for this period.</td></tr>
+                  <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500 text-sm">No challans for this period.</td></tr>
                 )}
                 {challans.map(c => {
                   const student = typeof c.studentId === 'object' ? c.studentId : null;
                   const cls = typeof c.classId === 'object' ? c.classId : null;
                   const isSettled = c.status === 'paid' || c.status === 'waived';
                   return (
-                    <tr key={c._id} className={cn(c.status === 'overdue' && 'bg-red-50')}>
-                      <td className="px-4 py-3 font-mono text-xs text-gray-500">{c.challanNo}</td>
+                    <tr key={c._id} className={cn(c.status === 'overdue' ? 'bg-red-50 dark:bg-red-900/20' : '')}>
+                      <td className="px-4 py-3 font-mono text-xs text-gray-500 dark:text-slate-400">{c.challanNo}</td>
                       <td className="px-4 py-3">
-                        <p className="font-medium text-gray-900">{student?.profile.name ?? '—'}</p>
-                        <p className="text-xs text-gray-400">{student?.rollNo}</p>
+                        <p className="font-medium text-gray-900 dark:text-slate-100">{student?.profile.name ?? '—'}</p>
+                        <p className="text-xs text-gray-400 dark:text-slate-500">{student?.rollNo}</p>
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{cls?.name ?? '—'}</td>
-                      <td className="px-4 py-3 text-right font-medium">{formatCurrency(c.netAmount)}</td>
-                      <td className="px-4 py-3 text-right text-green-600">{formatCurrency(c.paidAmount)}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-slate-300">{cls?.name ?? '—'}</td>
+                      <td className="px-4 py-3 text-right font-medium dark:text-slate-200">{formatCurrency(c.netAmount)}</td>
+                      <td className="px-4 py-3 text-right text-green-600 dark:text-green-400">{formatCurrency(c.paidAmount)}</td>
                       <td className="px-4 py-3 text-center">
                         <Badge variant={STATUS_VARIANT[c.status] ?? 'default'}>{c.status}</Badge>
                       </td>
@@ -298,13 +298,13 @@ export default function FeesPage() {
           {structures.map(s => {
             const cls = typeof s.classId === 'object' ? s.classId : null;
             return (
-              <div key={s._id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
+              <div key={s._id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700/40">
                 <div>
-                  <p className="font-medium text-gray-900">{s.name}</p>
-                  <p className="text-xs text-gray-400">{cls?.name} · Due day {s.dueDay} · {s.items.length} items</p>
+                  <p className="font-medium text-gray-900 dark:text-slate-100">{s.name}</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500">{cls?.name} · Due day {s.dueDay} · {s.items.length} items</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="font-semibold text-gray-800">{formatCurrency(s.totalAmount)}</span>
+                  <span className="font-semibold text-gray-800 dark:text-slate-200">{formatCurrency(s.totalAmount)}</span>
                   {isAccountant && (
                     <button onClick={() => openEditStructure(s)} className="btn-secondary text-xs">Edit</button>
                   )}
@@ -397,8 +397,8 @@ export default function FeesPage() {
       <Modal open={payOpen} onClose={() => setPayOpen(false)} title="Record Payment" size="sm">
         <div className="space-y-4">
           {payChallan && (
-            <div className="bg-gray-50 rounded-lg p-3 text-sm">
-              <p className="text-gray-500">Outstanding: <span className="font-semibold text-gray-900">{formatCurrency(payChallan.netAmount - payChallan.paidAmount)}</span></p>
+            <div className="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-3 text-sm">
+              <p className="text-gray-500 dark:text-slate-400">Outstanding: <span className="font-semibold text-gray-900">{formatCurrency(payChallan.netAmount - payChallan.paidAmount)}</span></p>
             </div>
           )}
           {apiError && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">{apiError}</div>}
@@ -429,7 +429,7 @@ export default function FeesPage() {
       <Modal open={waiverOpen} onClose={() => setWaiverOpen(false)} title="Apply Discount / Waiver" size="sm">
         <div className="space-y-4">
           {waiverChallan && (
-            <div className="bg-gray-50 rounded-lg p-3 text-sm">
+            <div className="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-3 text-sm">
               <p className="text-gray-500">Total: <span className="font-semibold">{formatCurrency(waiverChallan.totalAmount)}</span></p>
             </div>
           )}

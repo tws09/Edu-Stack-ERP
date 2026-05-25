@@ -34,7 +34,10 @@
     "loginTitle": "Welcome to EduStack PK",
     "loginSubtitle": "Sign in to your school portal",
     "invalidCredentials": "Invalid email or password",
-    "sessionExpired": "Your session has expired. Please login again."
+    "sessionExpired": "Your session has expired. Please login again.",
+    "invalidEmail": "Please enter a valid email address.",
+    "passwordTooShort": "Password must be at least 6 characters.",
+    "mustChangePassword": "You must change your password before continuing."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -52,7 +55,10 @@
     "branches": "Branches",
     "academic": "Academic Setup",
     "sops": "SOPs & Guides",
-    "staff": "Staff"
+    "resources": "Learning Resources",
+    "staff": "Staff",
+    "examPaper": "Exam Papers",
+    "classFellows": "Class Fellows"
   },
   "dashboard": {
     "title": "Dashboard",

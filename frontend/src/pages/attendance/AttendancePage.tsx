@@ -61,14 +61,14 @@ function StudentAttendanceView() {
 
       {/* Month selector */}
       <div className="flex gap-3 mb-5">
-        <select value={month} onChange={e => setMonth(e.target.value)} className="text-sm border border-gray-200 rounded-lg px-3 py-2">
+        <select value={month} onChange={e => setMonth(e.target.value)} className="text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200">
           {Array.from({ length: 12 }, (_, i) => (
             <option key={i + 1} value={String(i + 1)}>
               {new Date(2000, i).toLocaleString('default', { month: 'long' })}
             </option>
           ))}
         </select>
-        <select value={year} onChange={e => setYear(e.target.value)} className="text-sm border border-gray-200 rounded-lg px-3 py-2">
+        <select value={year} onChange={e => setYear(e.target.value)} className="text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200">
           {[2024, 2025, 2026].map(y => <option key={y} value={String(y)}>{y}</option>)}
         </select>
       </div>
@@ -108,7 +108,7 @@ function StudentAttendanceView() {
                 {stats?.percentage ?? 0}%
               </span>
             </div>
-            <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-2.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
               <div
                 className={cn('h-full rounded-full transition-all', (stats?.percentage ?? 0) >= (stats?.threshold ?? 75) ? 'bg-green-500' : 'bg-red-500')}
                 style={{ width: `${stats?.percentage ?? 0}%` }}
@@ -122,7 +122,7 @@ function StudentAttendanceView() {
 
           {/* Calendar */}
           <div className="card p-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Daily Attendance</h3>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Daily Attendance</h3>
             <div className="grid grid-cols-7 gap-1 mb-1">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
                 <div key={d} className="text-center text-xs text-gray-400 font-medium py-1">{d}</div>
@@ -139,7 +139,7 @@ function StudentAttendanceView() {
                     title={status ?? 'No record'}
                     className={cn(
                       'aspect-square flex flex-col items-center justify-center rounded-lg text-xs font-medium relative',
-                      status ? STATUS_COLORS[status as Status] : 'bg-gray-50 text-gray-300 border border-gray-100'
+                      status ? STATUS_COLORS[status as Status] : 'bg-gray-50 dark:bg-slate-700 text-gray-300 dark:text-slate-600 border border-gray-100 dark:border-slate-600'
                     )}
                   >
                     {day}
@@ -151,15 +151,15 @@ function StudentAttendanceView() {
               })}
             </div>
             {/* Legend */}
-            <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-gray-100">
+            <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-gray-100 dark:border-slate-700">
               {Object.entries(STATUS_DOT).map(([s, dot]) => (
-                <div key={s} className="flex items-center gap-1.5 text-xs text-gray-500">
+                <div key={s} className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
                   <span className={cn('w-2 h-2 rounded-full', dot)} />
                   <span className="capitalize">{s}</span>
                 </div>
               ))}
-              <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                <span className="w-2 h-2 rounded-full bg-gray-200" />
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
+                <span className="w-2 h-2 rounded-full bg-gray-200 dark:bg-slate-600" />
                 <span>No record</span>
               </div>
             </div>
@@ -263,8 +263,8 @@ function StaffAttendanceView() {
             <input type="date" className="input" value={date} max={today} onChange={e => { setDate(e.target.value); setSubmitted(false); }} />
           </div>
           <div className="flex items-end gap-2">
-            <button onClick={() => setView('mark')} className={cn('flex-1 py-2.5 text-sm rounded-lg border transition-colors', view === 'mark' ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50')}>Mark</button>
-            <button onClick={() => setView('summary')} className={cn('flex-1 py-2.5 text-sm rounded-lg border transition-colors', view === 'summary' ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50')}>Summary</button>
+            <button onClick={() => setView('mark')} className={cn('flex-1 py-2.5 text-sm rounded-lg border transition-colors', view === 'mark' ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700')}>Mark</button>
+            <button onClick={() => setView('summary')} className={cn('flex-1 py-2.5 text-sm rounded-lg border transition-colors', view === 'summary' ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700')}>Summary</button>
           </div>
         </div>
       </div>
@@ -302,10 +302,10 @@ function StaffAttendanceView() {
             {students.map((student) => {
               const status = statuses[student._id] ?? 'present';
               return (
-                <div key={student._id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
+                <div key={student._id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700/40">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono text-gray-400 w-10">{student.rollNo}</span>
-                    <span className="text-sm font-medium text-gray-900">{student.profile.name}</span>
+                    <span className="text-xs font-mono text-gray-400 dark:text-slate-500 w-10">{student.rollNo}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-slate-100">{student.profile.name}</span>
                   </div>
                   <button
                     onClick={() => toggleStatus(student._id)}
@@ -334,12 +334,12 @@ function StaffAttendanceView() {
       {view === 'summary' && sectionId && (
         <>
           <div className="flex gap-3 mb-4">
-            <select value={summaryMonth} onChange={e => setSummaryMonth(e.target.value)} className="text-sm border border-gray-200 rounded-lg px-3 py-1.5">
+            <select value={summaryMonth} onChange={e => setSummaryMonth(e.target.value)} className="text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200">
               {Array.from({ length: 12 }, (_, i) => (
                 <option key={i + 1} value={String(i + 1)}>{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
               ))}
             </select>
-            <select value={summaryYear} onChange={e => setSummaryYear(e.target.value)} className="text-sm border border-gray-200 rounded-lg px-3 py-1.5">
+            <select value={summaryYear} onChange={e => setSummaryYear(e.target.value)} className="text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200">
               {[2024, 2025, 2026].map(y => <option key={y} value={String(y)}>{y}</option>)}
             </select>
           </div>
@@ -347,20 +347,20 @@ function StaffAttendanceView() {
           <div className="card overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Roll No</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Name</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Present</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Absent</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">%</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500">Alert</th>
+                <tr className="bg-gray-50 dark:bg-slate-700/50 border-b border-gray-100 dark:border-slate-700">
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Roll No</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Name</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Present</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Absent</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">%</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Alert</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                 {sectionSummary.map((s) => (
-                  <tr key={String(s.studentId)} className={cn(s.isShortage && 'bg-red-50')}>
-                    <td className="px-4 py-3 font-mono text-gray-500">{s.rollNo}</td>
-                    <td className="px-4 py-3 font-medium text-gray-900">{s.name}</td>
+                  <tr key={String(s.studentId)} className={cn(s.isShortage ? 'bg-red-50 dark:bg-red-900/20' : '')}>
+                    <td className="px-4 py-3 font-mono text-gray-500 dark:text-slate-400">{s.rollNo}</td>
+                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{s.name}</td>
                     <td className="px-4 py-3 text-center text-green-600">{s.present}</td>
                     <td className="px-4 py-3 text-center text-red-600">{s.absent}</td>
                     <td className="px-4 py-3 text-center font-medium">

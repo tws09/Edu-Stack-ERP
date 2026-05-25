@@ -43,25 +43,25 @@ export default function Modal({ open, onClose, title, subtitle, children, size =
 
       {/* Panel */}
       <div className={cn(
-        'relative bg-white w-full shadow-2xl flex flex-col',
+        'relative bg-white dark:bg-slate-800 w-full shadow-2xl flex flex-col',
         'rounded-t-3xl sm:rounded-2xl',
         'max-h-[92svh] sm:max-h-[85vh]',
         widths[size]
       )}>
         {/* Drag handle (mobile) */}
         <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
-          <div className="w-10 h-1 bg-gray-200 rounded-full" />
+          <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full" />
         </div>
 
         {/* Header */}
-        <div className="flex items-start justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+        <div className="flex items-start justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700 shrink-0">
           <div>
-            <h2 className="text-base font-bold text-gray-900">{title}</h2>
-            {subtitle && <p className="text-sm text-gray-400 mt-0.5">{subtitle}</p>}
+            <h2 className="text-base font-bold text-gray-900 dark:text-slate-100">{title}</h2>
+            {subtitle && <p className="text-sm text-gray-400 dark:text-slate-400 mt-0.5">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
-            className="ml-4 shrink-0 text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100 transition-colors"
+            className="ml-4 shrink-0 text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
             aria-label="Close"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -75,7 +75,7 @@ export default function Modal({ open, onClose, title, subtitle, children, size =
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl shrink-0 flex items-center justify-end gap-3">
+          <div className="px-6 py-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50 rounded-b-2xl shrink-0 flex items-center justify-end gap-3">
             {footer}
           </div>
         )}

@@ -1,15 +1,45 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
+import { useThemeStore } from '../../stores/themeStore';
+import { getOrgBranding } from '../../services/authService';
 import { cn } from '../../lib/utils';
+
+type LoginRole = 'admin' | 'teacher' | 'student';
+
+const ROLE_OPTIONS: { value: LoginRole; label: string; icon: string }[] = [
+  { value: 'admin',   label: 'Admin / Staff', icon: '🏫' },
+  { value: 'teacher', label: 'Teacher',        icon: '👨‍🏫' },
+  { value: 'student', label: 'Student',        icon: '🎓' },
+];
+
+function getDashboardPath(role?: string, slug?: string): string {
+  if (role === 'super_admin') return '/admin';
+  const prefix = slug ? `/${slug}` : '';
+  if (role === 'group_admin') return `${prefix}/group`;
+  if (role === 'teacher') return `${prefix}/teacher`;
+  if (role === 'student') return `${prefix}/student`;
+  return `${prefix}/dashboard`;
+}
 
 export default function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { slug } = useParams<{ slug?: string }>();
   const login = useAuthStore((s) => s.login);
   const user = useAuthStore((s) => s.user);
+  const { isDark, toggle } = useThemeStore();
 
+  const { data: branding } = useQuery({
+    queryKey: ['org-branding', slug],
+    queryFn: () => getOrgBranding(slug!),
+    enabled: !!slug,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const [selectedRole, setSelectedRole] = useState<LoginRole>('admin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -17,59 +47,158 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user) navigate(getDashboardPath(user.role), { replace: true });
-  }, [user, navigate]);
+    if (user) navigate(getDashboardPath(user.role, slug), { replace: true });
+  }, [user, navigate, slug]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  // Reset fields when switching roles
+  function handleRoleChange(role: LoginRole) {
+    setSelectedRole(role);
+    setEmail('');
+    setPassword('');
+    setError('');
+  }
+
+  function validate(): string | null {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return t('auth.invalidEmail');
+    if (password.length < 6) return t('auth.passwordTooShort');
+    return null;
+  }
+
+  const ADMIN_ROLES = ['group_admin', 'branch_principal', 'coordinator', 'accountant', 'it_admin'];
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const validationError = validate();
+    if (validationError) { setError(validationError); return; }
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
+      await login(email, password, slug, selectedRole as 'admin' | 'teacher' | 'student');
+
+      // Client-side guard: verify returned role matches selected tab
       const updatedUser = useAuthStore.getState().user;
-      navigate(getDashboardPath(updatedUser?.role ?? 'branch_principal'), { replace: true });
-    } catch {
-      setError(t('auth.invalidCredentials'));
+      if (updatedUser) {
+        if (selectedRole === 'teacher' && updatedUser.role !== 'teacher') {
+          setError('This account is not registered as a Teacher. Please select the correct role.');
+          await useAuthStore.getState().logout();
+          return;
+        }
+        if (selectedRole === 'admin' && !ADMIN_ROLES.includes(updatedUser.role)) {
+          setError('This account is not registered as Staff / Admin. Please select the correct role.');
+          await useAuthStore.getState().logout();
+          return;
+        }
+        if (selectedRole === 'student' && updatedUser.role !== 'student') {
+          setError('This account is not registered as a Student. Please select the correct role.');
+          await useAuthStore.getState().logout();
+          return;
+        }
+      }
+
+      navigate(getDashboardPath(updatedUser?.role, slug), { replace: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg === 'PASSWORD_CHANGE_REQUIRED') {
+        setError(t('auth.mustChangePassword'));
+      } else if (msg && msg !== 'Login failed') {
+        // Show the specific backend message (e.g. role mismatch, suspended org)
+        setError(msg);
+      } else {
+        setError(t('auth.invalidCredentials'));
+      }
     } finally {
       setLoading(false);
     }
   }
 
+  const roleLabel = ROLE_OPTIONS.find((r) => r.value === selectedRole)?.label ?? '';
+
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-emerald-950 px-4 py-12"
+      className="min-h-screen flex items-center justify-center bg-navy-950 px-4 py-12"
       style={{
         backgroundImage:
-          'radial-gradient(circle at 1px 1px, rgba(167,243,208,0.12) 1px, transparent 0)',
+          'radial-gradient(circle at 1px 1px, rgba(96,165,250,0.08) 1px, transparent 0)',
         backgroundSize: '36px 36px',
       }}
     >
+      {/* Dark mode toggle */}
+      <button
+        onClick={toggle}
+        className="fixed top-4 right-4 w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors z-50"
+        title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        {isDark ? (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M18.364 18.364l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        ) : (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        )}
+      </button>
+
       {/* Decorative blobs */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-emerald-700/20 blur-3xl" />
+        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-700/20 blur-3xl" />
         <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-amber-600/10 blur-3xl" />
       </div>
 
-      <div className="relative w-full max-w-sm">
-        {/* Brand mark */}
+      <div className="relative w-full max-w-lg">
+        {/* Brand mark — shows org logo/name if slug is present */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/30 mb-4">
-            <svg className="w-9 h-9 text-emerald-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">EduStack PK</h1>
-          <p className="text-emerald-400 text-sm mt-1 font-medium">School Management System</p>
+          {branding?.logoUrl ? (
+            <img
+              src={branding.logoUrl}
+              alt={branding.name}
+              className="h-16 w-auto object-contain mb-4 drop-shadow-lg"
+            />
+          ) : (
+            <div className="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/30 mb-4">
+              <svg className="w-9 h-9 text-navy-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+              </svg>
+            </div>
+          )}
+          <h1 className="text-2xl font-extrabold text-white tracking-tight">
+            {branding?.name ?? 'EduStack PK'}
+          </h1>
+          <p className="text-blue-300 text-sm mt-1 font-medium">
+            {branding?.welcomeMessage || 'School Management System'}
+          </p>
         </div>
 
         {/* Login card */}
         <div className="bg-white rounded-3xl shadow-2xl shadow-black/40 overflow-hidden">
-          {/* Colored top strip */}
-          <div className="h-1.5 bg-linear-to-r from-emerald-500 via-emerald-400 to-amber-400" />
+          <div className="h-1.5 bg-linear-to-r from-blue-600 via-blue-500 to-amber-400" />
 
-          <div className="px-8 py-8">
+          <div className="px-12 py-10">
             <h2 className="text-xl font-bold text-gray-900 mb-1">{t('auth.loginTitle')}</h2>
-            <p className="text-gray-400 text-sm mb-6">{t('auth.loginSubtitle')}</p>
+            <p className="text-gray-400 text-sm mb-5">{t('auth.loginSubtitle')}</p>
+
+            {/* Role selector */}
+            <div className="mb-5">
+              <label className="label mb-1.5">I am a</label>
+              <div className="grid grid-cols-3 gap-2">
+                {ROLE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => handleRoleChange(opt.value)}
+                    className={cn(
+                      'flex flex-col items-center gap-1 rounded-xl border-2 py-2.5 px-1 text-xs font-semibold transition-all duration-150',
+                      selectedRole === opt.value
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'
+                    )}
+                  >
+                    <span className="text-lg leading-none">{opt.icon}</span>
+                    <span>{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
@@ -81,6 +210,7 @@ export default function LoginPage() {
                 </div>
               )}
 
+              {/* Email field — all roles */}
               <div>
                 <label className="label">{t('auth.email')}</label>
                 <div className="relative">
@@ -101,6 +231,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {/* Password */}
               <div>
                 <label className="label">{t('auth.password')}</label>
                 <div className="relative">
@@ -143,11 +274,11 @@ export default function LoginPage() {
                 disabled={loading}
                 className={cn(
                   'w-full rounded-xl py-3 text-sm font-bold text-white mt-2',
-                  'bg-linear-to-r from-emerald-600 to-emerald-500',
-                  'hover:from-emerald-700 hover:to-emerald-600',
-                  'focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2',
+                  'bg-linear-to-r from-blue-600 to-blue-500',
+                  'hover:from-blue-700 hover:to-blue-600',
+                  'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
                   'disabled:opacity-60 disabled:cursor-not-allowed',
-                  'shadow-lg shadow-emerald-500/25 transition-all duration-150',
+                  'shadow-lg shadow-blue-500/25 transition-all duration-150',
                   'flex items-center justify-center gap-2'
                 )}
               >
@@ -161,7 +292,7 @@ export default function LoginPage() {
                   </>
                 ) : (
                   <>
-                    {t('auth.login')}
+                    Login as {roleLabel}
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
@@ -171,26 +302,20 @@ export default function LoginPage() {
             </form>
           </div>
 
-          <div className="bg-gray-50 border-t border-gray-100 px-8 py-4 text-center">
+          <div className="bg-gray-50 border-t border-gray-100 px-12 py-4 text-center">
             <p className="text-sm text-gray-500">
               Don't have an account?{' '}
-              <Link to="/register" className="text-emerald-600 font-semibold hover:text-emerald-700 transition-colors">
+              <Link to="/register" className="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
                 Register your school →
               </Link>
             </p>
           </div>
         </div>
 
-        <p className="text-center text-xs text-emerald-700 mt-6">
+        <p className="text-center text-xs text-blue-400/60 mt-6">
           EduStack PK &copy; {new Date().getFullYear()} — WolfStack
         </p>
       </div>
     </div>
   );
-}
-
-function getDashboardPath(role?: string): string {
-  if (role === 'super_admin') return '/admin';
-  if (role === 'group_admin') return '/group';
-  return '/dashboard';
 }

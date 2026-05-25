@@ -10,14 +10,13 @@ export interface ActiveBranch {
 
 interface AuthState {
   user: AuthUser | null;
-  accessToken: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
   activeBranch: ActiveBranch | null;
-  login: (email: string, password: string) => Promise<void>;
+  orgSlug: string | null;
+  login: (email: string, password: string, slug?: string, loginAs?: 'admin' | 'teacher' | 'student') => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: AuthUser) => void;
-  setSession: (user: AuthUser, accessToken: string, refreshToken: string) => void;
+  setSession: (user: AuthUser, slug?: string) => void;
   setActiveBranch: (branch: ActiveBranch | null) => void;
 }
 
@@ -25,31 +24,24 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      accessToken: null,
-      refreshToken: null,
       isAuthenticated: false,
       activeBranch: null,
+      orgSlug: null,
 
-      login: async (email, password) => {
-        const { user, accessToken, refreshToken } = await apiLogin(email, password);
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-        set({ user, accessToken, refreshToken, isAuthenticated: true });
+      login: async (email, password, slug, loginAs) => {
+        const { user } = await apiLogin(email, password, slug, loginAs);
+        set({ user, isAuthenticated: true, orgSlug: slug ?? null });
       },
 
       logout: async () => {
         await apiLogout();
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false, activeBranch: null });
+        set({ user: null, isAuthenticated: false, activeBranch: null, orgSlug: null });
       },
 
       setUser: (user) => set({ user }),
 
-      setSession: (user, accessToken, refreshToken) => {
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-        set({ user, accessToken, refreshToken, isAuthenticated: true });
+      setSession: (user, slug) => {
+        set({ user, isAuthenticated: true, orgSlug: slug ?? null });
       },
 
       setActiveBranch: (branch) => set({ activeBranch: branch }),
@@ -58,9 +50,8 @@ export const useAuthStore = create<AuthState>()(
       name: 'edustack_auth',
       partialize: (state) => ({
         user: state.user,
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
+        orgSlug: state.orgSlug,
       }),
     }
   )
