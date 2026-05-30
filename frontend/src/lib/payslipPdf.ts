@@ -106,7 +106,7 @@ export function downloadPayslipPdf(payroll: PayrollDoc, orgName: string): void {
   // Earnings
   drawSection('EARNINGS', [
     { label: 'Basic Salary', amount: payroll.basicSalary },
-    ...payroll.allowances,
+    ...payroll.allowances.map(a => ({ label: a.name, amount: a.amount })),
   ], GREEN);
 
   // Deductions
