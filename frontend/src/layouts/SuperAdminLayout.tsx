@@ -83,7 +83,7 @@ export default function SuperAdminLayout() {
             <NavLink
               key={item.path}
               to={item.path}
-              end={item.path === '/admin'}
+              end={item.path === '/'}
               className={({ isActive }) =>
                 cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',

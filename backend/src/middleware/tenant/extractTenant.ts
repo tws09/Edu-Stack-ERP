@@ -24,8 +24,8 @@ export async function extractTenant(
   const host = req.hostname;
   const baseDomain = env.baseDomain;
 
-  // app.edustack.pk — Super Admin; skip tenant extraction
-  if (host === `app.${baseDomain}` || host === 'localhost') {
+  // admin.tws.enterprises — Super Admin; skip tenant extraction
+  if (host === `admin.${baseDomain}` || host === 'localhost') {
     // Still check for X-Org-Slug header (mobile requests on localhost dev)
     const headerSlug = req.headers['x-org-slug'] as string | undefined;
     if (headerSlug) {
