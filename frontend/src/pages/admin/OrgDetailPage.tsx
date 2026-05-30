@@ -65,7 +65,7 @@ export default function OrgDetailPage() {
     <div className="p-6 max-w-3xl mx-auto">
       {/* Back + header */}
       <button
-        onClick={() => navigate('/admin/organizations')}
+        onClick={() => navigate('/organizations')}
         className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 mb-6 transition-colors"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -83,7 +83,7 @@ export default function OrgDetailPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">{org.name}</h1>
-              <p className="text-sm text-gray-400 dark:text-slate-500 mt-0.5">{org.slug}.edustack.pk</p>
+              <p className="text-sm text-gray-400 dark:text-slate-500 mt-0.5">{org.slug}.tws.enterprises</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -191,7 +191,7 @@ export default function OrgDetailPage() {
           {[
             { label: 'Contact Email', value: org.contactEmail },
             { label: 'Contact Phone', value: org.contactPhone ?? '—' },
-            { label: 'Slug', value: `${org.slug}.edustack.pk` },
+            { label: 'Slug', value: `${org.slug}.tws.enterprises` },
             { label: 'Trial Ends', value: org.trialEndsAt ? formatDate(org.trialEndsAt) : '—' },
           ].map(({ label, value }) => (
             <div key={label} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-slate-700/50 last:border-0">

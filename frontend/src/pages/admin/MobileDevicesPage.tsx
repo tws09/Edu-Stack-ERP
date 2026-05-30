@@ -293,7 +293,7 @@ export default function MobileDevicesPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400 dark:text-slate-500">{selectedOrg.slug}.edustack.pk</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500">{selectedOrg.slug}.tws.enterprises</p>
                   </div>
                 </div>
 

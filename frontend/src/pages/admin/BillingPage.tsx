@@ -105,7 +105,7 @@ export default function BillingPage() {
                 <tr key={m._id} className="hover:bg-gray-50 dark:hover:bg-slate-700/40">
                   <td className="px-4 py-3">
                     <p className="font-medium text-gray-900 dark:text-slate-100">{org?.name ?? m.orgId}</p>
-                    {org && <p className="text-xs text-gray-400 dark:text-slate-500">{org.slug}.edustack.pk</p>}
+                    {org && <p className="text-xs text-gray-400 dark:text-slate-500">{org.slug}.tws.enterprises</p>}
                   </td>
                   <td className="px-4 py-3 text-gray-600 dark:text-slate-400 capitalize">{m.plan}</td>
                   <td className="px-4 py-3 text-center text-gray-600 dark:text-slate-400">{m.activeStudents}</td>

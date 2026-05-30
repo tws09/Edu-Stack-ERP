@@ -52,16 +52,7 @@ api.interceptors.response.use(
     } catch (refreshErr) {
       processQueue(refreshErr as Error);
       localStorage.removeItem('edustack_auth');
-      // Redirect to the correct login page based on current URL
-      const path = window.location.pathname;
-      const isAdminArea = path.startsWith('/admin');
-      const slugMatch = path.match(/^\/([^/]+)\//);
-      const slug = !isAdminArea && slugMatch ? slugMatch[1] : null;
-      window.location.href = isAdminArea
-        ? '/admin/login'
-        : slug
-          ? `/${slug}/login`
-          : '/register';
+      window.location.href = '/login';
       return Promise.reject(refreshErr);
     } finally {
       isRefreshing = false;

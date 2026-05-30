@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link, useParams } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
 import { useThemeStore } from '../../stores/themeStore';
 import { getOrgBranding } from '../../services/authService';
+import { getOrgSlug } from '../../utils/tenant';
 import { cn } from '../../lib/utils';
 
 type LoginRole = 'admin' | 'teacher' | 'student';
@@ -15,19 +16,18 @@ const ROLE_OPTIONS: { value: LoginRole; label: string; icon: string }[] = [
   { value: 'student', label: 'Student',        icon: '🎓' },
 ];
 
-function getDashboardPath(role?: string, slug?: string): string {
-  if (role === 'super_admin') return '/admin';
-  const prefix = slug ? `/${slug}` : '';
-  if (role === 'group_admin') return `${prefix}/group`;
-  if (role === 'teacher') return `${prefix}/teacher`;
-  if (role === 'student') return `${prefix}/student`;
-  return `${prefix}/dashboard`;
+function getDashboardPath(role?: string): string {
+  if (role === 'super_admin') return '/';
+  if (role === 'group_admin') return '/group';
+  if (role === 'teacher')     return '/teacher';
+  if (role === 'student')     return '/student';
+  return '/dashboard';
 }
 
 export default function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { slug } = useParams<{ slug?: string }>();
+  const slug = getOrgSlug();
   const login = useAuthStore((s) => s.login);
   const user = useAuthStore((s) => s.user);
   const { isDark, toggle } = useThemeStore();
@@ -47,8 +47,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user) navigate(getDashboardPath(user.role, slug), { replace: true });
-  }, [user, navigate, slug]);
+    if (user) navigate(getDashboardPath(user.role), { replace: true });
+  }, [user, navigate]);
 
   // Reset fields when switching roles
   function handleRoleChange(role: LoginRole) {
@@ -95,7 +95,7 @@ export default function LoginPage() {
         }
       }
 
-      navigate(getDashboardPath(updatedUser?.role, slug), { replace: true });
+      navigate(getDashboardPath(updatedUser?.role), { replace: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : '';
       if (msg === 'PASSWORD_CHANGE_REQUIRED') {

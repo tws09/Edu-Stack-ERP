@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts';
@@ -119,8 +119,7 @@ interface ClassSection {
 export default function TeacherDashboard() {
   const { isDark } = useThemeStore();
   const user = useAuthStore(s => s.user);
-  const { slug } = useParams<{ slug?: string }>();
-  const base = slug ? `/${slug}/teacher` : '';
+  const base = '/teacher';
 
   /* ─── Academic year ─── */
   const { data: years = [] } = useQuery({

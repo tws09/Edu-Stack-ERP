@@ -17,8 +17,8 @@ export default function SuperAdminLoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user?.role === 'super_admin') navigate('/admin', { replace: true });
-    else if (user) navigate('/', { replace: true });
+    if (user?.role === 'super_admin') navigate('/', { replace: true });
+    else if (user) navigate('/login', { replace: true });
   }, [user, navigate]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -33,7 +33,7 @@ export default function SuperAdminLoginPage() {
         await useAuthStore.getState().logout();
         return;
       }
-      navigate('/admin', { replace: true });
+      navigate('/', { replace: true });
     } catch {
       setError('Invalid credentials.');
     } finally {

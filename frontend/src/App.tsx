@@ -4,6 +4,7 @@ import { Suspense, useEffect } from 'react';
 import './i18n';
 import { useThemeStore } from './stores/themeStore';
 import { useAuthStore } from './stores/authStore';
+import { getOrgSlug, isAdminDomain } from './utils/tenant';
 
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import AppLayout from './layouts/AppLayout';
@@ -60,16 +61,180 @@ function PageLoader() {
   );
 }
 
-function RootRedirect() {
-  const { isAuthenticated, user, orgSlug } = useAuthStore();
-  if (!isAuthenticated || !user) return <Navigate to="/register" replace />;
-  if (user.role === 'super_admin') return <Navigate to="/admin" replace />;
-  if (!orgSlug) return <Navigate to="/register" replace />;
-  if (user.role === 'group_admin') return <Navigate to={`/${orgSlug}/group`} replace />;
-  if (user.role === 'coordinator') return <Navigate to={`/${orgSlug}/coordinator`} replace />;
-  if (user.role === 'teacher') return <Navigate to={`/${orgSlug}/teacher`} replace />;
-  if (user.role === 'student') return <Navigate to={`/${orgSlug}/student`} replace />;
-  return <Navigate to={`/${orgSlug}/dashboard`} replace />;
+// ── admin.tws.enterprises ─────────────────────────────────
+function AdminRouter() {
+  return (
+    <Routes>
+      <Route path="/login" element={<SuperAdminLoginPage />} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <SuperAdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<SuperAdminDashboard />} />
+        <Route path="organizations" element={<OrganizationsPage />} />
+        <Route path="organizations/:id" element={<OrgDetailPage />} />
+        <Route path="billing" element={<BillingPage />} />
+        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="mobile-devices" element={<MobileDevicesPage />} />
+        <Route path="settings" element={<AdminSettingsPage />} />
+      </Route>
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
+}
+
+// ── beaconhouse.tws.enterprises (any school subdomain) ────
+function TenantRedirect() {
+  const { isAuthenticated, user } = useAuthStore();
+  if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
+  if (user.role === 'group_admin')  return <Navigate to="/group" replace />;
+  if (user.role === 'coordinator')  return <Navigate to="/coordinator" replace />;
+  if (user.role === 'teacher')      return <Navigate to="/teacher" replace />;
+  if (user.role === 'student')      return <Navigate to="/student" replace />;
+  return <Navigate to="/dashboard" replace />;
+}
+
+function TenantRouter() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Branch-level staff */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={['branch_principal', 'accountant', 'it_admin']}>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<BranchDashboard />} />
+        <Route path="students"       element={<StudentsPage />} />
+        <Route path="attendance"     element={<AttendancePage />} />
+        <Route path="timetable"      element={<TimetablePage />} />
+        <Route path="timetable/edit" element={<TimetableEditPage />} />
+        <Route path="exams"          element={<ExamsPage />} />
+        <Route path="assignments"    element={<AssignmentsPage />} />
+        <Route path="academic"       element={<AcademicSetupPage />} />
+        <Route path="fees"           element={<FeesPage />} />
+        <Route path="payroll"        element={<PayrollPage />} />
+        <Route path="notifications"  element={<NotificationsPage />} />
+        <Route path="sops"           element={<SopsPage />} />
+        <Route path="resources"      element={<ResourcesPage />} />
+        <Route path="exam-paper"     element={<ExamPaperPage />} />
+        <Route path="settings"       element={<SettingsPage />} />
+        <Route path="staff"          element={<StaffPage />} />
+      </Route>
+
+      {/* Coordinator */}
+      <Route
+        path="/coordinator"
+        element={
+          <ProtectedRoute allowedRoles={['coordinator']}>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<BranchDashboard />} />
+        <Route path="students"      element={<StudentsPage />} />
+        <Route path="attendance"    element={<AttendancePage />} />
+        <Route path="timetable"     element={<TimetablePage />} />
+        <Route path="exams"         element={<ExamsPage />} />
+        <Route path="exam-paper"    element={<ExamPaperPage />} />
+        <Route path="assignments"   element={<AssignmentsPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
+      </Route>
+
+      {/* Teacher */}
+      <Route
+        path="/teacher"
+        element={
+          <ProtectedRoute allowedRoles={['teacher']}>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<TeacherDashboard />} />
+        <Route path="attendance"    element={<AttendancePage />} />
+        <Route path="timetable"     element={<TimetablePage />} />
+        <Route path="exams"         element={<ExamsPage />} />
+        <Route path="assignments"   element={<AssignmentsPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="exam-paper"    element={<ExamPaperPage />} />
+        <Route path="resources"     element={<ResourcesPage />} />
+        <Route path="sops"          element={<SopsPage />} />
+        <Route path="fees"          element={<FeesPage />} />
+        <Route path="payroll"       element={<PayrollPage />} />
+      </Route>
+
+      {/* Student */}
+      <Route
+        path="/student"
+        element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<StudentDashboard />} />
+        <Route path="class-fellows"  element={<ClassFellowsPage />} />
+        <Route path="timetable"      element={<TimetablePage />} />
+        <Route path="exams"          element={<ExamsPage />} />
+        <Route path="assignments"    element={<AssignmentsPage />} />
+        <Route path="notifications"  element={<NotificationsPage />} />
+        <Route path="fees"           element={<FeesPage />} />
+        <Route path="resources"      element={<ResourcesPage />} />
+        <Route path="sops"           element={<SopsPage />} />
+      </Route>
+
+      {/* Group admin */}
+      <Route
+        path="/group"
+        element={
+          <ProtectedRoute allowedRoles={['group_admin']}>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<BranchDashboard />} />
+        <Route path="branches"       element={<BranchesPage />} />
+        <Route path="staff"          element={<StaffPage />} />
+        <Route path="students"       element={<StudentsPage />} />
+        <Route path="attendance"     element={<AttendancePage />} />
+        <Route path="timetable"      element={<TimetablePage />} />
+        <Route path="timetable/edit" element={<TimetableEditPage />} />
+        <Route path="exams"          element={<ExamsPage />} />
+        <Route path="assignments"    element={<AssignmentsPage />} />
+        <Route path="academic"       element={<AcademicSetupPage />} />
+        <Route path="fees"           element={<FeesPage />} />
+        <Route path="payroll"        element={<PayrollPage />} />
+        <Route path="notifications"  element={<NotificationsPage />} />
+        <Route path="sops"           element={<SopsPage />} />
+        <Route path="resources"      element={<ResourcesPage />} />
+        <Route path="exam-paper"     element={<ExamPaperPage />} />
+        <Route path="settings"       element={<GroupSettingsPage />} />
+        <Route path="roles"          element={<RolesHierarchyPage />} />
+      </Route>
+
+      <Route path="/" element={<TenantRedirect />} />
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
+}
+
+// ── tws.enterprises (root domain — registration) ─────────
+function PublicRouter() {
+  return (
+    <Routes>
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/" element={<Navigate to="/register" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
 }
 
 export default function App() {
@@ -78,157 +243,14 @@ export default function App() {
     document.documentElement.classList.toggle('dark', isDark);
   }, [isDark]);
 
+  const admin = isAdminDomain();
+  const slug  = getOrgSlug();
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Suspense fallback={<PageLoader />}>
-          <Routes>
-            {/* ── Global public ──────────────────────────── */}
-            <Route path="/admin/login" element={<SuperAdminLoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-
-            {/* ── Super Admin (no org slug) ──────────────── */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute allowedRoles={['super_admin']}>
-                  <SuperAdminLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<SuperAdminDashboard />} />
-              <Route path="organizations" element={<OrganizationsPage />} />
-              <Route path="organizations/:id" element={<OrgDetailPage />} />
-              <Route path="billing" element={<BillingPage />} />
-              <Route path="users" element={<AdminUsersPage />} />
-              <Route path="mobile-devices" element={<MobileDevicesPage />} />
-              <Route path="settings" element={<AdminSettingsPage />} />
-            </Route>
-
-            {/* ── Org-scoped routes (all under /:slug) ───── */}
-            <Route path="/:slug/login" element={<LoginPage />} />
-
-            {/* Branch-level staff */}
-            <Route
-              path="/:slug/dashboard"
-              element={
-                <ProtectedRoute allowedRoles={['branch_principal', 'accountant', 'it_admin']}>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<BranchDashboard />} />
-              <Route path="students" element={<StudentsPage />} />
-              <Route path="attendance" element={<AttendancePage />} />
-              <Route path="timetable" element={<TimetablePage />} />
-              <Route path="timetable/edit" element={<TimetableEditPage />} />
-              <Route path="exams" element={<ExamsPage />} />
-              <Route path="assignments" element={<AssignmentsPage />} />
-              <Route path="academic" element={<AcademicSetupPage />} />
-              <Route path="fees" element={<FeesPage />} />
-              <Route path="payroll" element={<PayrollPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="sops" element={<SopsPage />} />
-              <Route path="resources" element={<ResourcesPage />} />
-              <Route path="exam-paper" element={<ExamPaperPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="staff" element={<StaffPage />} />
-            </Route>
-
-            {/* Coordinator */}
-            <Route
-              path="/:slug/coordinator"
-              element={
-                <ProtectedRoute allowedRoles={['coordinator']}>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<BranchDashboard />} />
-              <Route path="students" element={<StudentsPage />} />
-              <Route path="attendance" element={<AttendancePage />} />
-              <Route path="timetable" element={<TimetablePage />} />
-              <Route path="exams" element={<ExamsPage />} />
-              <Route path="exam-paper" element={<ExamPaperPage />} />
-              <Route path="assignments" element={<AssignmentsPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
-            </Route>
-
-            {/* Teacher */}
-            <Route
-              path="/:slug/teacher"
-              element={
-                <ProtectedRoute allowedRoles={['teacher']}>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<TeacherDashboard />} />
-              <Route path="attendance" element={<AttendancePage />} />
-              <Route path="timetable" element={<TimetablePage />} />
-              <Route path="exams" element={<ExamsPage />} />
-              <Route path="assignments" element={<AssignmentsPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="exam-paper" element={<ExamPaperPage />} />
-              <Route path="resources" element={<ResourcesPage />} />
-              <Route path="sops" element={<SopsPage />} />
-              <Route path="fees" element={<FeesPage />} />
-              <Route path="payroll" element={<PayrollPage />} />
-            </Route>
-
-            {/* Student */}
-            <Route
-              path="/:slug/student"
-              element={
-                <ProtectedRoute allowedRoles={['student']}>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<StudentDashboard />} />
-              <Route path="class-fellows" element={<ClassFellowsPage />} />
-              <Route path="timetable" element={<TimetablePage />} />
-              <Route path="exams" element={<ExamsPage />} />
-              <Route path="assignments" element={<AssignmentsPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="fees" element={<FeesPage />} />
-              <Route path="resources" element={<ResourcesPage />} />
-              <Route path="sops" element={<SopsPage />} />
-            </Route>
-
-            {/* Group admin */}
-            <Route
-              path="/:slug/group"
-              element={
-                <ProtectedRoute allowedRoles={['group_admin']}>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<BranchDashboard />} />
-              <Route path="branches" element={<BranchesPage />} />
-              <Route path="staff" element={<StaffPage />} />
-              <Route path="students" element={<StudentsPage />} />
-              <Route path="attendance" element={<AttendancePage />} />
-              <Route path="timetable" element={<TimetablePage />} />
-              <Route path="timetable/edit" element={<TimetableEditPage />} />
-              <Route path="exams" element={<ExamsPage />} />
-              <Route path="assignments" element={<AssignmentsPage />} />
-              <Route path="academic" element={<AcademicSetupPage />} />
-              <Route path="fees" element={<FeesPage />} />
-              <Route path="payroll" element={<PayrollPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="sops" element={<SopsPage />} />
-              <Route path="resources" element={<ResourcesPage />} />
-              <Route path="exam-paper" element={<ExamPaperPage />} />
-              <Route path="settings" element={<GroupSettingsPage />} />
-              <Route path="roles" element={<RolesHierarchyPage />} />
-            </Route>
-
-            {/* ── Catch-all ──────────────────────────────── */}
-            <Route path="/" element={<RootRedirect />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+          {admin ? <AdminRouter /> : slug ? <TenantRouter /> : <PublicRouter />}
         </Suspense>
       </BrowserRouter>
     </QueryClientProvider>

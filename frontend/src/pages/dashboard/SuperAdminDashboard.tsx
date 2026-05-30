@@ -105,7 +105,7 @@ export default function SuperAdminDashboard() {
           </p>
         </div>
         <Link
-          to="/admin/organizations"
+          to="/organizations"
           className="btn-primary"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -168,7 +168,7 @@ export default function SuperAdminDashboard() {
             <h2 className="font-bold text-gray-900 dark:text-slate-100">Organizations</h2>
             <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{orgs.length} total registered</p>
           </div>
-          <Link to="/admin/organizations" className="text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+          <Link to="/organizations" className="text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
             View all →
           </Link>
         </div>
@@ -188,7 +188,7 @@ export default function SuperAdminDashboard() {
             </div>
             <p className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">No organizations yet</p>
             <p className="text-xs text-gray-400 dark:text-slate-500 mb-4">Add your first school to get started</p>
-            <Link to="/admin/organizations" className="btn-primary text-xs px-4 py-2">
+            <Link to="/organizations" className="btn-primary text-xs px-4 py-2">
               Add Organization
             </Link>
           </div>
@@ -207,7 +207,7 @@ export default function SuperAdminDashboard() {
                 {/* Org info */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900 dark:text-slate-100 truncate">{org.name}</p>
-                  <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{org.slug}.edustack.pk</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{org.slug}.tws.enterprises</p>
                 </div>
 
                 {/* Students */}
@@ -230,7 +230,7 @@ export default function SuperAdminDashboard() {
 
                 {/* Action */}
                 <Link
-                  to={`/admin/organizations/${org._id}`}
+                  to={`/organizations/${org._id}`}
                   className="hidden group-hover:flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors shrink-0"
                 >
                   Manage

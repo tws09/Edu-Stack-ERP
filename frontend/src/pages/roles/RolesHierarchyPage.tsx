@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
 import api from '../../services/api';
 import { roleLabel, getInitials, cn } from '../../lib/utils';
 import type { UserRole } from '../../types';
@@ -231,7 +230,6 @@ const AVATAR_COLORS: Record<string, string> = {
 
 // ── Main page ─────────────────────────────────────────────────────────
 export default function RolesHierarchyPage() {
-  useParams<{ slug: string }>();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState<string>('');

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts';
@@ -99,8 +99,7 @@ function EmptyState({ message }: { message: string }) {
 export default function StudentDashboard() {
   const { isDark } = useThemeStore();
   const user = useAuthStore(s => s.user);
-  const { slug } = useParams<{ slug?: string }>();
-  const base = slug ? `/${slug}/student` : '';
+  const base = '/student';
 
   /* ─── Data fetching ─── */
 

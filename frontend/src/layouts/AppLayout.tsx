@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, useNavigate, Outlet, Link, useParams } from 'react-router-dom';
+import { NavLink, useNavigate, Outlet, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
@@ -138,14 +138,12 @@ export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const { slug } = useParams<{ slug?: string }>();
-  const prefix = slug ? `/${slug}` : '';
   const base = (() => {
-    if (user?.role === 'group_admin') return `${prefix}/group`;
-    if (user?.role === 'coordinator') return `${prefix}/coordinator`;
-    if (user?.role === 'teacher') return `${prefix}/teacher`;
-    if (user?.role === 'student') return `${prefix}/student`;
-    return `${prefix}/dashboard`;
+    if (user?.role === 'group_admin') return '/group';
+    if (user?.role === 'coordinator') return '/coordinator';
+    if (user?.role === 'teacher')     return '/teacher';
+    if (user?.role === 'student')     return '/student';
+    return '/dashboard';
   })();
 
   useSocket();
@@ -162,7 +160,7 @@ export default function AppLayout() {
 
   const handleLogout = async () => {
     await logout();
-    navigate(slug ? `/${slug}/login` : '/register', { replace: true });
+    navigate('/login', { replace: true });
   };
 
   const toggleLang = () => setLanguage(i18n.language === 'en' ? 'ur' : 'en');

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
 import { useThemeStore } from '../../stores/themeStore';
+import { schoolUrl, adminLoginUrl } from '../../utils/tenant';
 import type { AuthUser } from '../../types';
 import { cn } from '../../lib/utils';
 
@@ -29,7 +30,6 @@ function autoSlug(name: string) {
 }
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
   const setSession = useAuthStore(s => s.setSession);
   const { isDark, toggle } = useThemeStore();
 
@@ -91,7 +91,7 @@ export default function RegisterPage() {
       });
 
       setSession(data.data.user as AuthUser, form.slug);
-      navigate(`/${form.slug}/group`, { replace: true });
+      window.location.href = schoolUrl(form.slug, '/group');
     } catch (err: any) {
       const msg = err?.response?.data?.message
         ?? err?.response?.data?.errors?.[0]?.msg
@@ -181,7 +181,7 @@ export default function RegisterPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Your URL *</label>
                 <div className="flex rounded-lg border border-gray-300 dark:border-slate-600 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
-                  <span className="bg-gray-50 dark:bg-slate-700/50 px-3.5 py-2.5 text-sm text-gray-400 dark:text-slate-500 border-r border-gray-300 dark:border-slate-600 whitespace-nowrap">edustack.pk/</span>
+                  <span className="bg-gray-50 dark:bg-slate-700/50 px-3.5 py-2.5 text-sm text-gray-400 dark:text-slate-500 border-r border-gray-300 dark:border-slate-600 whitespace-nowrap">tws.enterprises/</span>
                   <input
                     className="flex-1 px-3 py-2.5 text-sm focus:outline-none font-mono dark:bg-slate-700 dark:text-slate-100"
                     placeholder="your-school"
@@ -311,7 +311,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-gray-500 dark:text-slate-400 mt-6">
           Already have an account?{' '}
-          <Link to="/admin/login" className="text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300">Sign in</Link>
+          <a href={adminLoginUrl()} className="text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300">Sign in</a>
         </p>
 
         <p className="text-center text-xs text-gray-400 dark:text-slate-500 mt-3">
