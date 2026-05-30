@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
 import { QRCodeCanvas } from 'qrcode.react';
 import api from '../../services/api';
 import type { Organization, ApiResponse } from '../../types';
@@ -39,17 +38,22 @@ export default function GroupSettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setLogoError('');
+    if (file.size > 2 * 1024 * 1024) {
+      setLogoError('Image must be under 2 MB.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
     setLogoUploading(true);
     try {
-      const { data } = await api.post<{ success: boolean; data: { uploadUrl: string; publicUrl: string } }>(
-        `/organizations/${user!.orgId}/upload-logo`,
-        { filename: file.name, contentType: file.type }
-      );
-      if (!data.success) throw new Error('Failed to get upload URL');
-      await axios.put(data.data.uploadUrl, file, { headers: { 'Content-Type': file.type } });
-      setBrand(b => ({ ...b, logoUrl: data.data.publicUrl }));
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      setBrand(b => ({ ...b, logoUrl: base64 }));
     } catch {
-      setLogoError('Upload failed. Please try again.');
+      setLogoError('Failed to read image. Please try again.');
     } finally {
       setLogoUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -236,7 +240,7 @@ export default function GroupSettingsPage() {
           >
             <div>
               <h2 className="font-semibold text-gray-900 dark:text-slate-100 text-sm">Login Page Branding</h2>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Customise what students and staff see on your login page at <span className="font-mono">/your-slug/login</span></p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Customise what students and staff see on your school's login page.</p>
             </div>
 
             {brandSaved && (
