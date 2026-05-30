@@ -73,7 +73,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await login(email, password, slug, selectedRole as 'admin' | 'teacher' | 'student');
+      await login(email, password, slug ?? undefined, selectedRole as 'admin' | 'teacher' | 'student');
 
       // Client-side guard: verify returned role matches selected tab
       const updatedUser = useAuthStore.getState().user;
