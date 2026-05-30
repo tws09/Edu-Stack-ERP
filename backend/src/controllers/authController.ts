@@ -103,14 +103,40 @@ export async function login(req: Request, res: Response): Promise<void> {
     user.lastLoginAt = new Date();
     await user.save();
 
-    const tokens = generateTokens({
-      userId: user.id,
-      role: user.role,
-      orgId: user.orgId?.toString(),
-      branchId: user.branchId?.toString(),
-    });
+    const isMobile = req.headers['x-client-type'] === 'mobile';
+
+    const tokens = generateTokens(
+      {
+        userId: user.id,
+        role: user.role,
+        orgId: user.orgId?.toString(),
+        branchId: user.branchId?.toString(),
+      },
+      isMobile ? '30d' : undefined,
+    );
 
     await storeRefreshToken(user.id, tokens.refreshToken);
+
+    if (isMobile) {
+      // Mobile: return tokens in JSON body (Flutter stores in SecureStorage)
+      res.json({
+        success: true,
+        data: {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            orgId: user.orgId,
+            branchId: user.branchId,
+            profilePhotoUrl: user.profilePhotoUrl,
+          },
+        },
+      });
+      return;
+    }
 
     res.cookie('accessToken', tokens.accessToken, ACCESS_COOKIE_OPTS);
     res.cookie('refreshToken', tokens.refreshToken, REFRESH_COOKIE_OPTS);
@@ -148,7 +174,7 @@ export async function logout(req: Request, res: Response): Promise<void> {
 }
 
 export async function refresh(req: Request, res: Response): Promise<void> {
-  // Accept token from cookie or body (for backward compat during migration)
+  // Accept token from cookie (web) or body (mobile)
   const refreshToken =
     (req.cookies as Record<string, string> | undefined)?.refreshToken ??
     req.body?.refreshToken;
@@ -158,15 +184,27 @@ export async function refresh(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const result = await rotateRefreshToken(refreshToken);
+  const isMobile = req.headers['x-client-type'] === 'mobile';
+  const result = await rotateRefreshToken(refreshToken, isMobile ? '30d' : undefined);
   if (!result) {
     res.status(401).json({ success: false, message: 'Invalid or expired refresh token' });
     return;
   }
 
+  if (isMobile) {
+    res.json({
+      success: true,
+      data: {
+        accessToken: result.tokens.accessToken,
+        refreshToken: result.tokens.refreshToken,
+        user: { id: result.user._id.toString(), role: result.user.role },
+      },
+    });
+    return;
+  }
+
   res.cookie('accessToken', result.tokens.accessToken, ACCESS_COOKIE_OPTS);
   res.cookie('refreshToken', result.tokens.refreshToken, REFRESH_COOKIE_OPTS);
-
   res.json({ success: true, data: { user: { id: result.user._id.toString(), role: result.user.role } } });
 }
 

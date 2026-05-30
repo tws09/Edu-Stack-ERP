@@ -6,6 +6,8 @@ import { FeeStructure } from '../models/FeeStructure';
 import { Challan } from '../models/Challan';
 import { Student } from '../models/Student';
 import { AppError } from '../utils/errorHandler';
+import { initiateJazzCash, initiateEasypaisa } from '../services/paymentGatewayService';
+import { env } from '../config/env';
 
 export const createFeeStructureValidators = [
   body('name').trim().notEmpty().withMessage('Name is required'),
@@ -212,6 +214,52 @@ export async function applyWaiver(req: Request, res: Response, next: NextFunctio
 
     await challan.save();
     res.json({ success: true, data: challan });
+  } catch (err) { next(err); }
+}
+
+// ─── Online Payments ───────────────────────────────────────────────────────
+
+export const initiateOnlinePaymentValidators = [
+  body('mobileNumber').trim().matches(/^03\d{9}$/).withMessage('Mobile number must be 11-digit Pakistani format (03xxxxxxxxx)'),
+  body('gateway').isIn(['jazzcash', 'easypaisa']).withMessage('Invalid gateway'),
+  body('cnic').optional().trim(),
+];
+
+export async function initiateOnlinePayment(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) { res.status(422).json({ success: false, errors: errors.array() }); return; }
+
+    const { mobileNumber, gateway, cnic } = req.body;
+    const challan = await Challan.findOne({ _id: req.params['id'], orgId: req.orgId }).lean();
+    if (!challan) throw new AppError('Challan not found', 404);
+    if (challan.status === 'paid' || challan.status === 'waived') {
+      throw new AppError('Challan is already settled', 400);
+    }
+
+    const amount = challan.netAmount - challan.paidAmount;
+    if (amount <= 0) throw new AppError('No outstanding balance', 400);
+
+    if (gateway === 'jazzcash') {
+      if (!env.jazzCashEnabled) throw new AppError('JazzCash payments are not configured', 503);
+      const result = await initiateJazzCash({
+        amount,
+        mobileNumber,
+        cnic,
+        challanNo: challan.challanNo,
+        description: `EduStack fee payment — ${challan.challanNo}`,
+      });
+      res.json({ success: result.success, data: { txnRefNo: result.txnRefNo, responseCode: result.responseCode, responseDesc: result.responseDesc } });
+    } else {
+      if (!env.easypaisaEnabled) throw new AppError('EasyPaisa payments are not configured', 503);
+      const result = await initiateEasypaisa({
+        amount,
+        mobileNumber,
+        challanNo: challan.challanNo,
+        description: `EduStack fee payment — ${challan.challanNo}`,
+      });
+      res.json({ success: result.success, data: { txnRefNo: result.txnRefNo, responseCode: result.responseCode, responseDesc: result.responseDesc } });
+    }
   } catch (err) { next(err); }
 }
 

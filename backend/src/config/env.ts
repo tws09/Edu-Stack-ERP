@@ -37,5 +37,19 @@ export const env = {
   frontendUrl: optional('FRONTEND_URL', 'http://localhost:5173'),
   baseDomain: optional('BASE_DOMAIN', 'edustack.pk'),
   vercelPreviewUrl: optional('VERCEL_PREVIEW_URL', ''),
+
+  // JazzCash M-Wallet API (sandbox: https://sandbox.jazzcash.com.pk)
+  jazzCashMerchantId:     optional('JAZZCASH_MERCHANT_ID', ''),
+  jazzCashPassword:       optional('JAZZCASH_PASSWORD', ''),
+  jazzCashIntegritySalt:  optional('JAZZCASH_INTEGRITY_SALT', ''),
+  jazzCashApiUrl:         optional('JAZZCASH_API_URL', 'https://sandbox.jazzcash.com.pk/ApplicationAPI/API/2.0/Purchase/DoMWalletTransaction'),
+  jazzCashEnabled:        optional('JAZZCASH_MERCHANT_ID', '') !== '',
+
+  // EasyPaisa REST API
+  easypaisaMerchantId:    optional('EASYPAISA_MERCHANT_ID', ''),
+  easypaisaStoreId:       optional('EASYPAISA_STORE_ID', ''),
+  easypaisaHashKey:       optional('EASYPAISA_HASH_KEY', ''),
+  easypaisaApiUrl:        optional('EASYPAISA_API_URL', 'https://easypay.easypaisa.com.pk/easypay-service/rest/v4/initiate-ma-transaction'),
+  easypaisaEnabled:       optional('EASYPAISA_MERCHANT_ID', '') !== '',
 };
 

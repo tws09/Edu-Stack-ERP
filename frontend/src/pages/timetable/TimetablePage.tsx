@@ -5,10 +5,12 @@ import { academicService } from '../../services/academicService';
 import { timetableService, type TimetableSlot } from '../../services/timetableService';
 import { userService } from '../../services/userService';
 import { studentService } from '../../services/studentService';
+import { branchHeaderService } from '../../services/branchHeaderService';
 import PageHeader from '../../components/ui/PageHeader';
 import { useAuthStore } from '../../stores/authStore';
 import { cn } from '../../lib/utils';
 import { ExamScheduleTab, StudentExamScheduleTab } from './ExamScheduleTab';
+import { downloadTimetablePdf } from '../../lib/timetablePdf';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -199,7 +201,11 @@ export default function TimetablePage() {
 
 function StaffTimetableView() {
   const user = useAuthStore(s => s.user);
+  const orgSlug = useAuthStore(s => s.orgSlug);
   const navigate = useNavigate();
+
+  const { data: branchHeader } = useQuery({ queryKey: ['branch-header'], queryFn: branchHeaderService.get });
+  const orgName = branchHeader?.schoolName ?? orgSlug ?? 'School';
 
   const [mainTab, setMainTab] = useState<'class-schedule' | 'exam-schedule'>('class-schedule');
   const [view, setView] = useState<'class' | 'teacher'>('class');
@@ -321,6 +327,21 @@ function StaffTimetableView() {
                 ))}
               </select>
             </div>
+          )}
+
+          {timetable && (
+            <button
+              onClick={() => downloadTimetablePdf({
+                timetable,
+                orgName,
+                className: classes.find(c => c._id === classId)?.name,
+                sectionName: sections.find(s => s._id === sectionId)?.name,
+                teacherName: view === 'teacher' ? teachers.find((t: { _id: string; name: string }) => t._id === teacherFilter)?.name : undefined,
+              })}
+              className="text-xs px-3 py-1.5 rounded-lg bg-navy-900 text-white hover:bg-navy-800 transition-colors ml-auto"
+            >
+              ↓ PDF
+            </button>
           )}
         </div>
       </div>

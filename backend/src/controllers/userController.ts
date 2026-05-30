@@ -130,6 +130,31 @@ export async function updateUser(req: Request, res: Response): Promise<void> {
   res.json({ success: true, data: user });
 }
 
+/** Mobile: register or update FCM push token for the authenticated user */
+export async function updateFcmToken(req: Request, res: Response): Promise<void> {
+  const { fcmToken } = req.body;
+  if (!fcmToken || typeof fcmToken !== 'string') {
+    res.status(400).json({ success: false, message: 'fcmToken is required' });
+    return;
+  }
+
+  await User.findByIdAndUpdate(
+    req.user!.id,
+    { $addToSet: { fcmTokens: fcmToken } },
+  );
+
+  res.json({ success: true, message: 'FCM token registered' });
+}
+
+/** Mobile: remove FCM token on logout (so device stops receiving pushes) */
+export async function removeFcmToken(req: Request, res: Response): Promise<void> {
+  const { fcmToken } = req.body;
+  if (fcmToken) {
+    await User.findByIdAndUpdate(req.user!.id, { $pull: { fcmTokens: fcmToken } });
+  }
+  res.json({ success: true, message: 'FCM token removed' });
+}
+
 export async function resetUserPassword(req: Request, res: Response): Promise<void> {
   const callerRole = req.user!.role as UserRole;
   const { newPassword } = req.body;

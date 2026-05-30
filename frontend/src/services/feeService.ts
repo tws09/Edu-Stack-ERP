@@ -39,4 +39,7 @@ export const feeService = {
 
   getSummary: (params?: Record<string, string>) =>
     api.get<ApiResponse<FeeSummaryItem[]>>('/fees/challans/summary', { params }).then(r => r.data.data ?? []),
+
+  payOnline: (id: string, data: { mobileNumber: string; gateway: 'jazzcash' | 'easypaisa'; cnic?: string }) =>
+    api.post<ApiResponse<{ txnRefNo: string; responseCode: string; responseDesc: string }>>(`/fees/challans/${id}/pay-online`, data).then(r => r.data),
 };

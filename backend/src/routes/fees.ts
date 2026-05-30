@@ -6,6 +6,7 @@ import {
   updateFeeStructure, deleteFeeStructure,
   listChallans, getChallan, generateChallans, recordPayment, recordPaymentValidators,
   applyWaiver, getFeeSummary,
+  initiateOnlinePayment, initiateOnlinePaymentValidators,
 } from '../controllers/feeController';
 
 const router = Router();
@@ -23,6 +24,7 @@ router.get('/challans/summary', authorize('fee_management', 'read'), getFeeSumma
 router.get('/challans/:id', authorize('fee_management', 'read'), getChallan);
 router.post('/challans/generate', authorize('fee_management', 'create'), generateChallans);
 router.post('/challans/:id/payment', authorize('fee_management', 'update'), recordPaymentValidators, recordPayment);
+router.post('/challans/:id/pay-online', authorize('fee_management', 'update'), initiateOnlinePaymentValidators, initiateOnlinePayment);
 router.post('/challans/:id/waiver', authorize('fee_management', 'update'), applyWaiver);
 
 export default router;

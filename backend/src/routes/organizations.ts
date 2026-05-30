@@ -9,6 +9,11 @@ import {
   updateOrganization,
   getUsageMetrics,
   getLogoUploadUrl,
+  generateMobileQr,
+  getMobileConfig,
+  toggleMobileAccess,
+  getOrgMobileUsers,
+  revokeUserDevices,
 } from '../controllers/organizationController';
 
 const router = Router();
@@ -20,9 +25,18 @@ router.post('/', requireSuperAdmin, createOrgValidators, createOrganization);
 router.get('/', requireSuperAdmin, listOrganizations);
 router.get('/usage-metrics', requireSuperAdmin, getUsageMetrics);
 
+// Super-admin only — mobile configuration dashboard
+router.get('/mobile-config', requireSuperAdmin, getMobileConfig);
+router.patch('/:id/mobile-access', requireSuperAdmin, toggleMobileAccess);
+router.get('/:id/mobile-users', requireSuperAdmin, getOrgMobileUsers);
+router.delete('/:id/mobile-users/:userId/devices', requireSuperAdmin, revokeUserDevices);
+
 // Super-admin OR group_admin for their own org (controller enforces scoping)
 router.get('/:id', getOrganization);
 router.put('/:id', updateOrganization);
 router.post('/:id/upload-logo', getLogoUploadUrl);
+
+// Group admin: generate printable QR for mobile onboarding
+router.post('/:id/generate-qr', generateMobileQr);
 
 export default router;

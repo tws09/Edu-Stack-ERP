@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EduStack PK — Brochure</title>
+  <style>
+    /* ────────── FONTS ────────── */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    /* ────────── VARIABLES ────────── */
+    :root {
+      --navy:      #0d1b4b;
+      --navy-mid:  #1a2f6e;
+      --navy-light:#2a4099;
+      --accent:    #f97316;   /* orange — stands out on print */
+      --gold:      #fbbf24;
+      --white:     #ffffff;
+      --off-white: #f0f4ff;
+      --text-dark: #0d1b4b;
+      --text-mid:  #334466;
+      --border:    #c8d4f0;
+      --panel-w:   99mm;
+      --panel-h:   210mm;
+    }
+
+    /* ────────── RESET ────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #d0d5e8;
+      color: var(--text-dark);
+      font-size: 9pt;
+      line-height: 1.5;
+    }
+
+    /* ────────── PRINT INSTRUCTIONS (screen only) ────────── */
+    .print-instructions {
+      background: #1a2f6e;
+      color: white;
+      padding: 18px 32px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .print-instructions h2 { font-size: 15px; margin-bottom: 4px; color: #fbbf24; }
+    .print-instructions ol { padding-left: 18px; line-height: 1.9; }
+    .print-btn {
+      background: #f97316;
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .print-btn:hover { background: #ea6a00; }
+    @media print { .print-instructions { display: none !important; } }
+
+    /* ────────── PAGE WRAPPER ────────── */
+    .brochure-page {
+      width: 297mm;
+      height: 210mm;
+      display: flex;
+      margin: 20px auto;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+      position: relative;
+      overflow: hidden;
+    }
+    @media print {
+      body { background: white; }
+      .brochure-page {
+        margin: 0;
+        box-shadow: none;
+        page-break-after: always;
+      }
+      .brochure-page:last-of-type { page-break-after: avoid; }
+    }
+    @page { size: A4 landscape; margin: 0; }
+
+    /* ────────── PANEL BASE ────────── */
+    .panel {
+      width: var(--panel-w);
+      min-width: var(--panel-w);
+      height: var(--panel-h);
+      overflow: hidden;
+      position: relative;
+      border-right: 0.5px dashed #8899cc;
+      padding: 9mm 8mm;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel:last-child { border-right: none; }
+    @media print { .panel { border-right: 0.5px dashed #aabbdd; } }
+
+    /* ────────── COLOUR SCHEMES ────────── */
+    .panel-navy    { background: var(--navy); color: white; }
+    .panel-white   { background: white; }
+    .panel-offwhite{ background: var(--off-white); }
+    .panel-accent  { background: var(--accent); color: white; }
+    .panel-gradient{
+      background: linear-gradient(160deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: white;
+    }
+
+    /* ────────── LABEL (side indicator, screen only) ────────── */
+    .panel-label {
+      position: absolute;
+      top: 3px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 7px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.35;
+      font-weight: 600;
+      pointer-events: none;
+    }
+    @media print { .panel-label { display: none; } }
+
+    /* ────────── LOGO ────────── */
+    .logo-lockup { display: flex; align-items: center; gap: 6px; }
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+      font-weight: 900;
+      color: white;
+      flex-shrink: 0;
+      letter-spacing: -1px;
+    }
+    .logo-icon-small {
+      width: 22px; height: 22px;
+      border-radius: 5px;
+      font-size: 11px;
+    }
+    .logo-text { line-height: 1.1; }
+    .logo-text .product { font-size: 13px; font-weight: 800; letter-spacing: -0.3px; }
+    .logo-text .brand   { font-size: 8px;  font-weight: 500; opacity: 0.7; letter-spacing: 0.5px; text-transform: uppercase; }
+    .logo-text-small .product { font-size: 10px; font-weight: 800; }
+    .logo-text-small .brand   { font-size: 7px; opacity: 0.7; letter-spacing: 0.4px; text-transform: uppercase; }
+
+    /* ────────── HEADINGS ────────── */
+    h1 { font-size: 22px; font-weight: 900; line-height: 1.1; }
+    h2 { font-size: 13px; font-weight: 800; line-height: 1.2; }
+    h3 { font-size: 10.5px; font-weight: 700; }
+    h4 { font-size: 9px;    font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+
+    /* ────────── ACCENT LINE ────────── */
+    .accent-line {
+      width: 30px; height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      margin: 5px 0 8px;
+    }
+    .accent-line-gold {
+      background: var(--gold);
+    }
+
+    /* ────────── TAGLINE ────────── */
+    .tagline {
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.88;
+      line-height: 1.4;
+    }
+    .big-tagline {
+      font-size: 17px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+
+    /* ────────── FEATURE LIST ────────── */
+    .feature-list { list-style: none; padding: 0; margin: 0; }
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 4px 0;
+      border-bottom: 0.5px solid rgba(0,0,0,0.06);
+      font-size: 8.5px;
+      line-height: 1.4;
+    }
+    .feature-list li:last-child { border-bottom: none; }
+    .feat-icon {
+      width: 16px; height: 16px;
+      background: var(--accent);
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .feat-icon-navy { background: var(--navy); }
+    .feat-title  { font-weight: 700; color: var(--text-dark); display: block; font-size: 8.5px; }
+    .feat-desc   { color: var(--text-mid); font-size: 7.5px; display: block; }
+
+    .feature-list-white li { border-bottom-color: rgba(255,255,255,0.12); }
+    .feature-list-white .feat-title { color: white; }
+    .feature-list-white .feat-desc  { color: rgba(255,255,255,0.65); }
+
+    /* ────────── CHECK LIST ────────── */
+    .check-list { list-style: none; padding: 0; margin: 0; }
+    .check-list li {
+      display: flex; align-items: flex-start; gap: 5px;
+      padding: 3.5px 0;
+      font-size: 8.5px;
+      color: rgba(255,255,255,0.9);
+      line-height: 1.35;
+    }
+    .check-icon { color: var(--gold); font-size: 10px; flex-shrink: 0; margin-top: 0px; }
+
+    /* ────────── PRICING CARD ────────── */
+    .pricing-card {
+      background: white;
+      border-radius: 8px;
+      padding: 9px 10px;
+      color: var(--text-dark);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .price-big {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--navy);
+      line-height: 1;
+    }
+    .price-unit { font-size: 8px; color: var(--text-mid); font-weight: 500; }
+    .price-tag {
+      display: inline-block;
+      background: #dcfce7;
+      color: #166534;
+      font-size: 7.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+      margin-top: 4px;
+    }
+
+    /* ────────── STAT BOXES ────────── */
+    .stats-row { display: flex; gap: 6px; margin: 8px 0; }
+    .stat-box {
+      flex: 1;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+      padding: 7px 5px;
+      text-align: center;
+      border: 0.5px solid rgba(255,255,255,0.15);
+    }
+    .stat-num  { font-size: 18px; font-weight: 900; color: var(--gold); line-height: 1; }
+    .stat-lbl  { font-size: 7px;  color: rgba(255,255,255,0.7); margin-top: 2px; }
+
+    /* ────────── CONTACT FIELD ────────── */
+    .contact-field {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 0.5px solid rgba(255,255,255,0.12);
+    }
+    .contact-field:last-child { border-bottom: none; }
+    .contact-icon {
+      width: 22px; height: 22px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+    .contact-label { font-size: 7px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; }
+    .contact-value { font-size: 9px; font-weight: 600; margin-top: 1px; }
+
+    /* ────────── DIVIDER ────────── */
+    .divider {
+      height: 0.5px;
+      background: rgba(0,0,0,0.08);
+      margin: 7px 0;
+    }
+    .divider-white { background: rgba(255,255,255,0.14); }
+
+    /* ────────── QR PLACEHOLDER ────────── */
+    .qr-box {
+      width: 55px; height: 55px;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 7px;
+      text-align: center;
+      color: rgba(255,255,255,0.5);
+      padding: 4px;
+    }
+
+    /* ────────── CTA BUTTON ────────── */
+    .cta-btn {
+      background: var(--accent);
+      color: white;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 9px;
+      font-weight: 700;
+      display: inline-block;
+      letter-spacing: 0.02em;
+    }
+
+    /* ────────── BADGE ────────── */
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      font-size: 7px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .badge-gold {
+      background: var(--gold);
+      color: var(--navy);
+    }
+    .badge-outline {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.35);
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* ────────── FOOTER ────────── */
+    .panel-footer {
+      margin-top: auto;
+      padding-top: 6px;
+      border-top: 0.5px solid rgba(255,255,255,0.12);
+    }
+    .panel-footer-light {
+      border-top-color: rgba(0,0,0,0.08);
+    }
+
+    /* ────────── HERO GRAPHIC ────────── */
+    .hero-graphic {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 8px -8mm;
+      background: linear-gradient(135deg, rgba(249,115,22,0.12) 0%, rgba(26,47,110,0.3) 100%);
+      border-top: 0.5px solid rgba(255,255,255,0.1);
+      border-bottom: 0.5px solid rgba(255,255,255,0.1);
+    }
+    .hero-graphic-inner {
+      text-align: center;
+      padding: 8px;
+    }
+    .screen-mockup {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      padding: 8px;
+      width: 72mm;
+    }
+    .screen-bar {
+      display: flex; gap: 3px; margin-bottom: 5px;
+    }
+    .screen-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+    }
+    .screen-row {
+      height: 6px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 3px;
+      margin: 3px 0;
+    }
+    .screen-row.accent { background: rgba(249,115,22,0.4); width: 60%; }
+    .screen-row.short  { width: 70%; }
+    .screen-row.shorter{ width: 45%; }
+    .screen-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      margin-top: 5px;
+    }
+    .screen-cell {
+      height: 18px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 4px;
+      border: 0.5px solid rgba(255,255,255,0.1);
+    }
+    .screen-cell.filled { background: rgba(249,115,22,0.18); }
+
+    /* ────────── SIDE 2 PANEL FEATURES ────────── */
+    .module-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--off-white);
+      border: 0.5px solid var(--border);
+      border-radius: 20px;
+      padding: 3px 8px 3px 4px;
+      font-size: 7.5px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin: 2px 2px;
+    }
+    .module-chip .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .module-chip .dot-navy { background: var(--navy); }
+    .module-chip .dot-gold { background: var(--gold); }
+    .module-chip .dot-green { background: #22c55e; }
+
+    .section-head {
+      display: flex; align-items: center; gap: 6px; margin-bottom: 5px;
+    }
+    .section-head-icon {
+      width: 20px; height: 20px;
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+    .bg-accent  { background: var(--accent); }
+    .bg-navy    { background: var(--navy); }
+    .bg-gold    { background: var(--gold); }
+    .bg-green   { background: #22c55e; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     PRINT INSTRUCTIONS  (screen only)
+════════════════════════════════════════════════════════════ -->
+<div class="print-instructions">
+  <div>
+    <h2>🖨️ Printing Instructions — A4 Tri-fold Brochure</h2>
+    <ol>
+      <li>Print <strong>Side 1</strong> first (page 1)</li>
+      <li>Re-insert paper and print <strong>Side 2</strong> on the back (page 2)</li>
+      <li>Fold: bring left panel in, then fold right panel over → classic tri-fold</li>
+      <li>In print dialog: <strong>A4 Landscape, No margins, Actual size (100%)</strong></li>
+    </ol>
+  </div>
+  <button class="print-btn" onclick="window.print()">Print Brochure</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SIDE 1  —  Print this first
+     Layout (left → right when flat):
+       [BACK COVER] | [ADDRESS PANEL] | [FRONT COVER]
+════════════════════════════════════════════════════════════ -->
+<div class="brochure-page" id="side1">
+
+  <!-- ─── PANEL 1: BACK COVER ─── -->
+  <div class="panel panel-gradient">
+    <span class="panel-label">Side 1 · Left · Back Cover</span>
+
+    <!-- Logo -->
+    <div class="logo-lockup" style="margin-bottom:10px;">
+      <div class="logo-icon">E</div>
+      <div class="logo-text">
+        <div class="product" style="color:white;">EduStack <span style="color:var(--gold);">PK</span></div>
+        <div class="brand" style="color:rgba(255,255,255,0.6);">by WolfStack</div>
+      </div>
+    </div>
+
+    <h2 style="font-size:14px; margin-bottom:4px;">Ready to Transform<br>Your Academy?</h2>
+    <div class="accent-line accent-line-gold"></div>
+    <p style="font-size:8px; color:rgba(255,255,255,0.75); margin-bottom:12px; line-height:1.6;">
+      Join the growing network of forward-thinking schools and academies across Pakistan using EduStack PK to save time, reduce paperwork, and serve students better.
+    </p>
+
+    <!-- Contact Fields -->
+    <div style="margin-bottom:4px;">
+      <h4 style="color:var(--gold); font-size:7.5px; letter-spacing:0.1em; margin-bottom:6px;">GET IN TOUCH</h4>
+      <div class="contact-field">
+        <div class="contact-icon">📞</div>
+        <div>
+          <div class="contact-label">Phone / WhatsApp</div>
+          <div class="contact-value">[YOUR PHONE NUMBER]</div>
+        </div>
+      </div>
+      <div class="contact-field">
+        <div class="contact-icon">✉️</div>
+        <div>
+          <div class="contact-label">Email</div>
+          <div class="contact-value">[YOUR EMAIL]</div>
+        </div>
+      </div>
+      <div class="contact-field">
+        <div class="contact-icon">🌐</div>
+        <div>
+          <div class="contact-label">Website</div>
+          <div class="contact-value">www.edustack.pk</div>
+        </div>
+      </div>
+      <div class="contact-field">
+        <div class="contact-icon">📍</div>
+        <div>
+          <div class="contact-label">Location</div>
+          <div class="contact-value">[YOUR CITY, PAKISTAN]</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider divider-white"></div>
+
+    <!-- Free Trial CTA -->
+    <div style="background:rgba(249,115,22,0.18); border:1px solid rgba(249,115,22,0.35); border-radius:7px; padding:8px; margin:6px 0; text-align:center;">
+      <div style="font-size:11px; font-weight:800; color:var(--gold);">14-Day Free Trial</div>
+      <div style="font-size:7.5px; color:rgba(255,255,255,0.75); margin-top:2px;">No credit card required</div>
+    </div>
+
+    <div class="panel-footer" style="display:flex; align-items:center; justify-content:space-between; margin-top:auto;">
+      <div style="font-size:7px; color:rgba(255,255,255,0.45);">© 2026 WolfStack. All rights reserved.</div>
+      <div style="text-align:right;">
+        <div style="font-size:7px; color:rgba(255,255,255,0.45);">Powered by</div>
+        <div style="font-size:9px; font-weight:800; color:rgba(255,255,255,0.7);">WolfStack</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── PANEL 2: ADDRESS / MAILING PANEL ─── -->
+  <div class="panel panel-white" style="padding:9mm 7mm;">
+    <span class="panel-label">Side 1 · Center · Mailing Panel</span>
+
+    <div style="margin-bottom:14px;">
+      <div class="logo-lockup">
+        <div class="logo-icon logo-icon-small" style="background:var(--navy);">E</div>
+        <div class="logo-text logo-text-small">
+          <div class="product">EduStack <span style="color:var(--accent);">PK</span></div>
+          <div class="brand">by WolfStack</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:18px;">
+      <span class="badge">New in Pakistan</span>
+      <p style="font-size:8px; color:var(--text-mid); margin-top:8px; line-height:1.6;">
+        Pakistan's first cloud-based School & Academy Management System built specifically for Matric and Intermediate institutions.
+      </p>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Quick Stats -->
+    <div style="margin:10px 0;">
+      <h4 style="margin-bottom:7px;">Why Choose EduStack PK?</h4>
+      <ul class="check-list" style="color:var(--text-dark);">
+        <li><span class="check-icon" style="color:var(--accent);">✓</span><span>Purpose-built for Pakistani curriculum (Matric/Inter)</span></li>
+        <li><span class="check-icon" style="color:var(--accent);">✓</span><span>Urdu & English interface</span></li>
+        <li><span class="check-icon" style="color:var(--accent);">✓</span><span>JazzCash & EasyPaisa integration</span></li>
+        <li><span class="check-icon" style="color:var(--accent);">✓</span><span>Works on any phone or computer</span></li>
+        <li><span class="check-icon" style="color:var(--accent);">✓</span><span>Secure cloud storage — no data loss</span></li>
+        <li><span class="check-icon" style="color:var(--accent);">✓</span><span>Multi-branch support from one login</span></li>
+      </ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Pricing teaser -->
+    <div style="margin-top:8px; text-align:center; background:var(--off-white); border-radius:7px; padding:8px;">
+      <div style="font-size:7.5px; color:var(--text-mid); text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Starting from</div>
+      <div style="font-size:20px; font-weight:900; color:var(--navy); line-height:1.1;">Rs. 30</div>
+      <div style="font-size:7.5px; color:var(--text-mid);">per student / month</div>
+    </div>
+
+    <div class="panel-footer panel-footer-light" style="margin-top:auto; padding-top:8px; border-top:0.5px solid var(--border);">
+      <div style="font-size:7px; color:#999;">Mailing address of recipient</div>
+      <div style="border:0.5px dashed #ccc; border-radius:4px; height:28px; margin-top:4px;"></div>
+    </div>
+  </div>
+
+  <!-- ─── PANEL 3: FRONT COVER ─── -->
+  <div class="panel panel-navy" style="padding:0; overflow:hidden;">
+    <span class="panel-label" style="color:white; z-index:10;">Side 1 · Right · FRONT COVER</span>
+
+    <!-- Top section -->
+    <div style="padding:9mm 8mm 5mm; position:relative; z-index:2;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+        <div class="logo-lockup">
+          <div class="logo-icon" style="background:var(--accent); width:36px; height:36px; border-radius:9px; font-size:20px;">E</div>
+          <div class="logo-text">
+            <div class="product" style="color:white; font-size:15px;">EduStack <span style="color:var(--accent);">PK</span></div>
+            <div class="brand" style="color:rgba(255,255,255,0.55);">by WolfStack</div>
+          </div>
+        </div>
+        <span class="badge badge-gold">2026</span>
+      </div>
+
+      <h1 style="color:white; font-size:20px; line-height:1.15; margin-bottom:8px;">
+        Smart School<br>Management<br><span style="color:var(--accent);">Made Simple.</span>
+      </h1>
+      <div class="accent-line" style="width:40px; height:3px; background:var(--gold);"></div>
+      <p class="tagline" style="color:rgba(255,255,255,0.75); font-size:9px; margin-top:6px; line-height:1.55;">
+        The complete cloud ERP for Pakistan's schools and academies — attendance, fees, results, payroll & more.
+      </p>
+    </div>
+
+    <!-- Screen mockup graphic -->
+    <div class="hero-graphic">
+      <div class="hero-graphic-inner">
+        <div class="screen-mockup">
+          <div class="screen-bar">
+            <div class="screen-dot" style="background:#ff5f57;"></div>
+            <div class="screen-dot" style="background:#ffbd2e;"></div>
+            <div class="screen-dot" style="background:#28c840;"></div>
+          </div>
+          <div class="screen-row accent"></div>
+          <div class="screen-row"></div>
+          <div class="screen-row short"></div>
+          <div class="screen-grid">
+            <div class="screen-cell filled"></div>
+            <div class="screen-cell"></div>
+            <div class="screen-cell"></div>
+            <div class="screen-cell filled"></div>
+            <div class="screen-cell filled"></div>
+            <div class="screen-cell"></div>
+          </div>
+          <div class="screen-row shorter" style="margin-top:5px;"></div>
+        </div>
+        <div style="font-size:7px; color:rgba(255,255,255,0.4); margin-top:5px;">Live Dashboard Preview</div>
+      </div>
+    </div>
+
+    <!-- Bottom modules strip -->
+    <div style="padding:5mm 8mm 8mm; margin-top:auto;">
+      <div style="display:flex; flex-wrap:wrap; gap:3px; margin-bottom:8px;">
+        <span class="badge badge-outline">Students</span>
+        <span class="badge badge-outline">Fees</span>
+        <span class="badge badge-outline">Attendance</span>
+        <span class="badge badge-outline">Exams</span>
+        <span class="badge badge-outline">Payroll</span>
+        <span class="badge badge-outline">Reports</span>
+      </div>
+      <div style="font-size:7.5px; color:rgba(255,255,255,0.5); display:flex; align-items:center; gap:4px;">
+        <span style="color:var(--gold);">★★★★★</span>
+        <span>Cloud-based · Always available · Fully secure</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /side1 -->
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SIDE 2  —  Print on back of Side 1
+     Layout (left → right when flat, unfolded):
+       [INSIDE LEFT] | [INSIDE CENTER] | [INSIDE RIGHT]
+════════════════════════════════════════════════════════════ -->
+<div class="brochure-page" id="side2">
+
+  <!-- ─── PANEL 4: INSIDE LEFT ─── -->
+  <div class="panel panel-offwhite">
+    <span class="panel-label">Side 2 · Left · Inside Panel 1</span>
+
+    <div class="section-head">
+      <div class="section-head-icon bg-navy">🎓</div>
+      <div>
+        <h3 style="color:var(--navy);">Academic Management</h3>
+        <div style="font-size:7.5px; color:var(--text-mid);">Everything for students & classes</div>
+      </div>
+    </div>
+    <div class="accent-line"></div>
+
+    <ul class="feature-list" style="margin-bottom:8px;">
+      <li>
+        <div class="feat-icon">👤</div>
+        <div><span class="feat-title">Student Admissions</span><span class="feat-desc">Online forms, document upload, auto roll number generation</span></div>
+      </li>
+      <li>
+        <div class="feat-icon">✅</div>
+        <div><span class="feat-title">Attendance Tracking</span><span class="feat-desc">Daily per-class attendance with instant parent SMS alerts</span></div>
+      </li>
+      <li>
+        <div class="feat-icon">📅</div>
+        <div><span class="feat-title">Timetable Builder</span><span class="feat-desc">Drag-and-drop scheduling with clash detection</span></div>
+      </li>
+      <li>
+        <div class="feat-icon">📝</div>
+        <div><span class="feat-title">Exam Management</span><span class="feat-desc">Schedule tests, enter marks, auto-generate result cards</span></div>
+      </li>
+      <li>
+        <div class="feat-icon">📚</div>
+        <div><span class="feat-title">Assignments</span><span class="feat-desc">Assign homework, collect digital submissions, grade online</span></div>
+      </li>
+      <li>
+        <div class="feat-icon">📊</div>
+        <div><span class="feat-title">Result Cards & Reports</span><span class="feat-desc">Auto-formatted PDF reports for Matric & Intermediate</span></div>
+      </li>
+    </ul>
+
+    <div class="divider"></div>
+
+    <div style="margin-top:6px;">
+      <h4 style="margin-bottom:6px; color:var(--text-dark);">Supported Curricula</h4>
+      <div style="display:flex; flex-wrap:wrap;">
+        <span class="module-chip"><span class="dot"></span>Matric (9th–10th)</span>
+        <span class="module-chip"><span class="dot dot-navy"></span>Inter Part I & II</span>
+        <span class="module-chip"><span class="dot dot-gold"></span>O/A Levels</span>
+        <span class="module-chip"><span class="dot dot-green"></span>Primary</span>
+      </div>
+    </div>
+
+    <div class="panel-footer panel-footer-light" style="margin-top:auto; padding-top:6px; border-top:0.5px solid var(--border);">
+      <div style="font-size:7px; color:#999;">Customized for Punjab, Sindh, KPK & Balochistan boards</div>
+    </div>
+  </div>
+
+  <!-- ─── PANEL 5: INSIDE CENTER ─── -->
+  <div class="panel panel-white" style="background:white;">
+    <span class="panel-label">Side 2 · Center · Inside Panel 2</span>
+
+    <div class="section-head">
+      <div class="section-head-icon bg-accent">💰</div>
+      <div>
+        <h3 style="color:var(--navy);">Finance & Administration</h3>
+        <div style="font-size:7.5px; color:var(--text-mid);">Automate the paperwork</div>
+      </div>
+    </div>
+    <div class="accent-line"></div>
+
+    <ul class="feature-list" style="margin-bottom:8px;">
+      <li>
+        <div class="feat-icon feat-icon-navy">🧾</div>
+        <div><span class="feat-title">Fee Management</span><span class="feat-desc">Auto-generate monthly challans, track payments, send reminders</span></div>
+      </li>
+      <li>
+        <div class="feat-icon feat-icon-navy">📱</div>
+        <div><span class="feat-title">JazzCash / EasyPaisa</span><span class="feat-desc">Parents pay fees digitally — no more cash queues</span></div>
+      </li>
+      <li>
+        <div class="feat-icon feat-icon-navy">💼</div>
+        <div><span class="feat-title">Payroll Processing</span><span class="feat-desc">Staff salaries, deductions, allowances, pay slips in one click</span></div>
+      </li>
+      <li>
+        <div class="feat-icon feat-icon-navy">🏫</div>
+        <div><span class="feat-title">Multi-Branch Control</span><span class="feat-desc">Manage all your branches from a single dashboard</span></div>
+      </li>
+      <li>
+        <div class="feat-icon feat-icon-navy">🔔</div>
+        <div><span class="feat-title">Real-time Notifications</span><span class="feat-desc">Instant alerts for fees, attendance, and important events</span></div>
+      </li>
+      <li>
+        <div class="feat-icon feat-icon-navy">📈</div>
+        <div><span class="feat-title">Analytics Dashboard</span><span class="feat-desc">Revenue, attendance trends, and performance insights</span></div>
+      </li>
+    </ul>
+
+    <div class="divider"></div>
+
+    <!-- Pricing Card -->
+    <div class="pricing-card" style="margin-top:7px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <div style="font-size:7.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-mid); font-weight:600; margin-bottom:2px;">Simple Pricing</div>
+          <div class="price-big">Rs. 30–50</div>
+          <div class="price-unit">per active student / month</div>
+          <span class="price-tag">No setup fee · No contracts</span>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:7px; color:var(--text-mid); margin-bottom:2px;">100 students =</div>
+          <div style="font-size:14px; font-weight:800; color:var(--navy);">~Rs. 3,000</div>
+          <div style="font-size:7px; color:var(--text-mid);">per month</div>
+        </div>
+      </div>
+      <div style="margin-top:7px; padding-top:7px; border-top:0.5px solid var(--border);">
+        <div style="font-size:7.5px; color:var(--text-mid); line-height:1.6;">
+          ✓ Free 14-day trial &nbsp;·&nbsp; ✓ Billed monthly &nbsp;·&nbsp; ✓ Cancel anytime
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── PANEL 6: INSIDE RIGHT ─── -->
+  <div class="panel panel-gradient">
+    <span class="panel-label" style="color:white;">Side 2 · Right · Inside Panel 3</span>
+
+    <div class="section-head" style="margin-bottom:6px;">
+      <div class="section-head-icon" style="background:rgba(255,255,255,0.15);">⭐</div>
+      <div>
+        <h3 style="color:white;">Why Schools Love<br>EduStack PK</h3>
+      </div>
+    </div>
+    <div class="accent-line accent-line-gold"></div>
+
+    <ul class="check-list" style="margin-bottom:8px;">
+      <li><span class="check-icon">✓</span><span><strong>Cloud-based</strong> — access from any phone, laptop, or tablet anywhere in Pakistan</span></li>
+      <li><span class="check-icon">✓</span><span><strong>Bilingual</strong> — full Urdu &amp; English interface for all staff and parents</span></li>
+      <li><span class="check-icon">✓</span><span><strong>Secure by design</strong> — role-based access, encrypted data, regular backups</span></li>
+      <li><span class="check-icon">✓</span><span><strong>No IT team needed</strong> — set up in hours, not weeks</span></li>
+      <li><span class="check-icon">✓</span><span><strong>Offline-friendly</strong> — core features work with limited internet</span></li>
+      <li><span class="check-icon">✓</span><span><strong>Dedicated local support</strong> — WhatsApp &amp; phone support in Urdu</span></li>
+      <li><span class="check-icon">✓</span><span><strong>Affordable</strong> — priced in PKR, transparent monthly billing</span></li>
+      <li><span class="check-icon">✓</span><span><strong>Regular updates</strong> — new features added every month</span></li>
+    </ul>
+
+    <div class="divider divider-white"></div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-num">7</div>
+        <div class="stat-lbl">User Roles</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">15+</div>
+        <div class="stat-lbl">Modules</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">24/7</div>
+        <div class="stat-lbl">Cloud Access</div>
+      </div>
+    </div>
+
+    <div class="divider divider-white"></div>
+
+    <!-- CTA -->
+    <div style="text-align:center; margin-top:6px;">
+      <div style="font-size:11px; font-weight:800; color:white; margin-bottom:3px;">Get Started Today</div>
+      <div style="font-size:8px; color:rgba(255,255,255,0.7); margin-bottom:8px;">Free 14-day trial — no card required</div>
+      <div style="display:flex; justify-content:center; gap:10px; align-items:center;">
+        <div class="qr-box" style="width:50px; height:50px; font-size:7px;">Scan to visit website</div>
+        <div style="text-align:left;">
+          <div style="font-size:8.5px; font-weight:700; color:white;">www.edustack.pk</div>
+          <div style="font-size:7.5px; color:rgba(255,255,255,0.65); margin-top:2px;">Sign up in 2 minutes</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-footer" style="margin-top:auto; padding-top:6px;">
+      <div class="logo-lockup">
+        <div class="logo-icon logo-icon-small" style="background:rgba(255,255,255,0.15);">W</div>
+        <div class="logo-text logo-text-small">
+          <div class="product" style="color:rgba(255,255,255,0.8);">WolfStack</div>
+          <div class="brand" style="color:rgba(255,255,255,0.45);">Software Solutions</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /side2 -->
+
+</body>
+</html>

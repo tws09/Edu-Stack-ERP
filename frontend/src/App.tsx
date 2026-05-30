@@ -20,6 +20,7 @@ import AdminUsersPage from './pages/admin/UsersPage';
 import AdminSettingsPage from './pages/admin/SettingsPage';
 import BranchDashboard from './pages/dashboard/BranchDashboard';
 import StudentDashboard from './pages/dashboard/StudentDashboard';
+import TeacherDashboard from './pages/dashboard/TeacherDashboard';
 import ClassFellowsPage from './pages/classFellows/ClassFellowsPage';
 import AcademicSetupPage from './pages/settings/AcademicSetupPage';
 import SettingsPage from './pages/settings/SettingsPage';
@@ -39,6 +40,7 @@ import BranchesPage from './pages/branches/BranchesPage';
 import ResourcesPage from './pages/resources/ResourcesPage';
 import ExamPaperPage from './pages/examPaper/ExamPaperPage';
 import RolesHierarchyPage from './pages/roles/RolesHierarchyPage';
+import MobileDevicesPage from './pages/admin/MobileDevicesPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -99,6 +101,7 @@ export default function App() {
               <Route path="organizations/:id" element={<OrgDetailPage />} />
               <Route path="billing" element={<BillingPage />} />
               <Route path="users" element={<AdminUsersPage />} />
+              <Route path="mobile-devices" element={<MobileDevicesPage />} />
               <Route path="settings" element={<AdminSettingsPage />} />
             </Route>
 
@@ -160,7 +163,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             >
-              <Route index element={<BranchDashboard />} />
+              <Route index element={<TeacherDashboard />} />
               <Route path="attendance" element={<AttendancePage />} />
               <Route path="timetable" element={<TimetablePage />} />
               <Route path="exams" element={<ExamsPage />} />

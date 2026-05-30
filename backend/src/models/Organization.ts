@@ -17,6 +17,11 @@ export interface IOrganization extends Document {
     timezone: string;
     currency: string;
     academicYearStart: number; // month index 0-11
+    primaryColor: string;
+  };
+  mobile: {
+    enabled: boolean;
+    qrSecret?: string;
   };
   usageBilling: {
     activeStudents: number;
@@ -43,6 +48,11 @@ const organizationSchema = new Schema<IOrganization>(
       timezone: { type: String, default: 'Asia/Karachi' },
       currency: { type: String, default: 'PKR' },
       academicYearStart: { type: Number, default: 3 }, // April
+      primaryColor: { type: String, default: '#1e3a5f' }, // Navy Blue
+    },
+    mobile: {
+      enabled: { type: Boolean, default: true },
+      qrSecret: { type: String },
     },
     usageBilling: {
       activeStudents: { type: Number, default: 0 },

@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduStack PK — Theme Switcher</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ════════════════════════════════════
+       THEME VARIABLES — swapped by JS
+    ════════════════════════════════════ */
+    :root {
+      --sidebar-bg:     #0A1628;
+      --sidebar-hover:  #0F2044;
+      --sidebar-active: #2563EB;
+      --sidebar-text:   rgba(255,255,255,0.55);
+      --sidebar-text-active: #ffffff;
+      --accent:         #2563EB;
+      --accent-hover:   #1D4ED8;
+      --accent-light:   #EFF6FF;
+      --accent-text:    #1D4ED8;
+      --page-bg:        #F8FAFC;
+      --card-bg:        #ffffff;
+      --border:         #E2E8F0;
+      --text-primary:   #0F172A;
+      --text-secondary: #64748B;
+      --text-muted:     #94A3B8;
+      --logo-bg:        #F59E0B;
+      --logo-text:      #0A1628;
+      --radius:         12px;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--page-bg);
+      color: var(--text-primary);
+      transition: background 0.3s;
+    }
+
+    /* ════════════════════════════════════
+       THEME SWITCHER BAR (fixed top)
+    ════════════════════════════════════ */
+    .switcher-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid #E2E8F0;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+    }
+
+    .switcher-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748B;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .theme-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 16px;
+      border-radius: 999px;
+      border: 2px solid #E2E8F0;
+      background: #fff;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .theme-btn:hover { border-color: #94A3B8; background: #F8FAFC; }
+
+    .theme-btn.active {
+      border-color: var(--btn-color);
+      background: var(--btn-color);
+      color: #fff;
+    }
+
+    .theme-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .rec-tag {
+      background: #16A34A;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ════════════════════════════════════
+       LAYOUT
+    ════════════════════════════════════ */
+    .page {
+      display: flex;
+      min-height: 100vh;
+      padding-top: 56px;
+    }
+
+    /* ════════════════════════════════════
+       SIDEBAR
+    ════════════════════════════════════ */
+    .sidebar {
+      width: 250px;
+      min-width: 250px;
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 56px;
+      bottom: 0;
+      left: 0;
+      overflow-y: auto;
+      transition: background 0.3s;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px;
+      height: 62px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .logo-icon {
+      width: 34px; height: 34px;
+      background: var(--logo-bg);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--logo-text);
+      font-weight: 800; font-size: 14px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      flex-shrink: 0;
+    }
+
+    .logo-name { color: #fff; font-weight: 700; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.2; }
+    .logo-sub  { color: rgba(255,255,255,0.35); font-size: 10px; font-weight: 500; }
+
+    .sidebar-body { padding: 8px; flex: 1; }
+
+    .nav-group-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.28);
+      padding: 12px 10px 5px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 11px;
+      border-radius: 8px;
+      color: var(--sidebar-text);
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 1px;
+      transition: all 0.12s;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.85);
+    }
+
+    .nav-item.active {
+      background: var(--sidebar-active);
+      color: var(--sidebar-text-active);
+    }
+
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.8; }
+    .nav-item.active svg { opacity: 1; }
+
+    .nav-badge {
+      margin-left: auto;
+      background: #EF4444;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 999px;
+    }
+
+    .sidebar-footer {
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding: 12px;
+    }
+
+    .avatar {
+      width: 33px; height: 33px;
+      background: var(--logo-bg);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--logo-text);
+      font-weight: 700; font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .user-name { color: #fff; font-size: 13px; font-weight: 600; }
+    .user-role { color: rgba(255,255,255,0.38); font-size: 11px; }
+
+    .sign-out {
+      margin-top: 8px;
+      width: 100%;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(239,68,68,0.3);
+      background: transparent;
+      color: #FCA5A5;
+      font-size: 11.5px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s;
+    }
+
+    /* ════════════════════════════════════
+       MAIN CONTENT
+    ════════════════════════════════════ */
+    .main {
+      flex: 1;
+      margin-left: 250px;
+      padding: 28px 32px;
+      transition: background 0.3s;
+    }
+
+    /* Page header */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+
+    .page-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .page-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Stat cards */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .stat-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-val   { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 26px; font-weight: 800; color: var(--text-primary); margin-top: 5px; line-height: 1; }
+    .stat-sub   { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+    .stat-accent { color: var(--accent) !important; }
+
+    /* Section card */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      overflow: hidden;
+      margin-bottom: 20px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title { font-weight: 700; font-size: 14px; color: var(--text-primary); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    .btn-secondary {
+      background: var(--card-bg);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-sm { padding: 5px 11px; font-size: 12px; border-radius: 6px; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    thead tr { background: var(--page-bg); border-bottom: 1px solid var(--border); transition: background 0.3s; }
+    th { text-align: left; padding: 10px 16px; font-size: 10.5px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-secondary); transition: border-color 0.3s; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--accent-light); transition: background 0.1s; }
+    .td-name { font-weight: 600; color: var(--text-primary); font-size: 13.5px; }
+    .td-sub  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    /* Badges */
+    .badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .b-green  { background: #F0FDF4; color: #16A34A; }
+    .b-amber  { background: #FFFBEB; color: #D97706; }
+    .b-red    { background: #FEF2F2; color: #DC2626; }
+    .b-accent { background: var(--accent-light); color: var(--accent-text); }
+    .b-slate  { background: #F1F5F9; color: #64748B; }
+
+    /* Inputs */
+    .input-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; padding: 16px 20px; }
+    .inp-group { display: flex; flex-direction: column; gap: 4px; }
+    .inp-label { font-size: 11.5px; font-weight: 600; color: var(--text-secondary); }
+    .inp-field {
+      padding: 8px 11px;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--text-primary);
+      background: var(--card-bg);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.3s;
+    }
+    .inp-field:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+    }
+
+    /* Progress bar */
+    .progress-wrap { background: var(--border); border-radius: 999px; height: 6px; flex: 1; }
+    .progress-bar  { height: 6px; border-radius: 999px; background: var(--accent); transition: background 0.3s; }
+
+    /* Color token section */
+    .token-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; padding: 16px 20px; }
+    .token { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .token-swatch { height: 56px; }
+    .token-info { padding: 6px 9px; background: var(--card-bg); }
+    .token-name { font-size: 10.5px; font-weight: 600; color: var(--text-primary); }
+    .token-hex  { font-size: 9.5px; color: var(--text-muted); font-family: monospace; margin-top: 1px; }
+
+    .section-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .divider { height: 1px; background: var(--border); margin: 4px 0 16px; }
+
+    /* Font demo */
+    .font-row { padding: 12px 20px; display: flex; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--border); }
+    .font-row:last-child { border-bottom: none; }
+    .font-meta { font-size: 10px; font-weight: 600; color: var(--text-muted); width: 160px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.6; }
+    .font-sample { flex: 1; }
+
+    /* Component row */
+    .comp-row { padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid var(--border); }
+    .comp-row:last-child { border-bottom: none; }
+    .comp-label { font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; width: 80px; flex-shrink: 0; }
+
+    /* Attendance mini chart */
+    .att-bar-wrap { display: flex; align-items: flex-end; gap: 3px; height: 40px; }
+    .att-bar { width: 8px; border-radius: 3px 3px 0 0; background: var(--accent); opacity: 0.85; transition: background 0.3s; }
+
+    /* Notification item */
+    .notif-item { display: flex; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); align-items: flex-start; }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 5px; flex-shrink: 0; transition: background 0.3s; }
+    .notif-dot.read { background: var(--border); }
+    .notif-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .notif-body  { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .notif-time  { font-size: 11px; color: var(--text-muted); margin-left: auto; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     THEME SWITCHER BAR
+══════════════════════════════════════════ -->
+<div class="switcher-bar">
+  <div class="switcher-label">Theme</div>
+
+  <button class="theme-btn active" id="btn-navy" style="--btn-color:#2563EB"
+    onclick="setTheme('navy')" >
+    <span class="theme-dot" style="background:#0A1628"></span>
+    Navy Blue
+    <span class="rec-tag">Recommended</span>
+  </button>
+
+  <button class="theme-btn" id="btn-violet" style="--btn-color:#7C3AED"
+    onclick="setTheme('violet')">
+    <span class="theme-dot" style="background:#4C1D95"></span>
+    Slate Violet
+  </button>
+
+  <button class="theme-btn" id="btn-emerald" style="--btn-color:#059669"
+    onclick="setTheme('emerald')">
+    <span class="theme-dot" style="background:#064E3B"></span>
+    Deep Emerald
+    <span style="font-size:9px;color:#64748B;font-weight:500">(current)</span>
+  </button>
+
+  <button class="theme-btn" id="btn-amber" style="--btn-color:#D97706"
+    onclick="setTheme('amber')">
+    <span class="theme-dot" style="background:#78350F"></span>
+    Warm Amber
+  </button>
+
+  <div style="margin-left:auto; font-size:11px; color:#94A3B8; font-weight:500">
+    Click any theme to see full portal recolor →
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     LAYOUT
+══════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">E</div>
+      <div>
+        <div class="logo-name">EduStack PK</div>
+        <div class="logo-sub">School Management</div>
+      </div>
+    </div>
+
+    <div class="sidebar-body">
+      <div class="nav-group-label">Main</div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item active">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Students
+      </div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        Attendance
+      </div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Timetable
+      </div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        Notifications
+        <span class="nav-badge">3</span>
+      </div>
+
+      <div class="nav-group-label">Finance</div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        Fee Management
+      </div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Payroll
+      </div>
+
+      <div class="nav-group-label">Academic</div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Exams & Results
+      </div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        Academic Setup
+      </div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Settings
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div style="display:flex;align-items:center;gap:9px;padding:6px 4px">
+        <div class="avatar">MA</div>
+        <div>
+          <div class="user-name">Muhammad Ali</div>
+          <div class="user-role">Group Admin</div>
+        </div>
+      </div>
+      <button class="sign-out">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div>
+        <div class="page-title">Students</div>
+        <div class="page-sub">1,248 students enrolled · Academic Year 2024-25</div>
+      </div>
+      <button class="btn btn-primary">+ Admit Student</button>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Students</div>
+        <div class="stat-val">1,248</div>
+        <div class="stat-sub">All sections combined</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Today's Attendance</div>
+        <div class="stat-val stat-accent">94.2%</div>
+        <div class="stat-sub">1,175 present today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Fee Collection</div>
+        <div class="stat-val" style="color:#16A34A">₨ 8.4L</div>
+        <div class="stat-sub">₨ 1.2L pending</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Staff</div>
+        <div class="stat-val">42</div>
+        <div class="stat-sub">Across 3 branches</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:20px">
+
+      <!-- Student table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="section-title">Student List</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary btn-sm">Export</button>
+            <button class="btn btn-primary btn-sm">+ Add</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Roll No</th>
+              <th>Student</th>
+              <th>Class</th>
+              <th>Fee</th>
+              <th>Attendance</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code style="font-size:12px;background:var(--page-bg);padding:2px 6px;border-radius:4px;color:var(--text-secondary)">2024-001</code></td>
+              <td><div class="td-name">Ahmad Raza Khan</div><div class="td-sub">9-A Science · Father: 0300-1234567</div></td>
+              <td>Grade 9</td>
+              <td><span class="badge b-green">Paid</span></td>
+              <td style="font-weight:600;color:#16A34A">96.2%</td>
+              <td><button class="btn btn-secondary btn-sm">View</button></td>
+            </tr>
+            <tr>
+              <td><code style="font-size:12px;background:var(--page-bg);padding:2px 6px;border-radius:4px;color:var(--text-secondary)">2024-002</code></td>
+              <td><div class="td-name">Fatima Malik</div><div class="td-sub">10-B Arts · Father: 0311-9876543</div></td>
+              <td>Grade 10</td>
+              <td><span class="badge b-amber">Partial</span></td>
+              <td style="font-weight:600;color:#D97706">81.5%</td>
+              <td><button class="btn btn-secondary btn-sm">View</button></td>
+            </tr>
+            <tr>
+              <td><code style="font-size:12px;background:var(--page-bg);padding:2px 6px;border-radius:4px;color:var(--text-secondary)">2024-003</code></td>
+              <td><div class="td-name">Usman Ali</div><div class="td-sub">9-A Science · Father: 0321-5554444</div></td>
+              <td>Grade 9</td>
+              <td><span class="badge b-red">Overdue</span></td>
+              <td style="font-weight:600;color:#DC2626">72.1%</td>
+              <td><button class="btn btn-secondary btn-sm">View</button></td>
+            </tr>
+            <tr>
+              <td><code style="font-size:12px;background:var(--page-bg);padding:2px 6px;border-radius:4px;color:var(--text-secondary)">2024-004</code></td>
+              <td><div class="td-name">Zainab Hassan</div><div class="td-sub">11-A Pre-Medical · Father: 0333-7778888</div></td>
+              <td>Grade 11</td>
+              <td><span class="badge b-green">Paid</span></td>
+              <td style="font-weight:600;color:#16A34A">99.1%</td>
+              <td><button class="btn btn-secondary btn-sm">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Right column -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+
+        <!-- Notifications -->
+        <div class="card">
+          <div class="card-header">
+            <div class="section-title">Notifications</div>
+            <span class="badge b-accent">3 new</span>
+          </div>
+          <div class="notif-item">
+            <div class="notif-dot"></div>
+            <div>
+              <div class="notif-title">Fee deadline tomorrow</div>
+              <div class="notif-body">42 students have unpaid challans</div>
+            </div>
+            <div class="notif-time">2m ago</div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-dot"></div>
+            <div>
+              <div class="notif-title">Exam results published</div>
+              <div class="notif-body">Grade 9 Mid-Term results are live</div>
+            </div>
+            <div class="notif-time">1h ago</div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-dot read"></div>
+            <div>
+              <div class="notif-title" style="font-weight:500;color:var(--text-secondary)">New staff added</div>
+              <div class="notif-body">Mr. Bilal joined as IT Admin</div>
+            </div>
+            <div class="notif-time">3h ago</div>
+          </div>
+        </div>
+
+        <!-- Attendance chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="section-title">Weekly Attendance</div>
+          </div>
+          <div style="padding:16px 20px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:4px;height:60px;margin-bottom:8px">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+                <div style="font-size:10px;color:var(--text-muted);font-weight:600">96%</div>
+                <div style="width:100%;border-radius:4px 4px 0 0;background:var(--accent);height:48px;transition:background 0.3s"></div>
+                <div style="font-size:10px;color:var(--text-muted)">Mon</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+                <div style="font-size:10px;color:var(--text-muted);font-weight:600">92%</div>
+                <div style="width:100%;border-radius:4px 4px 0 0;background:var(--accent);height:42px;opacity:0.85;transition:background 0.3s"></div>
+                <div style="font-size:10px;color:var(--text-muted)">Tue</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+                <div style="font-size:10px;color:var(--text-muted);font-weight:600">94%</div>
+                <div style="width:100%;border-radius:4px 4px 0 0;background:var(--accent);height:45px;opacity:0.9;transition:background 0.3s"></div>
+                <div style="font-size:10px;color:var(--text-muted)">Wed</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+                <div style="font-size:10px;color:var(--text-muted);font-weight:600">88%</div>
+                <div style="width:100%;border-radius:4px 4px 0 0;background:var(--accent);height:36px;opacity:0.7;transition:background 0.3s"></div>
+                <div style="font-size:10px;color:var(--text-muted)">Thu</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+                <div style="font-size:10px;color:var(--text-muted);font-weight:600">94%</div>
+                <div style="width:100%;border-radius:4px 4px 0 0;background:var(--accent);height:45px;opacity:0.9;transition:background 0.3s"></div>
+                <div style="font-size:10px;color:var(--text-muted)">Fri</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick form -->
+        <div class="card">
+          <div class="card-header"><div class="section-title">Quick Search</div></div>
+          <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+            <div class="inp-group">
+              <label class="inp-label">Student Name / Roll No</label>
+              <input class="inp-field" placeholder="Search student..." />
+            </div>
+            <div class="inp-group">
+              <label class="inp-label">Class</label>
+              <select class="inp-field">
+                <option>All Classes</option>
+                <option>9-A Science</option>
+                <option>10-B Arts</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center">Search</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Components row -->
+    <div class="card">
+      <div class="card-header"><div class="section-title">Component Reference</div></div>
+      <div class="comp-row">
+        <div class="comp-label">Buttons</div>
+        <button class="btn btn-primary">Primary</button>
+        <button class="btn btn-secondary">Secondary</button>
+        <button class="btn btn-primary btn-sm">Small</button>
+        <button class="btn btn-secondary btn-sm">Cancel</button>
+      </div>
+      <div class="comp-row">
+        <div class="comp-label">Badges</div>
+        <span class="badge b-green">Active</span>
+        <span class="badge b-green">Paid</span>
+        <span class="badge b-amber">Pending</span>
+        <span class="badge b-amber">Late</span>
+        <span class="badge b-red">Overdue</span>
+        <span class="badge b-red">Absent</span>
+        <span class="badge b-accent">Enrolled</span>
+        <span class="badge b-slate">Draft</span>
+      </div>
+      <div class="comp-row">
+        <div class="comp-label">Typography</div>
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:var(--text-primary)">Page Title</span>
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:var(--text-primary)">Section Head</span>
+        <span style="font-size:13.5px;color:var(--text-secondary)">Body text</span>
+        <span style="font-size:11px;color:var(--text-muted)">Caption</span>
+        <code style="font-size:12px;background:var(--page-bg);padding:2px 7px;border-radius:4px;color:var(--text-secondary)">ADM-2024-001</code>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const themes = {
+    navy: {
+      '--sidebar-bg':           '#0A1628',
+      '--sidebar-hover':        '#0F2044',
+      '--sidebar-active':       '#2563EB',
+      '--sidebar-text':         'rgba(255,255,255,0.52)',
+      '--sidebar-text-active':  '#ffffff',
+      '--accent':               '#2563EB',
+      '--accent-hover':         '#1D4ED8',
+      '--accent-light':         '#EFF6FF',
+      '--accent-text':          '#1D4ED8',
+      '--page-bg':              '#F8FAFC',
+      '--card-bg':              '#ffffff',
+      '--border':               '#E2E8F0',
+      '--text-primary':         '#0F172A',
+      '--text-secondary':       '#64748B',
+      '--text-muted':           '#94A3B8',
+      '--logo-bg':              '#F59E0B',
+      '--logo-text':            '#0A1628',
+      '--radius':               '12px',
+    },
+    violet: {
+      '--sidebar-bg':           '#1E1B4B',
+      '--sidebar-hover':        '#2E2A6B',
+      '--sidebar-active':       '#7C3AED',
+      '--sidebar-text':         'rgba(255,255,255,0.50)',
+      '--sidebar-text-active':  '#ffffff',
+      '--accent':               '#7C3AED',
+      '--accent-hover':         '#6D28D9',
+      '--accent-light':         '#F5F3FF',
+      '--accent-text':          '#5B21B6',
+      '--page-bg':              '#F8F7FF',
+      '--card-bg':              '#ffffff',
+      '--border':               '#E9E8F5',
+      '--text-primary':         '#1E1B4B',
+      '--text-secondary':       '#6B7280',
+      '--text-muted':           '#9CA3AF',
+      '--logo-bg':              '#F59E0B',
+      '--logo-text':            '#1E1B4B',
+      '--radius':               '12px',
+    },
+    emerald: {
+      '--sidebar-bg':           '#022c22',
+      '--sidebar-hover':        '#064E3B',
+      '--sidebar-active':       '#059669',
+      '--sidebar-text':         'rgba(255,255,255,0.50)',
+      '--sidebar-text-active':  '#ffffff',
+      '--accent':               '#059669',
+      '--accent-hover':         '#047857',
+      '--accent-light':         '#ECFDF5',
+      '--accent-text':          '#065F46',
+      '--page-bg':              '#F0FDF8',
+      '--card-bg':              '#ffffff',
+      '--border':               '#D1FAE5',
+      '--text-primary':         '#022c22',
+      '--text-secondary':       '#4B7A65',
+      '--text-muted':           '#86BFAB',
+      '--logo-bg':              '#F59E0B',
+      '--logo-text':            '#022c22',
+      '--radius':               '12px',
+    },
+    amber: {
+      '--sidebar-bg':           '#1C1400',
+      '--sidebar-hover':        '#2D1F00',
+      '--sidebar-active':       '#D97706',
+      '--sidebar-text':         'rgba(255,255,255,0.50)',
+      '--sidebar-text-active':  '#ffffff',
+      '--accent':               '#D97706',
+      '--accent-hover':         '#B45309',
+      '--accent-light':         '#FFFBEB',
+      '--accent-text':          '#92400E',
+      '--page-bg':              '#FFFDF5',
+      '--card-bg':              '#ffffff',
+      '--border':               '#FDE68A',
+      '--text-primary':         '#1C1400',
+      '--text-secondary':       '#78716C',
+      '--text-muted':           '#A8A29E',
+      '--logo-bg':              '#F59E0B',
+      '--logo-text':            '#1C1400',
+      '--radius':               '12px',
+    },
+  };
+
+  function setTheme(name) {
+    const vars = themes[name];
+    const root = document.documentElement;
+    Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+
+    // Update button active states
+    document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('btn-' + name).classList.add('active');
+  }
+</script>
+</body>
+</html>

@@ -26,15 +26,37 @@ export async function extractTenant(
 
   // app.edustack.pk — Super Admin; skip tenant extraction
   if (host === `app.${baseDomain}` || host === 'localhost') {
+    // Still check for X-Org-Slug header (mobile requests on localhost dev)
+    const headerSlug = req.headers['x-org-slug'] as string | undefined;
+    if (headerSlug) {
+      try {
+        const org = await Organization.findOne({ slug: headerSlug.toLowerCase(), status: 'active' }).lean();
+        if (org) {
+          req.orgId = String(org._id);
+          req.orgSlug = headerSlug.toLowerCase();
+        }
+      } catch { /* non-critical — continue without org */ }
+    }
     return next();
   }
 
-  // Host doesn't belong to our base domain at all (e.g. Railway/custom domain direct access)
-  // Skip tenant extraction — routes will use req.user.orgId from the JWT instead
+  // Mobile / Railway direct URL — no subdomain match
+  // Check X-Org-Slug header sent by Flutter app
   if (!host.endsWith(`.${baseDomain}`)) {
+    const headerSlug = req.headers['x-org-slug'] as string | undefined;
+    if (headerSlug) {
+      try {
+        const org = await Organization.findOne({ slug: headerSlug.toLowerCase(), status: 'active' }).lean();
+        if (org) {
+          req.orgId = String(org._id);
+          req.orgSlug = headerSlug.toLowerCase();
+        }
+      } catch { /* fall through — controller will use JWT orgId */ }
+    }
     return next();
   }
 
+  // Subdomain-based resolution (standard web flow)
   const slug = host.slice(0, host.length - baseDomain.length - 1);
 
   try {

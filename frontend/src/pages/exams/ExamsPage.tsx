@@ -4,11 +4,13 @@ import { academicService } from '../../services/academicService';
 import { examService } from '../../services/examService';
 import type { ExamDoc, ResultDoc } from '../../services/examService';
 import { studentService } from '../../services/studentService';
+import { branchHeaderService } from '../../services/branchHeaderService';
 import PageHeader from '../../components/ui/PageHeader';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import { useAuthStore } from '../../stores/authStore';
 import { cn } from '../../lib/utils';
+import { downloadResultCardPdf } from '../../lib/resultCardPdf';
 
 type View = 'list' | 'marks' | 'results';
 
@@ -197,8 +199,12 @@ export default function ExamsPage() {
 }
 
 function StaffExamsView() {
-  const user = useAuthStore(s => s.user);
+  const user    = useAuthStore(s => s.user);
+  const orgSlug = useAuthStore(s => s.orgSlug);
   const qc = useQueryClient();
+
+  const { data: branchHeader } = useQuery({ queryKey: ['branch-header'], queryFn: branchHeaderService.get });
+  const orgName = branchHeader?.schoolName ?? orgSlug ?? 'School';
 
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
@@ -524,6 +530,7 @@ function StaffExamsView() {
                   <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">%</th>
                   <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Grade</th>
                   <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">PDF</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
@@ -541,6 +548,21 @@ function StaffExamsView() {
                       <td className="px-4 py-3 text-center font-bold">{r.grade}</td>
                       <td className="px-4 py-3 text-center">
                         {r.isPassed ? <Badge variant="success">Pass</Badge> : <Badge variant="danger">Fail</Badge>}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => downloadResultCardPdf({
+                            result: r,
+                            examName: selectedExam?.name ?? '',
+                            orgName,
+                            studentName: student?.profile.name,
+                            rollNo: student?.rollNo,
+                          })}
+                          className="text-xs px-2 py-1 rounded border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                          title="Download Result Card PDF"
+                        >
+                          ↓ PDF
+                        </button>
                       </td>
                     </tr>
                   );

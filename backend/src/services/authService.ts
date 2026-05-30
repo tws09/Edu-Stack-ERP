@@ -19,7 +19,7 @@ interface JwtPayload {
   branchId?: string;
 }
 
-export function generateTokens(payload: JwtPayload): TokenPair {
+export function generateTokens(payload: JwtPayload, refreshExpiresIn?: string): TokenPair {
   const accessToken = jwt.sign(payload, env.jwtSecret, {
     expiresIn: env.jwtExpiresIn as jwt.SignOptions['expiresIn'],
   });
@@ -27,7 +27,7 @@ export function generateTokens(payload: JwtPayload): TokenPair {
   const refreshToken = jwt.sign(
     { ...payload, jti: uuidv4() },
     env.jwtRefreshSecret,
-    { expiresIn: env.jwtRefreshExpiresIn as jwt.SignOptions['expiresIn'] }
+    { expiresIn: (refreshExpiresIn ?? env.jwtRefreshExpiresIn) as jwt.SignOptions['expiresIn'] }
   );
 
   return { accessToken, refreshToken };
@@ -64,7 +64,8 @@ export async function storeRefreshToken(
 }
 
 export async function rotateRefreshToken(
-  oldToken: string
+  oldToken: string,
+  refreshExpiresIn?: string,
 ): Promise<{ user: IUser; tokens: TokenPair } | null> {
   let payload: JwtPayload & { jti?: string };
   try {
@@ -82,12 +83,15 @@ export async function rotateRefreshToken(
   const user = await User.findById(payload.userId);
   if (!user || !user.active) return null;
 
-  const tokens = generateTokens({
-    userId: user.id,
-    role: user.role,
-    orgId: user.orgId?.toString(),
-    branchId: user.branchId?.toString(),
-  });
+  const tokens = generateTokens(
+    {
+      userId: user.id,
+      role: user.role,
+      orgId: user.orgId?.toString(),
+      branchId: user.branchId?.toString(),
+    },
+    refreshExpiresIn,
+  );
 
   await storeRefreshToken(user.id, tokens.refreshToken);
 

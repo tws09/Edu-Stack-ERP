@@ -24,6 +24,7 @@ export interface IUser extends Document {
   lastLoginAt?: Date;
   passwordChangedAt?: Date;
   mustChangePassword: boolean;
+  fcmTokens: string[];
   comparePassword(candidate: string): Promise<boolean>;
   createdAt: Date;
   updatedAt: Date;
@@ -47,6 +48,7 @@ const userSchema = new Schema<IUser>(
     lastLoginAt: Date,
     passwordChangedAt: Date,
     mustChangePassword: { type: Boolean, default: false },
+    fcmTokens: { type: [String], default: [] },
   },
   { timestamps: true }
 );

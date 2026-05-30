@@ -4,6 +4,8 @@ import { Types } from 'mongoose';
 import { Attendance } from '../models/Attendance';
 import { Student } from '../models/Student';
 import { Branch } from '../models/Branch';
+import { StaffAttendance } from '../models/StaffAttendance';
+import { User } from '../models/User';
 
 export const markAttendanceValidators = [
   body('classId').isMongoId(),
@@ -212,6 +214,126 @@ export async function getSectionSummary(req: Request, res: Response): Promise<vo
       present: s.present, absent: s.absent, late: s.late, excused: s.excused,
       total, percentage,
       isShortage: total > 0 && percentage < threshold,
+    };
+  });
+
+  res.json({ success: true, data: summary });
+}
+
+// ─── Staff Attendance ─────────────────────────────────────────────────────────
+
+export const markStaffAttendanceValidators = [
+  body('date').isISO8601(),
+  body('records').isArray({ min: 1 }),
+  body('records.*.staffId').isMongoId(),
+  body('records.*.status').isIn(['present', 'absent', 'late', 'on_leave']),
+  body('records.*.checkInTime').optional().isString(),
+  body('records.*.checkOutTime').optional().isString(),
+  body('records.*.note').optional().isString(),
+];
+
+export async function markStaffAttendance(req: Request, res: Response): Promise<void> {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) { res.status(422).json({ success: false, errors: errors.array() }); return; }
+
+  const { orgId, branchId, id: markedById } = req.user!;
+  const { date, records } = req.body;
+
+  const dayStart = new Date(date);
+  dayStart.setHours(0, 0, 0, 0);
+
+  const ops = (records as { staffId: string; status: string; checkInTime?: string; checkOutTime?: string; note?: string }[]).map(r => ({
+    updateOne: {
+      filter: {
+        orgId: new Types.ObjectId(orgId!),
+        branchId: new Types.ObjectId(branchId!),
+        staffId: new Types.ObjectId(r.staffId),
+        date: dayStart,
+      },
+      update: {
+        $set: {
+          orgId: new Types.ObjectId(orgId!),
+          branchId: new Types.ObjectId(branchId!),
+          staffId: new Types.ObjectId(r.staffId),
+          date: dayStart,
+          status: r.status as 'present' | 'absent' | 'late' | 'on_leave',
+          checkInTime: r.checkInTime,
+          checkOutTime: r.checkOutTime,
+          note: r.note,
+          markedById: new Types.ObjectId(markedById),
+        },
+      },
+      upsert: true,
+    },
+  }));
+
+  await StaffAttendance.bulkWrite(ops);
+  res.json({ success: true, message: `Saved ${records.length} staff attendance records for ${date}` });
+}
+
+export async function getStaffAttendance(req: Request, res: Response): Promise<void> {
+  const { orgId, branchId } = req.user!;
+  const { date, month, year } = req.query;
+
+  const filter: Record<string, unknown> = { orgId, branchId };
+
+  if (date) {
+    const d = new Date(date as string);
+    d.setHours(0, 0, 0, 0);
+    const e = new Date(date as string);
+    e.setHours(23, 59, 59, 999);
+    filter.date = { $gte: d, $lte: e };
+  } else if (month && year) {
+    const monthStart = new Date(parseInt(year as string), parseInt(month as string) - 1, 1);
+    const monthEnd = new Date(parseInt(year as string), parseInt(month as string), 0, 23, 59, 59);
+    filter.date = { $gte: monthStart, $lte: monthEnd };
+  }
+
+  const records = await StaffAttendance.find(filter)
+    .populate('staffId', 'name role')
+    .sort({ date: -1 })
+    .lean();
+
+  res.json({ success: true, data: records });
+}
+
+export async function getStaffMonthlySummary(req: Request, res: Response): Promise<void> {
+  const { orgId, branchId } = req.user!;
+  const { month, year } = req.query;
+
+  if (!month || !year) {
+    res.status(400).json({ success: false, message: 'month and year required' });
+    return;
+  }
+
+  const monthStart = new Date(parseInt(year as string), parseInt(month as string) - 1, 1);
+  const monthEnd = new Date(parseInt(year as string), parseInt(month as string), 0, 23, 59, 59);
+
+  const [staff, agg] = await Promise.all([
+    User.find({ orgId, branchId, role: { $nin: ['student', 'super_admin', 'group_admin'] }, active: true })
+      .select('name role').lean(),
+    StaffAttendance.aggregate([
+      { $match: { orgId: new Types.ObjectId(orgId!), branchId: new Types.ObjectId(branchId!), date: { $gte: monthStart, $lte: monthEnd } } },
+      { $group: {
+        _id: '$staffId',
+        present: { $sum: { $cond: [{ $eq: ['$status', 'present'] }, 1, 0] } },
+        absent:  { $sum: { $cond: [{ $eq: ['$status', 'absent'] },  1, 0] } },
+        late:    { $sum: { $cond: [{ $eq: ['$status', 'late'] },    1, 0] } },
+        on_leave:{ $sum: { $cond: [{ $eq: ['$status', 'on_leave'] },1, 0] } },
+      }},
+    ]),
+  ]);
+
+  const statsMap = new Map(agg.map(r => [r._id.toString(), r]));
+
+  const summary = staff.map(s => {
+    const st = statsMap.get(s._id.toString()) ?? { present: 0, absent: 0, late: 0, on_leave: 0 };
+    const total = st.present + st.absent + st.late + st.on_leave;
+    return {
+      staffId: s._id,
+      name: s.name,
+      role: s.role,
+      present: st.present, absent: st.absent, late: st.late, on_leave: st.on_leave, total,
     };
   });
 

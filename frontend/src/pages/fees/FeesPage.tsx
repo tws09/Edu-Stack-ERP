@@ -3,11 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { academicService } from '../../services/academicService';
 import { feeService } from '../../services/feeService';
 import type { FeeStructureDoc, ChallanDoc } from '../../services/feeService';
+import { branchHeaderService } from '../../services/branchHeaderService';
 import PageHeader from '../../components/ui/PageHeader';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import { useAuthStore } from '../../stores/authStore';
 import { cn, formatCurrency, formatDate } from '../../lib/utils';
+import { downloadChallanPdf } from '../../lib/challanPdf';
 
 type Tab = 'structures' | 'challans';
 
@@ -19,7 +21,8 @@ const today = new Date();
 const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
 
 export default function FeesPage() {
-  const user = useAuthStore(s => s.user);
+  const user    = useAuthStore(s => s.user);
+  const orgSlug = useAuthStore(s => s.orgSlug);
   const qc = useQueryClient();
   const isAccountant = user?.role === 'accountant' || user?.role === 'branch_principal';
 
@@ -54,7 +57,18 @@ export default function FeesPage() {
   const [waiverDiscount, setWaiverDiscount] = useState('');
   const [waiverAmount, setWaiverAmount] = useState('');
 
+  // Online payment modal (JazzCash / EasyPaisa)
+  const [onlinePayOpen, setOnlinePayOpen] = useState(false);
+  const [onlinePayChallan, setOnlinePayChallan] = useState<ChallanDoc | null>(null);
+  const [onlineGateway, setOnlineGateway] = useState<'jazzcash' | 'easypaisa'>('jazzcash');
+  const [onlineMobile, setOnlineMobile] = useState('');
+  const [onlineCnic, setOnlineCnic] = useState('');
+  const [onlineResult, setOnlineResult] = useState<{ success: boolean; message: string } | null>(null);
+
   const [apiError, setApiError] = useState('');
+
+  const { data: branchHeader } = useQuery({ queryKey: ['branch-header'], queryFn: branchHeaderService.get });
+  const orgName = branchHeader?.schoolName ?? orgSlug ?? 'School';
 
   const { data: years = [] } = useQuery({ queryKey: ['years'], queryFn: academicService.getYears });
   const currentYear = years.find(y => y.isCurrent) ?? years[0];
@@ -116,6 +130,19 @@ export default function FeesPage() {
     mutationFn: ({ id, data }: { id: string; data: { discount?: number; waiver?: number } }) => feeService.applyWaiver(id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['challans'] }); qc.invalidateQueries({ queryKey: ['fee-summary'] }); qc.invalidateQueries({ queryKey: ['fee-history'] }); setWaiverOpen(false); },
     onError: (e: { response?: { data?: { message?: string } } }) => setApiError(e?.response?.data?.message ?? 'Error'),
+  });
+
+  const onlinePayMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { mobileNumber: string; gateway: 'jazzcash' | 'easypaisa'; cnic?: string } }) => feeService.payOnline(id, data),
+    onSuccess: (r) => {
+      if (r.success) {
+        setOnlineResult({ success: true, message: `Payment initiated. Ref: ${r.data?.txnRefNo}. The customer will receive a PIN on their phone.` });
+        qc.invalidateQueries({ queryKey: ['challans'] });
+      } else {
+        setOnlineResult({ success: false, message: r.data?.responseDesc ?? 'Payment failed. Please try again.' });
+      }
+    },
+    onError: (e: { response?: { data?: { message?: string } } }) => setOnlineResult({ success: false, message: e?.response?.data?.message ?? 'Payment initiation failed.' }),
   });
 
   const closeStructureModal = () => {
@@ -239,7 +266,7 @@ export default function FeesPage() {
                   <th className="text-right px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Paid</th>
                   <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
                   <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Due</th>
-                  {isAccountant && <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Actions</th>}
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
@@ -267,18 +294,32 @@ export default function FeesPage() {
                         <Badge variant={STATUS_VARIANT[c.status] ?? 'default'}>{c.status}</Badge>
                       </td>
                       <td className="px-4 py-3 text-center text-xs text-gray-500">{formatDate(c.dueDate)}</td>
-                      {isAccountant && (
-                        <td className="px-4 py-3 text-center">
-                          <div className="flex gap-1 justify-center">
-                            {!isSettled && (
-                              <button onClick={() => openPayment(c)} className="text-xs px-2 py-1 rounded border border-green-200 text-green-700 hover:bg-green-50 transition-colors">Pay</button>
-                            )}
-                            {!isSettled && (
-                              <button onClick={() => { setWaiverChallan(c); setWaiverDiscount(''); setWaiverAmount(''); setWaiverOpen(true); }} className="text-xs px-2 py-1 rounded border border-blue-200 text-blue-700 hover:bg-blue-50 transition-colors">Waiver</button>
-                            )}
-                          </div>
-                        </td>
-                      )}
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex gap-1 justify-center flex-wrap">
+                          {isAccountant && !isSettled && (
+                            <button onClick={() => openPayment(c)} className="text-xs px-2 py-1 rounded border border-green-200 text-green-700 hover:bg-green-50 transition-colors">Pay</button>
+                          )}
+                          {isAccountant && !isSettled && (
+                            <button
+                              onClick={() => { setOnlinePayChallan(c); setOnlineGateway('jazzcash'); setOnlineMobile(''); setOnlineCnic(''); setOnlineResult(null); setOnlinePayOpen(true); }}
+                              className="text-xs px-2 py-1 rounded border border-purple-200 text-purple-700 hover:bg-purple-50 transition-colors"
+                              title="Pay via JazzCash or EasyPaisa"
+                            >
+                              📱 Online
+                            </button>
+                          )}
+                          {isAccountant && !isSettled && (
+                            <button onClick={() => { setWaiverChallan(c); setWaiverDiscount(''); setWaiverAmount(''); setWaiverOpen(true); }} className="text-xs px-2 py-1 rounded border border-blue-200 text-blue-700 hover:bg-blue-50 transition-colors">Waiver</button>
+                          )}
+                          <button
+                            onClick={() => downloadChallanPdf(c, orgName)}
+                            className="text-xs px-2 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                            title="Download PDF"
+                          >
+                            ↓ PDF
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -421,6 +462,76 @@ export default function FeesPage() {
             <button onClick={handlePayment} disabled={paymentMutation.isPending || !payAmount} className="btn-primary">
               {paymentMutation.isPending ? 'Saving...' : 'Record Payment'}
             </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Online Payment Modal (JazzCash / EasyPaisa) */}
+      <Modal open={onlinePayOpen} onClose={() => { setOnlinePayOpen(false); setOnlineResult(null); }} title="Online Payment" size="sm">
+        <div className="space-y-4">
+          {onlinePayChallan && !onlineResult && (
+            <div className="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-3 text-sm">
+              <p className="text-gray-500 dark:text-slate-400">
+                Amount: <span className="font-semibold text-gray-900 dark:text-slate-100">{formatCurrency(onlinePayChallan.netAmount - onlinePayChallan.paidAmount)}</span>
+              </p>
+              <p className="text-gray-400 dark:text-slate-500 text-xs mt-0.5">Challan: {onlinePayChallan.challanNo}</p>
+            </div>
+          )}
+
+          {onlineResult ? (
+            <div className={cn('rounded-lg p-4 text-sm', onlineResult.success ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700')}>
+              <p className="font-semibold mb-1">{onlineResult.success ? '✓ Payment Initiated' : '✗ Payment Failed'}</p>
+              <p>{onlineResult.message}</p>
+            </div>
+          ) : (
+            <>
+              <div>
+                <label className="label">Payment Gateway</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['jazzcash', 'easypaisa'] as const).map(gw => (
+                    <button
+                      key={gw}
+                      onClick={() => setOnlineGateway(gw)}
+                      className={cn('py-2.5 rounded-lg border text-sm font-medium transition-colors capitalize', onlineGateway === gw ? 'bg-purple-600 text-white border-purple-600' : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700')}
+                    >
+                      {gw === 'jazzcash' ? 'JazzCash' : 'EasyPaisa'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="label">Customer Mobile Number</label>
+                <input
+                  className="input"
+                  value={onlineMobile}
+                  onChange={e => setOnlineMobile(e.target.value)}
+                  placeholder="03xxxxxxxxx"
+                  maxLength={11}
+                />
+                <p className="text-xs text-gray-400 mt-1">Must be a registered {onlineGateway === 'jazzcash' ? 'JazzCash' : 'EasyPaisa'} number</p>
+              </div>
+              {onlineGateway === 'jazzcash' && (
+                <div>
+                  <label className="label">CNIC (last 6 digits, optional)</label>
+                  <input className="input" value={onlineCnic} onChange={e => setOnlineCnic(e.target.value)} placeholder="XXXXXX" maxLength={13} />
+                </div>
+              )}
+            </>
+          )}
+
+          <div className="flex gap-3 justify-end">
+            <button onClick={() => { setOnlinePayOpen(false); setOnlineResult(null); }} className="btn-secondary">
+              {onlineResult ? 'Close' : 'Cancel'}
+            </button>
+            {!onlineResult && (
+              <button
+                onClick={() => onlinePayChallan && onlinePayMutation.mutate({ id: onlinePayChallan._id, data: { mobileNumber: onlineMobile, gateway: onlineGateway, cnic: onlineCnic || undefined } })}
+                disabled={onlinePayMutation.isPending || !onlineMobile || onlineMobile.length !== 11}
+                className="btn-primary bg-purple-600 hover:bg-purple-700 border-purple-600"
+              >
+                {onlinePayMutation.isPending ? 'Initiating...' : `Pay via ${onlineGateway === 'jazzcash' ? 'JazzCash' : 'EasyPaisa'}`}
+              </button>
+            )}
           </div>
         </div>
       </Modal>

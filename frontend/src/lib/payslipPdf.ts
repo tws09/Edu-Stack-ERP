@@ -1,0 +1,153 @@
+import jsPDF from 'jspdf';
+import type { PayrollDoc } from '../services/payrollService';
+
+function staffName(p: PayrollDoc) {
+  return typeof p.staffId === 'object' ? p.staffId.name : 'Staff Member';
+}
+function staffRole(p: PayrollDoc) {
+  return typeof p.staffId === 'object' ? p.staffId.role.replace(/_/g, ' ') : '';
+}
+function approverName(p: PayrollDoc) {
+  return typeof p.approvedById === 'object' ? p.approvedById.name : '';
+}
+function pkr(n: number) {
+  return `Rs ${Math.abs(n).toLocaleString('en-PK')}`;
+}
+
+const PRIMARY: [number, number, number] = [30, 58, 95];
+const GREEN:   [number, number, number] = [16, 120, 80];
+const RED:     [number, number, number] = [185, 40, 40];
+
+export function downloadPayslipPdf(payroll: PayrollDoc, orgName: string): void {
+  const doc = new jsPDF('portrait', 'mm', 'a4');
+  const W   = doc.internal.pageSize.getWidth();
+  const H   = doc.internal.pageSize.getHeight();
+  const m   = 20;
+  const cw  = W - m * 2;
+  const c1  = m + 6;
+  const c2  = m + cw / 2;
+  let y = 15;
+
+  // ── Header ─────────────────────────────────────────────
+  doc.setFillColor(...PRIMARY);
+  doc.rect(m, y, cw, 28, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(15);
+  doc.setTextColor(255, 255, 255);
+  doc.text(orgName, c1, y + 11);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text('SALARY PAYSLIP', c1, y + 19);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text(`Month: ${payroll.month}`, W - m - 6, y + 11, { align: 'right' });
+
+  const STATUS_COLORS: Record<string, [number, number, number]> = {
+    draft: [200, 140, 0], approved: [16, 120, 80], paid: [30, 58, 95],
+  };
+  const sc = STATUS_COLORS[payroll.status] ?? [100, 100, 100];
+  doc.setTextColor(...sc);
+  // Draw status badge bg
+  doc.setFillColor(255, 255, 255, 0.15);
+  doc.text(payroll.status.toUpperCase(), W - m - 6, y + 19, { align: 'right' });
+  y += 34;
+
+  // ── Employee info ───────────────────────────────────────
+  doc.setFillColor(248, 250, 252);
+  doc.rect(m, y, cw, 20, 'F');
+  doc.setDrawColor(220, 220, 220);
+  doc.rect(m, y, cw, 20);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(110, 110, 110);
+  doc.text('Employee Name', c1, y + 6);
+  doc.text('Role', c2, y + 6);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(20, 20, 20);
+  doc.text(staffName(payroll), c1, y + 14);
+  doc.setFontSize(9);
+  const role = staffRole(payroll);
+  doc.text(role.charAt(0).toUpperCase() + role.slice(1), c2, y + 14);
+  y += 26;
+
+  // ── Section helper ──────────────────────────────────────
+  const drawSection = (
+    title: string,
+    rows: { label: string; amount: number }[],
+    headerColor: [number, number, number],
+    negative = false,
+  ) => {
+    doc.setFillColor(...headerColor);
+    doc.rect(m, y, cw, 8, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(255, 255, 255);
+    doc.text(title, c1, y + 5.5);
+    y += 8;
+
+    rows.forEach((row, i) => {
+      const bg: [number, number, number] = i % 2 === 0 ? [255, 255, 255] : [248, 250, 252];
+      doc.setFillColor(...bg);
+      doc.rect(m, y, cw, 8, 'F');
+      doc.setDrawColor(235, 235, 235);
+      doc.line(m, y + 8, m + cw, y + 8);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(35, 35, 35);
+      doc.text(row.label, c1, y + 5.5);
+      const amtStr = negative ? `- ${pkr(row.amount)}` : pkr(row.amount);
+      doc.text(amtStr, W - m - 6, y + 5.5, { align: 'right' });
+      y += 8;
+    });
+    y += 5;
+  };
+
+  // Earnings
+  drawSection('EARNINGS', [
+    { label: 'Basic Salary', amount: payroll.basicSalary },
+    ...payroll.allowances,
+  ], GREEN);
+
+  // Deductions
+  const deductionRows = [...payroll.deductions];
+  if (payroll.absentDeduction > 0) {
+    deductionRows.push({ name: `Absent Days (${payroll.absentDays}d)`, amount: payroll.absentDeduction });
+  }
+  if (deductionRows.length > 0) {
+    drawSection('DEDUCTIONS', deductionRows.map(d => ({ label: d.name, amount: d.amount })), RED, true);
+  }
+
+  // Net pay
+  doc.setFillColor(...PRIMARY);
+  doc.rect(m, y, cw, 12, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(255, 255, 255);
+  doc.text('NET PAY', c1, y + 8.5);
+  doc.text(pkr(payroll.netPay), W - m - 6, y + 8.5, { align: 'right' });
+  y += 18;
+
+  // Approval info
+  if (payroll.approvedAt) {
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(7.5);
+    doc.setTextColor(120, 120, 120);
+    const approver = approverName(payroll);
+    const dateStr  = new Date(payroll.approvedAt).toLocaleDateString('en-PK');
+    doc.text(
+      approver ? `Approved by ${approver} on ${dateStr}` : `Approved on ${dateStr}`,
+      c1, y,
+    );
+    y += 7;
+  }
+
+  // ── Footer ──────────────────────────────────────────────
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7);
+  doc.setTextColor(190, 190, 190);
+  doc.text('Generated by EduStack PK — WolfStack', W / 2, H - 9, { align: 'center' });
+  doc.text('This is a computer-generated document.', W / 2, H - 5, { align: 'center' });
+
+  doc.save(`payslip_${staffName(payroll).replace(/\s+/g, '_')}_${payroll.month}.pdf`);
+}

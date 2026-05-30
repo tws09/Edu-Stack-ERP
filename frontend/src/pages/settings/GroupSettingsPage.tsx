@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { QRCodeCanvas } from 'qrcode.react';
 import api from '../../services/api';
 import type { Organization, ApiResponse } from '../../types';
 import { useAuthStore } from '../../stores/authStore';
@@ -28,6 +29,11 @@ export default function GroupSettingsPage() {
   const [logoUploading, setLogoUploading] = useState(false);
   const [logoError, setLogoError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [qrData, setQrData] = useState<string | null>(null);
+  const [qrOrgName, setQrOrgName] = useState('');
+  const [qrGenerating, setQrGenerating] = useState(false);
+  const [qrError, setQrError] = useState('');
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
 
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -48,6 +54,31 @@ export default function GroupSettingsPage() {
       setLogoUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  }
+
+  async function handleGenerateQr() {
+    setQrError('');
+    setQrGenerating(true);
+    try {
+      const { data } = await api.post<{ success: boolean; data: { qrData: string; org: { name: string; slug: string } } }>(
+        `/organizations/${user!.orgId}/generate-qr`
+      );
+      setQrData(data.data.qrData);
+      setQrOrgName(data.data.org.name);
+    } catch {
+      setQrError('Failed to generate QR code. Please try again.');
+    } finally {
+      setQrGenerating(false);
+    }
+  }
+
+  function handleDownloadQr() {
+    const canvas = qrCanvasRef.current;
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = `${qrOrgName || 'school'}-mobile-qr.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   }
 
   const { data: org, isLoading } = useQuery({
@@ -282,6 +313,82 @@ export default function GroupSettingsPage() {
               {updateBrand.isPending ? 'Saving...' : 'Save Branding'}
             </button>
           </form>
+
+          {/* Mobile App QR Code */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5 space-y-4">
+            <div>
+              <h2 className="font-semibold text-gray-900 dark:text-slate-100 text-sm">Mobile App Onboarding</h2>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
+                Generate a QR code that staff and students scan to connect the EduStack mobile app to your school.
+              </p>
+            </div>
+
+            {qrError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{qrError}</div>
+            )}
+
+            {qrData ? (
+              <div className="flex flex-col items-center gap-4">
+                <div className="p-4 bg-white rounded-xl border border-gray-200 dark:border-slate-600 inline-block">
+                  <QRCodeCanvas
+                    ref={qrCanvasRef}
+                    value={qrData}
+                    size={200}
+                    level="M"
+                    includeMargin
+                  />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-slate-400 text-center font-medium">{qrOrgName}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 text-center -mt-2">
+                  Scan with the EduStack mobile app to onboard your school
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handleDownloadQr}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download PNG
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleGenerateQr}
+                    disabled={qrGenerating}
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                  >
+                    Regenerate
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleGenerateQr}
+                disabled={qrGenerating}
+                className="w-full py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              >
+                {qrGenerating ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8H3m2 0V6m0 2v2M5 8H3m5-4h2M5 8h.01" />
+                    </svg>
+                    Generate QR Code
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

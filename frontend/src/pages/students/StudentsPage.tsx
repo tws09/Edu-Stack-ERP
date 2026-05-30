@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentService } from '../../services/studentService';
 import type { CreateStudentPayload } from '../../services/studentService';
 import { academicService } from '../../services/academicService';
+import { branchHeaderService } from '../../services/branchHeaderService';
+import { downloadTransferCertPdf } from '../../lib/transferCertPdf';
 import PageHeader from '../../components/ui/PageHeader';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
@@ -84,11 +86,15 @@ export default function StudentsPage() {
 
 function StaffStudentsView() {
   const qc = useQueryClient();
+  const orgSlug = useAuthStore(s => s.orgSlug);
   const [showAdd, setShowAdd] = useState(false);
   const [classFilter, setClassFilter] = useState('');
   const [sectionFilter, setSectionFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [addResult, setAddResult] = useState<{ tempPassword: string; admissionNo: string } | null>(null);
+
+  const { data: branchHeader } = useQuery({ queryKey: ['branch-header'], queryFn: branchHeaderService.get });
+  const orgName = branchHeader?.schoolName ?? orgSlug ?? 'School';
 
   const { data: years = [] } = useQuery({ queryKey: ['years'], queryFn: academicService.getYears });
   const currentYear = years.find(y => y.isCurrent) ?? years[0];
@@ -158,14 +164,15 @@ function StaffStudentsView() {
               <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Guardian</th>
               <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Admitted</th>
               <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
+              <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">TC</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
             {isLoading && (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">Loading...</td></tr>
+              <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">Loading...</td></tr>
             )}
             {!isLoading && students.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">No students found.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">No students found.</td></tr>
             )}
             {students.map((s) => (
               <tr key={s._id} className="hover:bg-gray-50 dark:hover:bg-slate-700/40 transition-colors">
@@ -184,6 +191,15 @@ function StaffStudentsView() {
                   <Badge variant={STATUS_VARIANTS[s.status as keyof typeof STATUS_VARIANTS] ?? 'default'}>
                     {s.status}
                   </Badge>
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <button
+                    onClick={() => downloadTransferCertPdf(s, orgName)}
+                    title="Download Transfer Certificate"
+                    className="text-xs px-2 py-1 rounded border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    ↓ TC
+                  </button>
                 </td>
               </tr>
             ))}

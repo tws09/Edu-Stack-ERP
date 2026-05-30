@@ -3,11 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { payrollService } from '../../services/payrollService';
 import type { PayrollDoc } from '../../services/payrollService';
 import { userService } from '../../services/userService';
+import { branchHeaderService } from '../../services/branchHeaderService';
 import PageHeader from '../../components/ui/PageHeader';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import { useAuthStore } from '../../stores/authStore';
 import { formatCurrency } from '../../lib/utils';
+import { downloadPayslipPdf } from '../../lib/payslipPdf';
 
 const today = new Date();
 const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
@@ -16,10 +18,41 @@ const STATUS_VARIANT: Record<string, 'default' | 'warning' | 'success'> = {
   draft: 'default', approved: 'warning', paid: 'success',
 };
 
+function downloadPayrollCsv(payrolls: PayrollDoc[], month: string) {
+  const headers = ['Staff Name', 'Role', 'Month', 'Basic Salary', 'Allowances', 'Gross Salary', 'Deductions', 'Absent Days', 'Net Pay', 'Status'];
+  const rows = payrolls.map(p => {
+    const staff = typeof p.staffId === 'object' ? p.staffId : null;
+    return [
+      staff?.name ?? '',
+      staff?.role?.replace('_', ' ') ?? '',
+      month,
+      p.basicSalary,
+      p.allowances.reduce((s, a) => s + a.amount, 0),
+      p.grossSalary,
+      p.totalDeductions,
+      p.absentDays,
+      p.netPay,
+      p.status,
+    ].join(',');
+  });
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `payroll_${month}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function PayrollPage() {
-  const user = useAuthStore(s => s.user);
+  const user    = useAuthStore(s => s.user);
+  const orgSlug = useAuthStore(s => s.orgSlug);
   const qc = useQueryClient();
   const canManage = user?.role === 'accountant' || user?.role === 'branch_principal';
+
+  const { data: branchHeader } = useQuery({ queryKey: ['branch-header'], queryFn: branchHeaderService.get });
+  const orgName = branchHeader?.schoolName ?? orgSlug ?? 'School';
 
   const [month, setMonth] = useState(currentMonth);
   const [editOpen, setEditOpen] = useState(false);
@@ -134,6 +167,13 @@ export default function PayrollPage() {
         <div className="flex items-center gap-3">
           <label className="label mb-0">Month</label>
           <input type="month" className="input w-48" value={month} onChange={e => setMonth(e.target.value)} />
+          <button
+            onClick={() => downloadPayrollCsv(payrolls, month)}
+            disabled={payrolls.length === 0}
+            className="ml-auto text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors"
+          >
+            ↓ CSV
+          </button>
         </div>
       </div>
 
@@ -175,7 +215,7 @@ export default function PayrollPage() {
                   </td>
                   {canManage && (
                     <td className="px-4 py-3 text-center">
-                      <div className="flex gap-1 justify-center">
+                      <div className="flex gap-1 justify-center flex-wrap">
                         {p.status === 'draft' && (
                           <>
                             <button onClick={() => openEdit(p)} className="text-xs px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700 transition-colors">Edit</button>
@@ -185,6 +225,13 @@ export default function PayrollPage() {
                         {p.status === 'approved' && (
                           <button onClick={() => { setPayTarget(p); setPayMethod('bank_transfer'); setPayMethodOpen(true); }} className="text-xs px-2 py-1 rounded border border-green-200 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/20 transition-colors">Mark Paid</button>
                         )}
+                        <button
+                          onClick={() => downloadPayslipPdf(p, orgName)}
+                          className="text-xs px-2 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700 transition-colors"
+                          title="Download Payslip PDF"
+                        >
+                          ↓ Payslip
+                        </button>
                       </div>
                     </td>
                   )}

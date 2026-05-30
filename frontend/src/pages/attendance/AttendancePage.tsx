@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { academicService } from '../../services/academicService';
 import { attendanceService } from '../../services/attendanceService';
-import type { AttendanceRecord } from '../../services/attendanceService';
+import type { AttendanceRecord, StaffStatus } from '../../services/attendanceService';
 import { studentService } from '../../services/studentService';
+import { branchHeaderService } from '../../services/branchHeaderService';
+import { downloadAttendancePdf, downloadAttendanceCsv } from '../../lib/attendancePdf';
 import PageHeader from '../../components/ui/PageHeader';
 import Badge from '../../components/ui/Badge';
 import { useAuthStore } from '../../stores/authStore';
@@ -182,6 +184,10 @@ function StaffAttendanceView() {
   const [summaryMonth, setSummaryMonth] = useState(String(new Date().getMonth() + 1));
   const [summaryYear, setSummaryYear] = useState(String(new Date().getFullYear()));
 
+  const orgSlug = useAuthStore(s => s.orgSlug);
+  const { data: branchHeader } = useQuery({ queryKey: ['branch-header'], queryFn: branchHeaderService.get });
+  const orgName = branchHeader?.schoolName ?? orgSlug ?? 'School';
+
   const { data: years = [] } = useQuery({ queryKey: ['years'], queryFn: academicService.getYears });
   const currentYear = years.find(y => y.isCurrent) ?? years[0];
 
@@ -333,7 +339,7 @@ function StaffAttendanceView() {
       {/* Monthly summary view */}
       {view === 'summary' && sectionId && (
         <>
-          <div className="flex gap-3 mb-4">
+          <div className="flex flex-wrap gap-3 mb-4 items-center">
             <select value={summaryMonth} onChange={e => setSummaryMonth(e.target.value)} className="text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200">
               {Array.from({ length: 12 }, (_, i) => (
                 <option key={i + 1} value={String(i + 1)}>{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
@@ -342,6 +348,35 @@ function StaffAttendanceView() {
             <select value={summaryYear} onChange={e => setSummaryYear(e.target.value)} className="text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200">
               {[2024, 2025, 2026].map(y => <option key={y} value={String(y)}>{y}</option>)}
             </select>
+            <div className="ml-auto flex gap-2">
+              <button
+                onClick={() => downloadAttendanceCsv({
+                  records: sectionSummary,
+                  className: classes.find(c => c._id === classId)?.name ?? classId,
+                  sectionName: sections.find(s => s._id === sectionId)?.name ?? sectionId,
+                  month: summaryMonth,
+                  year: summaryYear,
+                })}
+                disabled={sectionSummary.length === 0}
+                className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-40"
+              >
+                ↓ CSV
+              </button>
+              <button
+                onClick={() => downloadAttendancePdf({
+                  records: sectionSummary,
+                  className: classes.find(c => c._id === classId)?.name ?? classId,
+                  sectionName: sections.find(s => s._id === sectionId)?.name ?? sectionId,
+                  month: summaryMonth,
+                  year: summaryYear,
+                  orgName,
+                })}
+                disabled={sectionSummary.length === 0}
+                className="text-xs px-3 py-1.5 rounded-lg bg-navy-900 dark:bg-navy-800 border border-navy-700 text-white hover:bg-navy-800 dark:hover:bg-navy-700 transition-colors disabled:opacity-40"
+              >
+                ↓ PDF
+              </button>
+            </div>
           </div>
 
           <div className="card overflow-hidden">
@@ -383,8 +418,208 @@ function StaffAttendanceView() {
   );
 }
 
+const STAFF_CYCLE: StaffStatus[] = ['present', 'absent', 'late', 'on_leave'];
+const STAFF_COLORS: Record<StaffStatus, string> = {
+  present:  'bg-green-100 text-green-700 border-green-200',
+  absent:   'bg-red-100 text-red-700 border-red-200',
+  late:     'bg-yellow-100 text-yellow-700 border-yellow-200',
+  on_leave: 'bg-blue-100 text-blue-700 border-blue-200',
+};
+
+function StaffDailyAttendanceView() {
+  const qc = useQueryClient();
+  const today = new Date().toISOString().split('T')[0];
+  const [date, setDate] = useState(today);
+  const [view, setView] = useState<'mark' | 'summary'>('mark');
+  const [summaryMonth, setSummaryMonth] = useState(String(new Date().getMonth() + 1));
+  const [summaryYear, setSummaryYear] = useState(String(new Date().getFullYear()));
+  const [statuses, setStatuses] = useState<Record<string, StaffStatus>>({});
+  const [submitted, setSubmitted] = useState(false);
+
+  const { data: staffAttendance = [] } = useQuery({
+    queryKey: ['staff-attendance', date],
+    queryFn: () => attendanceService.getStaff({ date }),
+    enabled: view === 'mark',
+  });
+
+  const { data: summary = [] } = useQuery({
+    queryKey: ['staff-summary', summaryMonth, summaryYear],
+    queryFn: () => attendanceService.getStaffSummary({ month: summaryMonth, year: summaryYear }),
+    enabled: view === 'summary',
+  });
+
+  // Pre-fill statuses from existing records when date changes
+  useEffect(() => {
+    if (staffAttendance.length > 0) {
+      const existing: Record<string, StaffStatus> = {};
+      staffAttendance.forEach(r => {
+        const id = typeof r.staffId === 'object' ? r.staffId._id : r.staffId;
+        existing[id] = r.status;
+      });
+      setStatuses(existing);
+    }
+    setSubmitted(false);
+  }, [staffAttendance, date]);
+
+  const markMutation = useMutation({
+    mutationFn: attendanceService.markStaff,
+    onSuccess: () => {
+      setSubmitted(true);
+      qc.invalidateQueries({ queryKey: ['staff-attendance'] });
+      qc.invalidateQueries({ queryKey: ['staff-summary'] });
+    },
+  });
+
+  const toggleStatus = (staffId: string) => {
+    setStatuses(prev => {
+      const cur = prev[staffId] ?? 'present';
+      const next = STAFF_CYCLE[(STAFF_CYCLE.indexOf(cur) + 1) % STAFF_CYCLE.length];
+      return { ...prev, [staffId]: next };
+    });
+    setSubmitted(false);
+  };
+
+  const staffList = staffAttendance.length > 0
+    ? staffAttendance.map(r => ({ id: typeof r.staffId === 'object' ? r.staffId._id : r.staffId, name: typeof r.staffId === 'object' ? r.staffId.name : '—', role: typeof r.staffId === 'object' ? r.staffId.role : '' }))
+    : [];
+
+  const handleSave = () => {
+    const records = staffList.map(s => ({ staffId: s.id, status: statuses[s.id] ?? 'present' }));
+    if (records.length === 0) return;
+    markMutation.mutate({ date, records });
+  };
+
+  const roleLabel = (r: string) => r.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto">
+      <PageHeader title="Staff Attendance" />
+
+      <div className="card p-4 mb-5">
+        <div className="flex gap-3 flex-wrap items-end">
+          <div>
+            <label className="label">Date</label>
+            <input type="date" className="input" value={date} max={today} onChange={e => { setDate(e.target.value); setSubmitted(false); }} />
+          </div>
+          <div className="flex gap-2 items-end pb-0.5">
+            <button onClick={() => setView('mark')} className={cn('px-4 py-2 text-sm rounded-lg border transition-colors', view === 'mark' ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700')}>Mark</button>
+            <button onClick={() => setView('summary')} className={cn('px-4 py-2 text-sm rounded-lg border transition-colors', view === 'summary' ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700')}>Monthly Summary</button>
+          </div>
+        </div>
+      </div>
+
+      {view === 'mark' && (
+        <>
+          {submitted && (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-4 text-sm text-green-700">
+              ✓ Staff attendance saved for {date}.
+            </div>
+          )}
+          {staffList.length === 0 ? (
+            <div className="card px-5 py-10 text-center text-gray-400 text-sm">
+              No staff records found. Ensure staff have been added and have logged in at least once.
+            </div>
+          ) : (
+            <>
+              <div className="card divide-y divide-gray-100 dark:divide-slate-700 mb-4">
+                {staffList.map(s => {
+                  const status = statuses[s.id] ?? 'present';
+                  return (
+                    <div key={s.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700/40">
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-slate-100 text-sm">{s.name}</p>
+                        <p className="text-xs text-gray-400 dark:text-slate-500">{roleLabel(s.role)}</p>
+                      </div>
+                      <button
+                        onClick={() => toggleStatus(s.id)}
+                        className={cn('px-3 py-1 rounded-lg border text-xs font-medium transition-all capitalize', STAFF_COLORS[status])}
+                      >
+                        {status.replace('_', ' ')}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              <button onClick={handleSave} disabled={markMutation.isPending} className="btn-primary w-full py-3 text-base">
+                {markMutation.isPending ? 'Saving...' : 'Save Staff Attendance'}
+              </button>
+            </>
+          )}
+        </>
+      )}
+
+      {view === 'summary' && (
+        <>
+          <div className="flex gap-3 mb-4">
+            <select value={summaryMonth} onChange={e => setSummaryMonth(e.target.value)} className="text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200">
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i + 1} value={String(i + 1)}>{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
+              ))}
+            </select>
+            <select value={summaryYear} onChange={e => setSummaryYear(e.target.value)} className="text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200">
+              {[2024, 2025, 2026].map(y => <option key={y} value={String(y)}>{y}</option>)}
+            </select>
+          </div>
+          <div className="card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 dark:bg-slate-700/50 border-b border-gray-100 dark:border-slate-700">
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Name</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Role</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Present</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Absent</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Late</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">On Leave</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+                {summary.map(s => (
+                  <tr key={String(s.staffId)}>
+                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{s.name}</td>
+                    <td className="px-4 py-3 text-xs text-gray-500 dark:text-slate-400">{roleLabel(s.role)}</td>
+                    <td className="px-4 py-3 text-center text-green-600">{s.present}</td>
+                    <td className="px-4 py-3 text-center text-red-600">{s.absent}</td>
+                    <td className="px-4 py-3 text-center text-yellow-600">{s.late}</td>
+                    <td className="px-4 py-3 text-center text-blue-600">{s.on_leave}</td>
+                    <td className="px-4 py-3 text-center text-gray-500">{s.total}</td>
+                  </tr>
+                ))}
+                {summary.length === 0 && (
+                  <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400 text-sm">No records for this period.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function PrincipalAttendanceView() {
+  const [tab, setTab] = useState<'students' | 'staff'>('students');
+  return (
+    <div>
+      <div className="flex gap-2 px-6 pt-4">
+        {(['students', 'staff'] as const).map(t => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={cn('px-4 py-2 text-sm font-medium rounded-lg border transition-colors capitalize', tab === t ? 'bg-navy-950 text-white border-navy-950' : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700')}
+          >
+            {t === 'students' ? 'Student Attendance' : 'Staff Attendance'}
+          </button>
+        ))}
+      </div>
+      {tab === 'students' ? <StaffAttendanceView /> : <StaffDailyAttendanceView />}
+    </div>
+  );
+}
+
 export default function AttendancePage() {
   const user = useAuthStore(s => s.user);
   if (user?.role === 'student') return <StudentAttendanceView />;
+  if (user?.role === 'branch_principal' || user?.role === 'it_admin') return <PrincipalAttendanceView />;
   return <StaffAttendanceView />;
 }
