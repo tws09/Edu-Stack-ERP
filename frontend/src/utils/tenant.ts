@@ -1,5 +1,5 @@
 const BASE = import.meta.env.VITE_BASE_DOMAIN ?? 'tws.enterprises';
-const RESERVED = new Set(['admin', 'api', 'www', 'app']);
+const RESERVED = new Set(['admin', 'api', 'www', 'app', 'edu']);
 
 export function getOrgSlug(): string | null {
   const host = window.location.hostname;
