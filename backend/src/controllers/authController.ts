@@ -14,11 +14,14 @@ import {
 } from '../services/authService';
 import { withoutTenantEnforcement } from '../utils/tenantPlugin';
 
+const COOKIE_DOMAIN = env.isDev ? undefined : `.${env.baseDomain}`;
+
 const ACCESS_COOKIE_OPTS = {
   httpOnly: true,
   secure: !env.isDev,
   sameSite: 'strict' as const,
   maxAge: 15 * 60 * 1000,
+  ...(COOKIE_DOMAIN && { domain: COOKIE_DOMAIN }),
 };
 
 const REFRESH_COOKIE_OPTS = {
@@ -27,6 +30,7 @@ const REFRESH_COOKIE_OPTS = {
   sameSite: 'strict' as const,
   path: '/api/auth/refresh',
   maxAge: 7 * 24 * 60 * 60 * 1000,
+  ...(COOKIE_DOMAIN && { domain: COOKIE_DOMAIN }),
 };
 
 export const loginValidators = [
@@ -168,8 +172,8 @@ export async function logout(req: Request, res: Response): Promise<void> {
     req.headers.authorization?.slice(7);
   if (token) await blacklistToken(token);
 
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken', { path: '/api/auth/refresh' });
+  res.clearCookie('accessToken', { ...(COOKIE_DOMAIN && { domain: COOKIE_DOMAIN }) });
+  res.clearCookie('refreshToken', { path: '/api/auth/refresh', ...(COOKIE_DOMAIN && { domain: COOKIE_DOMAIN }) });
   res.json({ success: true, message: 'Logged out successfully' });
 }
 

@@ -42,6 +42,7 @@ import ResourcesPage from './pages/resources/ResourcesPage';
 import ExamPaperPage from './pages/examPaper/ExamPaperPage';
 import RolesHierarchyPage from './pages/roles/RolesHierarchyPage';
 import MobileDevicesPage from './pages/admin/MobileDevicesPage';
+import LandingPage from './pages/landing/LandingPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -226,13 +227,13 @@ function TenantRouter() {
   );
 }
 
-// ── tws.enterprises (root domain — registration) ─────────
+// ── tws.enterprises (root domain — landing + registration) ──
 function PublicRouter() {
   return (
     <Routes>
+      <Route path="/"         element={<LandingPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/" element={<Navigate to="/register" replace />} />
-      <Route path="*" element={<NotFoundPage />} />
+      <Route path="*"         element={<NotFoundPage />} />
     </Routes>
   );
 }
