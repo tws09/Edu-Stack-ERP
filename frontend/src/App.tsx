@@ -4,7 +4,7 @@ import { Suspense, useEffect } from 'react';
 import './i18n';
 import { useThemeStore } from './stores/themeStore';
 import { useAuthStore } from './stores/authStore';
-import { getOrgSlug, isAdminDomain } from './utils/tenant';
+import { getOrgSlug, isAdminDomain, getProductSubdomain } from './utils/tenant';
 
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import AppLayout from './layouts/AppLayout';
@@ -43,6 +43,7 @@ import ExamPaperPage from './pages/examPaper/ExamPaperPage';
 import RolesHierarchyPage from './pages/roles/RolesHierarchyPage';
 import MobileDevicesPage from './pages/admin/MobileDevicesPage';
 import LandingPage from './pages/landing/LandingPage';
+import PortfolioPage from './pages/portfolio/PortfolioPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -227,13 +228,23 @@ function TenantRouter() {
   );
 }
 
-// ── tws.enterprises (root domain — landing + registration) ──
-function PublicRouter() {
+// ── edu.tws.enterprises — EduStack PK landing + registration ──
+function EduRouter() {
   return (
     <Routes>
       <Route path="/"         element={<LandingPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="*"         element={<NotFoundPage />} />
+    </Routes>
+  );
+}
+
+// ── tws.enterprises (root domain) — WolfStack portfolio ──
+function PortfolioRouter() {
+  return (
+    <Routes>
+      <Route path="/" element={<PortfolioPage />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
@@ -244,14 +255,18 @@ export default function App() {
     document.documentElement.classList.toggle('dark', isDark);
   }, [isDark]);
 
-  const admin = isAdminDomain();
-  const slug  = getOrgSlug();
+  const admin   = isAdminDomain();
+  const product = getProductSubdomain(); // 'edu' | null
+  const slug    = getOrgSlug();
 
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Suspense fallback={<PageLoader />}>
-          {admin ? <AdminRouter /> : slug ? <TenantRouter /> : <PublicRouter />}
+          {admin          ? <AdminRouter />     :
+           product === 'edu' ? <EduRouter />    :
+           slug           ? <TenantRouter />    :
+           <PortfolioRouter />}
         </Suspense>
       </BrowserRouter>
     </QueryClientProvider>
