@@ -245,11 +245,11 @@ export async function generateMobileQr(req: Request, res: Response): Promise<voi
   }
 
   // QR payload — Flutter decodes this JSON on scan
+  // NOTE: logoUrl intentionally excluded — base64 logos exceed QR capacity; app fetches it via API
   const payload = {
     v: 1,                                    // version
     slug: org.slug,
     name: org.name,
-    logoUrl: org.logoUrl ?? null,
     primaryColor: org.settings?.primaryColor ?? '#1e3a5f',
     apiUrl: env.frontendUrl.replace('5173', '5000'), // backend URL
   };
