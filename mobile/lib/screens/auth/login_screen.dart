@@ -15,29 +15,19 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabs;
-  final _emailCtrl    = TextEditingController();
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  int _roleIndex = 2;
+  final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
-  final _formKey      = GlobalKey<FormState>();
-  bool _obscure       = true;
-  bool _loading       = false;
+  final _formKey = GlobalKey<FormState>();
+  bool _obscure = true;
+  bool _loading = false;
   String? _error;
 
-  // Maps tab index → loginAs value
   final _loginAsValues = ['admin', 'teacher', 'student'];
-  final _tabLabelKeys  = ['auth.admin', 'auth.teacher', 'auth.student'];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabs = TabController(length: 3, vsync: this, initialIndex: 2); // default Student
-  }
 
   @override
   void dispose() {
-    _tabs.dispose();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
@@ -45,21 +35,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() { _loading = true; _error = null; });
-
-    final slug    = LocalStorageService.orgSlug ?? '';
-    final loginAs = _loginAsValues[_tabs.index];
-
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       await ref.read(authProvider.notifier).login(
-        email:    _emailCtrl.text.trim(),
-        password: _passwordCtrl.text,
-        slug:     slug,
-        loginAs:  loginAs,
-      );
+            email: _emailCtrl.text.trim(),
+            password: _passwordCtrl.text,
+            slug: LocalStorageService.orgSlug ?? '',
+            loginAs: _loginAsValues[_roleIndex],
+          );
       if (!mounted) return;
-      final user = ref.read(authProvider).user!;
-      context.go(user.homeRoute);
+      context.go(ref.read(authProvider).user!.homeRoute);
     } catch (e) {
       setState(() {
         _error = e.toString().replaceAll('Exception: ', '');
@@ -70,178 +58,544 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    final cs  = Theme.of(context).colorScheme;
-    final tt  = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final org = ref.watch(orgProvider);
+    final h = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
+        children: [
+          // ── Hero ──────────────────────────────────────────────
+          SizedBox(
+            height: h * 0.46,
+            width: double.infinity,
+            child: Stack(
+              clipBehavior: Clip.hardEdge,
               children: [
-
-                // School logo + name
-                Row(
-                  children: [
-                    _OrgLogo(logoUrl: org?.logoUrl, primaryColor: cs.primary),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(org?.name ?? 'EduStack', style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-                          Text('auth.signInToContinue'.tr(), style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                // Gradient background
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xFF1565C0),
+                          const Color(0xFF1E88E5),
+                          const Color(0xFF42A5F5),
                         ],
+                        stops: const [0.0, 0.55, 1.0],
                       ),
                     ),
-                    // Switch school
-                    IconButton(
-                      tooltip: 'auth.switchSchool'.tr(),
-                      icon: Icon(Icons.qr_code_scanner_rounded, color: cs.primary),
-                      onPressed: () {
-                        ref.read(orgProvider.notifier).clearOrg();
-                        context.go('/onboarding/scan');
-                      },
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 36),
-
-                // Role tabs
-                Container(
-                  decoration: BoxDecoration(
-                    color: cs.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TabBar(
-                    controller: _tabs,
-                    indicator: BoxDecoration(
-                      color: cs.primary,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    labelColor: cs.onPrimary,
-                    unselectedLabelColor: cs.onSurfaceVariant,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-                    dividerColor: Colors.transparent,
-                    tabs: _tabLabelKeys.map((k) => Tab(text: k.tr())).toList(),
                   ),
                 ),
 
-                const SizedBox(height: 32),
-
-                // Email
-                TextFormField(
-                  controller: _emailCtrl,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    labelText: 'auth.email'.tr(),
-                    prefixIcon: const Icon(Icons.email_outlined),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'auth.email'.tr();
-                    if (!v.contains('@')) return 'auth.email'.tr();
-                    return null;
-                  },
+                // Decorative circle — bottom left
+                Positioned(
+                  bottom: -80,
+                  left: -70,
+                  child: _DecorativeCircle(size: 230),
                 ),
 
-                const SizedBox(height: 16),
-
-                // Password
-                TextFormField(
-                  controller: _passwordCtrl,
-                  obscureText: _obscure,
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _submit(),
-                  decoration: InputDecoration(
-                    labelText: 'auth.password'.tr(),
-                    prefixIcon: const Icon(Icons.lock_outline_rounded),
-                    suffixIcon: IconButton(
-                      icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-                      onPressed: () => setState(() => _obscure = !_obscure),
-                    ),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Password is required';
-                    if (v.length < 6) return 'Password too short';
-                    return null;
-                  },
+                // Decorative circle — top right
+                Positioned(
+                  top: -40,
+                  right: -60,
+                  child: _DecorativeCircle(size: 200),
                 ),
 
-                // Error
-                if (_error != null) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: cs.errorContainer,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.error_outline_rounded, color: cs.onErrorContainer, size: 18),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(_error!, style: TextStyle(color: cs.onErrorContainer, fontSize: 13))),
-                      ],
+                // Dot grid — left side
+                Positioned(
+                  top: 80,
+                  left: 16,
+                  child: CustomPaint(
+                    size: const Size(72, 120),
+                    painter: _DotPainter(
+                      color: Colors.white.withOpacity(0.25),
                     ),
                   ),
-                ],
-
-                const SizedBox(height: 28),
-
-                // Submit
-                FilledButton(
-                  onPressed: _loading ? null : _submit,
-                  child: _loading
-                      ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-                      : Text('auth.signIn'.tr()),
                 ),
 
-                const SizedBox(height: 32),
+                // Content
+                SafeArea(
+                  bottom: false,
+                  child: Column(
+                    children: [
+                      // Switch School button — top right
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 10, right: 16),
+                          child: GestureDetector(
+                            onTap: () {
+                              ref.read(orgProvider.notifier).clearOrg();
+                              context.go('/onboarding/scan');
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.12),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.qr_code_scanner_rounded,
+                                      color: cs.primary, size: 26),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'auth.switchSchool'.tr(),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: cs.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
 
-                // Footer
-                Center(
-                  child: Text(
-                    'EduStack PK · WolfStack',
-                    style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                      // Logo + name
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _OrgLogo(logoUrl: org?.logoUrl),
+                            const SizedBox(height: 16),
+                            Text(
+                              org?.name ?? 'EduStack',
+                              style: tt.headlineMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'auth.signInToContinue'.tr(),
+                              style: tt.bodyLarge?.copyWith(
+                                color: Colors.white.withOpacity(0.85),
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ),
+
+          // ── Form card ──────────────────────────────────────────
+          Expanded(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: cs.surface,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(32)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Role selector
+                      _RoleSelector(
+                        selected: _roleIndex,
+                        onChanged: (i) => setState(() {
+                          _roleIndex = i;
+                          _error = null;
+                        }),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Email
+                      TextFormField(
+                        controller: _emailCtrl,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        style: tt.bodyLarge,
+                        decoration: InputDecoration(
+                          hintText: 'auth.email'.tr(),
+                          prefixIcon: Icon(Icons.email_outlined,
+                              color: cs.onSurfaceVariant),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: cs.outlineVariant),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: cs.outlineVariant),
+                          ),
+                          filled: true,
+                          fillColor: cs.surface,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'auth.emailRequired'.tr();
+                          }
+                          if (!v.contains('@')) return 'auth.emailInvalid'.tr();
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // Password
+                      TextFormField(
+                        controller: _passwordCtrl,
+                        obscureText: _obscure,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => _submit(),
+                        style: tt.bodyLarge,
+                        decoration: InputDecoration(
+                          hintText: 'auth.password'.tr(),
+                          prefixIcon: Icon(Icons.lock_outline_rounded,
+                              color: cs.onSurfaceVariant),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscure
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: cs.onSurfaceVariant,
+                            ),
+                            onPressed: () =>
+                                setState(() => _obscure = !_obscure),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: cs.outlineVariant),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: cs.outlineVariant),
+                          ),
+                          filled: true,
+                          fillColor: cs.surface,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'auth.passwordRequired'.tr();
+                          }
+                          if (v.length < 6) return 'auth.passwordTooShort'.tr();
+                          return null;
+                        },
+                      ),
+
+                      // Error banner
+                      if (_error != null) ...[
+                        const SizedBox(height: 14),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: cs.errorContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(Icons.gpp_bad_rounded,
+                                  color: cs.error, size: 22),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _error!,
+                                  style: TextStyle(
+                                      color: cs.error,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 20),
+
+                      // Sign In button
+                      FilledButton(
+                        onPressed: _loading ? null : _submit,
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(54),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          backgroundColor: const Color(0xFF1565C0),
+                        ),
+                        child: _loading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2.5, color: Colors.white),
+                              )
+                            : Text(
+                                'auth.signIn'.tr(),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Footer
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.verified_user_outlined,
+                              size: 14, color: cs.onSurfaceVariant),
+                          const SizedBox(width: 6),
+                          Text(
+                            'EduStack PK · WolfStack',
+                            style: tt.bodySmall
+                                ?.copyWith(color: cs.onSurfaceVariant),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
+// ── Role selector ─────────────────────────────────────────────────────────────
+
+class _RoleSelector extends StatelessWidget {
+  final int selected;
+  final ValueChanged<int> onChanged;
+
+  const _RoleSelector({required this.selected, required this.onChanged});
+
+  static const _roleColors = [
+    Color(0xFF6C3FD6), // admin — deep violet
+    Color(0xFF00897B), // teacher — teal
+    Color(0xFF1565C0), // student — navy blue
+  ];
+
+  static const _roleIcons = [
+    Icons.admin_panel_settings_rounded,
+    Icons.menu_book_rounded,
+    Icons.backpack_rounded,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final roleLabels = [
+      'auth.admin'.tr(),
+      'auth.teacher'.tr(),
+      'auth.student'.tr(),
+    ];
+
+    return Row(
+      children: List.generate(3, (i) {
+        final active = i == selected;
+        final roleColor = _roleColors[i];
+        return Expanded(
+          child: GestureDetector(
+            onTap: () => onChanged(i),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeInOut,
+              margin: EdgeInsets.only(left: i == 0 ? 0 : 8),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: active ? roleColor : cs.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: active ? roleColor : Colors.transparent,
+                  width: 2,
+                ),
+                boxShadow: active
+                    ? [
+                        BoxShadow(
+                          color: roleColor.withOpacity(0.35),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        )
+                      ]
+                    : [],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: active
+                          ? Colors.white.withOpacity(0.18)
+                          : roleColor.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      _roleIcons[i],
+                      size: 20,
+                      color: active ? Colors.white : roleColor,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    roleLabels[i],
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: active ? Colors.white : cs.onSurfaceVariant,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+}
+
+// ── Org logo ──────────────────────────────────────────────────────────────────
+
 class _OrgLogo extends StatelessWidget {
   final String? logoUrl;
-  final Color primaryColor;
-  const _OrgLogo({this.logoUrl, required this.primaryColor});
+
+  const _OrgLogo({this.logoUrl});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 56,
-      height: 56,
+      width: 100,
+      height: 100,
       decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: primaryColor.withOpacity(0.2)),
+        shape: BoxShape.circle,
+        color: Colors.white,
+        border: Border.all(color: Colors.white, width: 3),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
-      child: logoUrl != null
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: CachedNetworkImage(imageUrl: logoUrl!, fit: BoxFit.contain),
-            )
-          : Icon(Icons.school_rounded, color: primaryColor, size: 30),
+      child: ClipOval(
+        child: logoUrl != null
+            ? CachedNetworkImage(
+                imageUrl: logoUrl!,
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => const ColoredBox(
+                  color: Colors.white,
+                  child: Center(
+                    child: SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2.5, color: Color(0xFF1565C0)),
+                    ),
+                  ),
+                ),
+                errorWidget: (_, __, ___) => const ColoredBox(
+                  color: Colors.white,
+                  child: Center(
+                    child: Icon(Icons.school_rounded,
+                        color: Color(0xFF1565C0), size: 50),
+                  ),
+                ),
+              )
+            : const ColoredBox(
+                color: Colors.white,
+                child: Center(
+                  child: Icon(Icons.school_rounded,
+                      color: Color(0xFF1565C0), size: 50),
+                ),
+              ),
+      ),
     );
   }
+}
+
+// ── Decorative circle ─────────────────────────────────────────────────────────
+
+class _DecorativeCircle extends StatelessWidget {
+  final double size;
+
+  const _DecorativeCircle({required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withOpacity(0.08),
+      ),
+    );
+  }
+}
+
+// ── Dot grid painter ──────────────────────────────────────────────────────────
+
+class _DotPainter extends CustomPainter {
+  final Color color;
+
+  const _DotPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    const spacing = 14.0;
+    const radius = 2.0;
+    for (double x = 0; x < size.width; x += spacing) {
+      for (double y = 0; y < size.height; y += spacing) {
+        canvas.drawCircle(Offset(x, y), radius, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DotPainter old) => old.color != color;
 }
