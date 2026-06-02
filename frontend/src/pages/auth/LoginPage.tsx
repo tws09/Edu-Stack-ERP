@@ -212,26 +212,23 @@ export default function LoginPage() {
               <p className="text-gray-400 text-sm mb-6">{t('auth.loginSubtitle')}</p>
 
               {/* Role selector */}
-              <div className="mb-5">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Sign in as</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {ROLE_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => handleRoleChange(opt.value)}
-                      className={cn(
-                        'flex flex-col items-center gap-1.5 rounded-xl border-2 py-3 px-1 text-xs font-semibold transition-all duration-150',
-                        selectedRole === opt.value
-                          ? 'border-blue-600 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'
-                      )}
-                    >
-                      <opt.Icon size={20} strokeWidth={1.75} />
-                      <span>{opt.label}</span>
-                    </button>
-                  ))}
-                </div>
+              <div className="flex border-b border-gray-200 mb-6 -mx-1">
+                {ROLE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => handleRoleChange(opt.value)}
+                    className={cn(
+                      'flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors duration-150 whitespace-nowrap',
+                      selectedRole === opt.value
+                        ? 'border-blue-600 text-blue-600'
+                        : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-300'
+                    )}
+                  >
+                    <opt.Icon size={15} strokeWidth={2} />
+                    <span>{opt.label}</span>
+                  </button>
+                ))}
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
