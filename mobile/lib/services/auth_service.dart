@@ -12,14 +12,21 @@ class AuthService {
     required String slug,
     required String loginAs,
   }) async {
-    final response = await _dio.post(
-      ApiConstants.login,
-      data: {'email': email, 'password': password, 'slug': slug, 'loginAs': loginAs},
-    );
-    final data = response.data as Map<String, dynamic>;
-    if (data['success'] != true) throw Exception(data['message'] ?? 'Login failed');
-    if (data['data']?['mustChangePassword'] == true) throw Exception('PASSWORD_CHANGE_REQUIRED');
-    return data['data'] as Map<String, dynamic>;
+    try {
+      final response = await _dio.post(
+        ApiConstants.login,
+        data: {'email': email, 'password': password, 'slug': slug, 'loginAs': loginAs},
+      );
+      final data = response.data as Map<String, dynamic>;
+      if (data['success'] != true) throw Exception(data['message'] ?? 'Login failed');
+      // mustChangePassword comes at the top level, not nested under 'data'
+      if (data['mustChangePassword'] == true) throw Exception('PASSWORD_CHANGE_REQUIRED');
+      return data['data'] as Map<String, dynamic>;
+    } on DioException catch (e) {
+      final body = e.response?.data;
+      final message = (body is Map) ? body['message'] as String? : null;
+      throw Exception(message ?? 'Login failed. Please try again.');
+    }
   }
 
   Future<AppUser> getMe() async {

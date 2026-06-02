@@ -39,9 +39,11 @@ class AuthInterceptor extends Interceptor {
   ) async {
     final response = err.response;
 
-    // Only handle 401s (not from the refresh endpoint itself)
+    // Only handle 401s — skip login & refresh endpoints to avoid loops
+    final path = err.requestOptions.path;
     if (response?.statusCode != 401 ||
-        (err.requestOptions.path.contains('/auth/refresh'))) {
+        path.contains('/auth/refresh') ||
+        path.contains('/auth/login')) {
       handler.next(err);
       return;
     }
