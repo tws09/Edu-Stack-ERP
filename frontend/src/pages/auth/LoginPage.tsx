@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { ShieldCheck, BookOpenText, GraduationCap } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useThemeStore } from '../../stores/themeStore';
 import { getOrgBranding } from '../../services/authService';
@@ -10,10 +11,10 @@ import { cn } from '../../lib/utils';
 
 type LoginRole = 'admin' | 'teacher' | 'student';
 
-const ROLE_OPTIONS: { value: LoginRole; label: string; icon: string }[] = [
-  { value: 'admin',   label: 'Admin / Staff', icon: '🏫' },
-  { value: 'teacher', label: 'Teacher',        icon: '👨‍🏫' },
-  { value: 'student', label: 'Student',        icon: '🎓' },
+const ROLE_OPTIONS: { value: LoginRole; label: string; Icon: React.ElementType }[] = [
+  { value: 'admin',   label: 'Admin / Staff', Icon: ShieldCheck   },
+  { value: 'teacher', label: 'Teacher',        Icon: BookOpenText  },
+  { value: 'student', label: 'Student',        Icon: GraduationCap },
 ];
 
 function getDashboardPath(role?: string): string {
@@ -226,7 +227,7 @@ export default function LoginPage() {
                           : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'
                       )}
                     >
-                      <span className="text-xl leading-none">{opt.icon}</span>
+                      <opt.Icon size={20} strokeWidth={1.75} />
                       <span>{opt.label}</span>
                     </button>
                   ))}
