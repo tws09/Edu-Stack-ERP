@@ -11,6 +11,18 @@ import { cn } from '../../lib/utils';
 
 type Tab = 'profile' | 'branding' | 'mobile' | 'subscription' | 'danger';
 
+type BrandState = {
+  logoUrl: string;
+  welcomeMessage: string;
+  tagline: string;
+  primaryColor: string;
+};
+
+const PRESET_COLORS = [
+  '#2563eb', '#059669', '#dc2626', '#7c3aed',
+  '#d97706', '#0891b2', '#0f172a', '#831843',
+];
+
 const TABS: { id: Tab; label: string; icon: React.ReactNode; danger?: boolean }[] = [
   {
     id: 'profile',
@@ -94,6 +106,70 @@ function SectionCard({ title, subtitle, children }: { title: string; subtitle?: 
   );
 }
 
+// ── Login page mini-preview ───────────────────────────────
+
+function LoginPreviewCard({ brand, orgName }: { brand: BrandState; orgName: string }) {
+  const primary = brand.primaryColor || '#2563eb';
+  return (
+    <div className="w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-700 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.15)] dark:shadow-none">
+      <div className="flex h-60">
+
+        {/* Left panel — school identity */}
+        <div className="w-[42%] bg-white dark:bg-slate-900 flex flex-col items-center justify-center p-4 border-r border-gray-100 dark:border-slate-700 gap-2.5 relative">
+          {brand.logoUrl ? (
+            <img src={brand.logoUrl} alt="" className="h-10 w-auto object-contain max-w-[72px]" />
+          ) : (
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ backgroundColor: primary }}>
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+              </svg>
+            </div>
+          )}
+          <div className="text-center px-1">
+            <p className="text-[9.5px] font-extrabold text-gray-900 dark:text-slate-50 leading-snug line-clamp-2">{orgName}</p>
+            {brand.tagline && (
+              <p className="text-[7.5px] italic mt-0.5 line-clamp-1" style={{ color: primary }}>{brand.tagline}</p>
+            )}
+            {brand.welcomeMessage && (
+              <p className="text-[7px] text-gray-400 dark:text-slate-500 mt-1 line-clamp-2 leading-snug">{brand.welcomeMessage}</p>
+            )}
+          </div>
+          <p className="absolute bottom-1.5 text-[6px] text-gray-200 dark:text-slate-700">EduStack PK</p>
+        </div>
+
+        {/* Right panel — login card */}
+        <div className="flex-1 bg-gray-50 dark:bg-slate-800 flex items-center justify-center p-3">
+          <div className="w-full bg-white dark:bg-slate-700 rounded-xl shadow-[0_2px_12px_-4px_rgba(0,0,0,0.12)] dark:shadow-none overflow-hidden">
+            <div className="h-[3px]" style={{ backgroundColor: primary }} />
+            <div className="px-3 py-3 space-y-2">
+              <div>
+                <p className="text-[9px] font-bold text-gray-900 dark:text-slate-100">Sign In</p>
+                <p className="text-[7px] text-gray-400 dark:text-slate-500">to your school account</p>
+              </div>
+              <div className="flex gap-3 border-b border-gray-100 dark:border-slate-600">
+                {['Admin', 'Teacher', 'Student'].map((r, i) => (
+                  <div key={r} className="pb-1" style={i === 0 ? { borderBottom: `1.5px solid ${primary}` } : {}}>
+                    <span className="text-[7px] font-semibold" style={{ color: i === 0 ? primary : '#9ca3af' }}>{r}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="h-3.5 bg-gray-100 dark:bg-slate-600 rounded" />
+              <div className="h-3.5 bg-gray-100 dark:bg-slate-600 rounded" />
+              <div className="h-5 rounded-md flex items-center justify-center gap-1" style={{ backgroundColor: primary }}>
+                <span className="text-[7.5px] font-bold text-white">Login as Admin</span>
+                <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────
 
 export default function GroupSettingsPage() {
@@ -107,7 +183,7 @@ export default function GroupSettingsPage() {
   const [profileSaved, setProfileSaved] = useState(false);
 
   // Brand form
-  const [brand, setBrand]       = useState({ logoUrl: '', welcomeMessage: '' });
+  const [brand, setBrand]       = useState<BrandState>({ logoUrl: '', welcomeMessage: '', tagline: '', primaryColor: '#2563eb' });
   const [brandSaved, setBrandSaved]     = useState(false);
   const [logoUploading, setLogoUploading] = useState(false);
   const [logoError, setLogoError]         = useState('');
@@ -134,8 +210,13 @@ export default function GroupSettingsPage() {
 
   useEffect(() => {
     if (org) {
-      setForm({ name: org.name, contactEmail: org.contactEmail, contactPhone: org.contactPhone ?? '', address: (org as any).address ?? '' });
-      setBrand({ logoUrl: (org as any).logoUrl ?? '', welcomeMessage: (org as any).welcomeMessage ?? '' });
+      setForm({ name: org.name, contactEmail: org.contactEmail, contactPhone: org.contactPhone ?? '', address: org.address ?? '' });
+      setBrand({
+        logoUrl: org.logoUrl ?? '',
+        welcomeMessage: org.welcomeMessage ?? '',
+        tagline: org.tagline ?? '',
+        primaryColor: org.primaryColor ?? '#2563eb',
+      });
     }
   }, [org]);
 
@@ -333,108 +414,170 @@ export default function GroupSettingsPage() {
 
             {/* ════ BRANDING TAB ════ */}
             {activeTab === 'branding' && (
-              <SectionCard title="Login Page Branding" subtitle="Customise what staff and students see on your school's login page.">
-                <form
-                  onSubmit={e => { e.preventDefault(); updateBrand.mutate(brand); }}
-                  className="space-y-6"
-                >
-                  {/* Logo drag & drop */}
-                  <div>
-                    <FieldLabel>School Logo</FieldLabel>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={e => { const f = e.target.files?.[0]; if (f) processLogoFile(f); }}
-                    />
+              <SectionCard title="Login Page Builder" subtitle="Customise what staff and students see on your school's login page. Changes preview live.">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) processLogoFile(f); }}
+                />
+                <form onSubmit={e => { e.preventDefault(); updateBrand.mutate(brand); }}>
+                  <div className="flex flex-col xl:flex-row gap-8">
 
-                    {brand.logoUrl ? (
-                      /* Logo preview state */
-                      <div className="flex items-center gap-4">
-                        <div className="relative group w-20 h-20 rounded-2xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0">
-                          <img src={brand.logoUrl} alt="School logo" className="w-full h-full object-contain p-2" />
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <button
-                              type="button"
-                              onClick={() => fileInputRef.current?.click()}
-                              className="text-white text-[10px] font-semibold"
-                            >
-                              Change
-                            </button>
+                    {/* ── Controls ── */}
+                    <div className="flex-1 min-w-0 space-y-6">
+
+                      {/* Logo */}
+                      <div>
+                        <FieldLabel>School Logo</FieldLabel>
+                        {brand.logoUrl ? (
+                          <div className="flex items-center gap-4">
+                            <div className="relative group w-20 h-20 rounded-2xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+                              <img src={brand.logoUrl} alt="School logo" className="w-full h-full object-contain p-2" />
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <button type="button" onClick={() => fileInputRef.current?.click()} className="text-white text-[10px] font-semibold">Change</button>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-700 dark:text-slate-200">Logo uploaded</p>
+                              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Shown on your school's login page</p>
+                              <div className="flex gap-3 mt-2">
+                                <button type="button" onClick={() => fileInputRef.current?.click()} className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline">Replace</button>
+                                <button type="button" onClick={() => setBrand(b => ({ ...b, logoUrl: '' }))} className="text-xs text-red-500 dark:text-red-400 font-medium hover:underline">Remove</button>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-700 dark:text-slate-200">Logo uploaded</p>
-                          <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Shown on your school's login page</p>
-                          <div className="flex gap-3 mt-2">
-                            <button type="button" onClick={() => fileInputRef.current?.click()} className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline">Replace</button>
-                            <button type="button" onClick={() => setBrand(b => ({ ...b, logoUrl: '' }))} className="text-xs text-red-500 dark:text-red-400 font-medium hover:underline">Remove</button>
+                        ) : (
+                          <div
+                            onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                            onDragLeave={() => setIsDragging(false)}
+                            onDrop={e => { e.preventDefault(); setIsDragging(false); const f = e.dataTransfer.files?.[0]; if (f) processLogoFile(f); }}
+                            onClick={() => fileInputRef.current?.click()}
+                            className={cn(
+                              'flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200 py-8 px-6',
+                              isDragging
+                                ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/10'
+                                : 'border-gray-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-slate-500 hover:bg-gray-50/60 dark:hover:bg-slate-700/30',
+                            )}
+                          >
+                            <div className={cn('w-11 h-11 rounded-2xl flex items-center justify-center transition-colors', isDragging ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-500' : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-slate-500')}>
+                              {logoUploading
+                                ? <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                : <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                              }
+                            </div>
+                            <div className="text-center">
+                              <p className="text-sm font-medium text-gray-700 dark:text-slate-200">{isDragging ? 'Drop your logo here' : 'Drag & drop or click to upload'}</p>
+                              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">PNG, JPG, SVG or WebP · Max 2 MB</p>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    ) : (
-                      /* Drop zone */
-                      <div
-                        onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
-                        onDragLeave={() => setIsDragging(false)}
-                        onDrop={e => {
-                          e.preventDefault();
-                          setIsDragging(false);
-                          const f = e.dataTransfer.files?.[0];
-                          if (f) processLogoFile(f);
-                        }}
-                        onClick={() => fileInputRef.current?.click()}
-                        className={cn(
-                          'relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200 py-10 px-6',
-                          isDragging
-                            ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/10'
-                            : 'border-gray-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-slate-500 hover:bg-gray-50/60 dark:hover:bg-slate-700/30',
                         )}
-                      >
-                        <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center transition-colors', isDragging ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-500' : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-slate-500')}>
-                          {logoUploading
-                            ? <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                            : <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                          }
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm font-medium text-gray-700 dark:text-slate-200">
-                            {isDragging ? 'Drop your logo here' : 'Drag & drop or click to upload'}
-                          </p>
-                          <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">PNG, JPG, SVG or WebP &middot; Max 2 MB</p>
-                        </div>
+                        {logoError && <p className="text-xs text-red-500 mt-1.5">{logoError}</p>}
                       </div>
-                    )}
-                    {logoError && <p className="text-xs text-red-500 mt-1.5">{logoError}</p>}
-                  </div>
 
-                  {/* Welcome message */}
-                  <div>
-                    <FieldLabel>Welcome Message</FieldLabel>
-                    <textarea
-                      rows={3}
-                      className={cn(inputCls, 'resize-none')}
-                      value={brand.welcomeMessage}
-                      onChange={e => setBrand(b => ({ ...b, welcomeMessage: e.target.value }))}
-                      placeholder="Welcome back! Please sign in to continue."
-                    />
-                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-1.5">Displayed below your logo on the login page.</p>
-                  </div>
+                      {/* Brand color */}
+                      <div>
+                        <FieldLabel>Brand Color</FieldLabel>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          {/* Color swatch opens native picker */}
+                          <label className="relative cursor-pointer flex-shrink-0">
+                            <input
+                              type="color"
+                              value={brand.primaryColor}
+                              onChange={e => setBrand(b => ({ ...b, primaryColor: e.target.value }))}
+                              className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                            />
+                            <div
+                              className="w-10 h-10 rounded-xl border-2 border-white dark:border-slate-600 shadow-md ring-1 ring-gray-200 dark:ring-slate-600 hover:scale-105 transition-transform"
+                              style={{ backgroundColor: brand.primaryColor }}
+                            />
+                          </label>
+                          {/* Hex input */}
+                          <input
+                            type="text"
+                            value={brand.primaryColor}
+                            onChange={e => {
+                              const v = e.target.value;
+                              if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) setBrand(b => ({ ...b, primaryColor: v }));
+                            }}
+                            maxLength={7}
+                            placeholder="#2563eb"
+                            className={cn(inputCls, 'font-mono w-28 text-sm')}
+                          />
+                          {/* Preset swatches */}
+                          <div className="flex gap-1.5 flex-wrap">
+                            {PRESET_COLORS.map(c => (
+                              <button
+                                key={c}
+                                type="button"
+                                title={c}
+                                onClick={() => setBrand(b => ({ ...b, primaryColor: c }))}
+                                className={cn(
+                                  'w-6 h-6 rounded-full transition-all hover:scale-110 ring-offset-2 dark:ring-offset-slate-800',
+                                  brand.primaryColor === c ? 'ring-2 ring-gray-500 dark:ring-slate-400' : '',
+                                )}
+                                style={{ backgroundColor: c }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1.5">Applied to your login button, tab underline, and accent bar.</p>
+                      </div>
 
-                  {updateBrand.isError && (
-                    <p className="text-xs text-red-500">{(updateBrand.error as any)?.response?.data?.message ?? 'Failed to save branding'}</p>
-                  )}
+                      {/* Tagline */}
+                      <div>
+                        <FieldLabel>School Tagline</FieldLabel>
+                        <input
+                          className={inputCls}
+                          value={brand.tagline}
+                          onChange={e => setBrand(b => ({ ...b, tagline: e.target.value }))}
+                          placeholder="Nurturing excellence since 1985"
+                          maxLength={80}
+                        />
+                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1.5">Short motto shown in your brand color beneath the school name.</p>
+                      </div>
 
-                  <div className="flex items-center gap-4 pt-1">
-                    <button
-                      type="submit"
-                      disabled={updateBrand.isPending}
-                      className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-semibold rounded-xl disabled:opacity-50 transition-all shadow-[0_2px_8px_-2px_rgba(59,130,246,0.5)]"
-                    >
-                      {updateBrand.isPending ? 'Saving...' : 'Save Branding'}
-                    </button>
-                    {brandSaved && <SavedBadge />}
+                      {/* Welcome message */}
+                      <div>
+                        <FieldLabel>Welcome Message</FieldLabel>
+                        <textarea
+                          rows={3}
+                          className={cn(inputCls, 'resize-none')}
+                          value={brand.welcomeMessage}
+                          onChange={e => setBrand(b => ({ ...b, welcomeMessage: e.target.value }))}
+                          placeholder="Welcome back! Please sign in to continue."
+                        />
+                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1.5">Displayed below your tagline on the login page.</p>
+                      </div>
+
+                      {updateBrand.isError && (
+                        <p className="text-xs text-red-500">{(updateBrand.error as any)?.response?.data?.message ?? 'Failed to save branding'}</p>
+                      )}
+
+                      <div className="flex items-center gap-4 pt-1">
+                        <button
+                          type="submit"
+                          disabled={updateBrand.isPending}
+                          className="px-5 py-2.5 text-white text-sm font-semibold rounded-xl disabled:opacity-50 transition-all hover:opacity-90 active:scale-[0.98] shadow-[0_2px_8px_-2px_rgba(0,0,0,0.25)]"
+                          style={{ backgroundColor: brand.primaryColor || '#2563eb' }}
+                        >
+                          {updateBrand.isPending ? 'Saving...' : 'Save Branding'}
+                        </button>
+                        {brandSaved && <SavedBadge />}
+                      </div>
+                    </div>
+
+                    {/* ── Live preview ── */}
+                    <div className="xl:w-[300px] flex-shrink-0">
+                      <p className="text-[10.5px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 mb-3 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Live Preview
+                      </p>
+                      <LoginPreviewCard brand={brand} orgName={form.name || 'Your School'} />
+                      <p className="text-[10.5px] text-gray-400 dark:text-slate-500 mt-2 text-center">Updates as you edit</p>
+                    </div>
+
                   </div>
                 </form>
               </SectionCard>
@@ -632,8 +775,9 @@ export default function GroupSettingsPage() {
                         <button
                           type="button"
                           onClick={() => {
-                            setBrand({ logoUrl: '', welcomeMessage: '' });
-                            updateBrand.mutate({ logoUrl: '', welcomeMessage: '' });
+                            const reset: BrandState = { logoUrl: '', welcomeMessage: '', tagline: '', primaryColor: '#2563eb' };
+                            setBrand(reset);
+                            updateBrand.mutate(reset);
                             setResetConfirm(false);
                           }}
                           className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg transition-colors"

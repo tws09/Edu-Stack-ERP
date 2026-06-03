@@ -39,6 +39,11 @@ export interface Organization {
   status: 'active' | 'suspended' | 'trial';
   contactEmail: string;
   contactPhone?: string;
+  address?: string;
+  logoUrl?: string;
+  welcomeMessage?: string;
+  tagline?: string;
+  primaryColor?: string;
   usageBilling: { activeStudents: number; lastCountedAt?: string };
   trialEndsAt?: string;
   createdAt: string;

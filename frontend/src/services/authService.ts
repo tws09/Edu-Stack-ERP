@@ -42,6 +42,8 @@ export interface OrgBranding {
   slug: string;
   logoUrl: string | null;
   welcomeMessage: string | null;
+  tagline: string | null;
+  primaryColor: string | null;
 }
 
 export async function getOrgBranding(slug: string): Promise<OrgBranding | null> {

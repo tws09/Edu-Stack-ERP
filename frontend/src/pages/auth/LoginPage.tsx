@@ -107,8 +107,9 @@ export default function LoginPage() {
     }
   }
 
-  const roleLabel = ROLE_OPTIONS.find((r) => r.value === selectedRole)?.label ?? '';
-  const schoolName = branding?.name ?? 'EduStack PK';
+  const roleLabel    = ROLE_OPTIONS.find((r) => r.value === selectedRole)?.label ?? '';
+  const schoolName   = branding?.name ?? 'EduStack PK';
+  const primaryColor = branding?.primaryColor || '#2563eb';
 
   return (
     <div className="min-h-screen flex">
@@ -153,6 +154,11 @@ export default function LoginPage() {
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
             {schoolName}
           </h1>
+          {branding?.tagline && (
+            <p className="text-sm font-semibold mt-1.5 italic" style={{ color: primaryColor }}>
+              {branding.tagline}
+            </p>
+          )}
           <p className="text-gray-400 text-base mt-2 font-medium">
             {branding?.welcomeMessage || 'School Management System'}
           </p>
@@ -198,6 +204,11 @@ export default function LoginPage() {
               </div>
             )}
             <h1 className="text-2xl font-extrabold text-white tracking-tight">{schoolName}</h1>
+            {branding?.tagline && (
+              <p className="text-sm font-semibold mt-1 italic" style={{ color: primaryColor }}>
+                {branding.tagline}
+              </p>
+            )}
             <p className="text-blue-300 text-sm mt-1 font-medium">
               {branding?.welcomeMessage || 'School Management System'}
             </p>
@@ -205,7 +216,7 @@ export default function LoginPage() {
 
           {/* Login card */}
           <div className="bg-white rounded-3xl shadow-xl shadow-black/8 overflow-hidden">
-            <div className="h-1 bg-linear-to-r from-blue-600 to-blue-400" />
+            <div className="h-1" style={{ backgroundColor: primaryColor }} />
 
             <div className="px-8 py-8 lg:px-10 lg:py-9">
               <h2 className="text-xl font-bold text-gray-900 mb-0.5">{t('auth.loginTitle')}</h2>
@@ -221,9 +232,10 @@ export default function LoginPage() {
                     className={cn(
                       'flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors duration-150 whitespace-nowrap',
                       selectedRole === opt.value
-                        ? 'border-blue-600 text-blue-600'
+                        ? 'border-transparent'
                         : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-300'
                     )}
+                    style={selectedRole === opt.value ? { borderBottomColor: primaryColor, color: primaryColor } : {}}
                   >
                     <opt.Icon size={15} strokeWidth={2} />
                     <span>{opt.label}</span>
@@ -303,12 +315,12 @@ export default function LoginPage() {
                   disabled={loading}
                   className={cn(
                     'w-full rounded-xl py-3 text-sm font-bold text-white mt-1',
-                    'bg-blue-600 hover:bg-blue-700',
-                    'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                    'hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2',
                     'disabled:opacity-60 disabled:cursor-not-allowed',
-                    'shadow-lg shadow-blue-600/20 transition-colors duration-150',
+                    'shadow-lg transition-opacity duration-150',
                     'flex items-center justify-center gap-2'
                   )}
+                  style={{ backgroundColor: primaryColor }}
                 >
                   {loading ? (
                     <>
