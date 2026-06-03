@@ -3,6 +3,19 @@ import { Schema, model, Document, Types } from 'mongoose';
 export type OrgPlan = 'starter' | 'growth' | 'scale';
 export type OrgStatus = 'active' | 'suspended' | 'trial';
 
+export interface ISiteNewsPost { id: string; title: string; body: string; date: string; }
+
+export interface ISiteConfig {
+  published: boolean;
+  hero:        { enabled: boolean; headline: string; subtext: string; ctaText: string; imageUrl?: string };
+  about:       { enabled: boolean; body: string; founded: string; principalName: string; principalQuote: string; vision: string; mission: string };
+  stats:       { enabled: boolean; items: { label: string; value: string }[] };
+  admissions:  { enabled: boolean; body: string; criteria: string; process: string };
+  contact:     { enabled: boolean; address: string; phone: string; email: string; mapUrl: string };
+  news:        { enabled: boolean; posts: ISiteNewsPost[] };
+  policies:    { enabled: boolean; privacy: string; conduct: string };
+}
+
 export interface IOrganization extends Document {
   name: string;
   slug: string;
@@ -15,6 +28,8 @@ export interface IOrganization extends Document {
   welcomeMessage?: string;
   tagline?: string;
   primaryColor?: string;
+  websiteAddon?: boolean;
+  site?: ISiteConfig;
   settings: {
     timezone: string;
     currency: string;
@@ -48,6 +63,17 @@ const organizationSchema = new Schema<IOrganization>(
     welcomeMessage: { type: String, trim: true },
     tagline: { type: String, trim: true },
     primaryColor: { type: String, default: '#2563eb' },
+    websiteAddon: { type: Boolean, default: false },
+    site: {
+      published:  { type: Boolean, default: false },
+      hero:       { enabled: Boolean, headline: String, subtext: String, ctaText: String, imageUrl: String },
+      about:      { enabled: Boolean, body: String, founded: String, principalName: String, principalQuote: String, vision: String, mission: String },
+      stats:      { enabled: Boolean, items: [{ label: String, value: String, _id: false }] },
+      admissions: { enabled: Boolean, body: String, criteria: String, process: String },
+      contact:    { enabled: Boolean, address: String, phone: String, email: String, mapUrl: String },
+      news:       { enabled: Boolean, posts: [{ id: String, title: String, body: String, date: String, _id: false }] },
+      policies:   { enabled: Boolean, privacy: String, conduct: String },
+    },
     settings: {
       timezone: { type: String, default: 'Asia/Karachi' },
       currency: { type: String, default: 'PKR' },

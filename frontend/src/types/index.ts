@@ -31,6 +31,28 @@ export interface ApiResponse<T = unknown> {
   meta?: { total: number; page: number; limit?: number; unreadCount?: number };
 }
 
+export interface SiteNewsPost { id: string; title: string; body: string; date: string; }
+
+export interface SiteConfig {
+  published: boolean;
+  hero:        { enabled: boolean; headline: string; subtext: string; ctaText: string; imageUrl?: string };
+  about:       { enabled: boolean; body: string; founded: string; principalName: string; principalQuote: string; vision: string; mission: string };
+  stats:       { enabled: boolean; items: { label: string; value: string }[] };
+  admissions:  { enabled: boolean; body: string; criteria: string; process: string };
+  contact:     { enabled: boolean; address: string; phone: string; email: string; mapUrl: string };
+  news:        { enabled: boolean; posts: SiteNewsPost[] };
+  policies:    { enabled: boolean; privacy: string; conduct: string };
+}
+
+export interface PublicSiteData extends SiteConfig {
+  orgName: string;
+  slug: string;
+  logoUrl: string | null;
+  tagline: string | null;
+  primaryColor: string | null;
+  welcomeMessage: string | null;
+}
+
 export interface Organization {
   _id: string;
   name: string;
@@ -44,6 +66,8 @@ export interface Organization {
   welcomeMessage?: string;
   tagline?: string;
   primaryColor?: string;
+  websiteAddon?: boolean;
+  site?: SiteConfig;
   usageBilling: { activeStudents: number; lastCountedAt?: string };
   trialEndsAt?: string;
   createdAt: string;

@@ -6,10 +6,11 @@ import type { Organization, ApiResponse } from '../../types';
 import { useAuthStore } from '../../stores/authStore';
 import PageHeader from '../../components/ui/PageHeader';
 import { cn } from '../../lib/utils';
+import WebsiteBuilderTab from './WebsiteBuilderTab';
 
 // ── Tab definitions ────────────────────────────────────────
 
-type Tab = 'profile' | 'branding' | 'mobile' | 'subscription' | 'danger';
+type Tab = 'profile' | 'branding' | 'website' | 'mobile' | 'subscription' | 'danger';
 
 type BrandState = {
   logoUrl: string;
@@ -33,6 +34,11 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode; danger?: boolean }[
     id: 'branding',
     label: 'Login Branding',
     icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>,
+  },
+  {
+    id: 'website',
+    label: 'Website',
+    icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>,
   },
   {
     id: 'mobile',
@@ -581,6 +587,41 @@ export default function GroupSettingsPage() {
                   </div>
                 </form>
               </SectionCard>
+            )}
+
+            {/* ════ WEBSITE TAB ════ */}
+            {activeTab === 'website' && (
+              org?.websiteAddon ? (
+                <WebsiteBuilderTab
+                  orgId={org._id}
+                  initialSite={org.site}
+                  orgSlug={org.slug}
+                />
+              ) : (
+                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.06)] dark:shadow-none overflow-hidden">
+                  <div className="px-7 py-5 border-b border-gray-100 dark:border-slate-700/70">
+                    <h3 className="font-semibold text-gray-900 dark:text-slate-50 text-[0.95rem] tracking-tight">Public Website</h3>
+                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Launch a branded website at your school's subdomain.</p>
+                  </div>
+                  <div className="px-7 py-16 flex flex-col items-center text-center gap-5">
+                    <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-300 dark:text-slate-600">
+                      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800 dark:text-slate-100">Website Add-on Not Enabled</p>
+                      <p className="text-sm text-gray-400 dark:text-slate-500 mt-1.5 max-w-sm">
+                        This is a premium add-on. Contact{' '}
+                        <a href="mailto:support@tws.enterprises" className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
+                          support@tws.enterprises
+                        </a>{' '}
+                        to enable the Website builder for your school.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )
             )}
 
             {/* ════ MOBILE APP TAB ════ */}

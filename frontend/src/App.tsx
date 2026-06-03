@@ -1,10 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { Suspense, useEffect } from 'react';
 import './i18n';
 import { useThemeStore } from './stores/themeStore';
 import { useAuthStore } from './stores/authStore';
 import { getOrgSlug, isAdminDomain, getProductSubdomain } from './utils/tenant';
+import { getSchoolSite } from './services/authService';
 
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import AppLayout from './layouts/AppLayout';
@@ -44,6 +45,7 @@ import RolesHierarchyPage from './pages/roles/RolesHierarchyPage';
 import MobileDevicesPage from './pages/admin/MobileDevicesPage';
 import LandingPage from './pages/landing/LandingPage';
 import PortfolioPage from './pages/portfolio/PortfolioPage';
+import SchoolSitePage from './pages/public/SchoolSitePage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -90,14 +92,31 @@ function AdminRouter() {
 }
 
 // ── beaconhouse.tws.enterprises (any school subdomain) ────
-function TenantRedirect() {
+// Authenticated → dashboard. Unauthenticated → check for published site,
+// fall back to /login if add-on is off or site is unpublished.
+function TenantRoot() {
   const { isAuthenticated, user } = useAuthStore();
-  if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
-  if (user.role === 'group_admin')  return <Navigate to="/group" replace />;
-  if (user.role === 'coordinator')  return <Navigate to="/coordinator" replace />;
-  if (user.role === 'teacher')      return <Navigate to="/teacher" replace />;
-  if (user.role === 'student')      return <Navigate to="/student" replace />;
-  return <Navigate to="/dashboard" replace />;
+  const slug = getOrgSlug();
+
+  const { data: siteData, isLoading } = useQuery({
+    queryKey: ['school-site', slug],
+    queryFn: () => getSchoolSite(slug!),
+    enabled: !!slug && !isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  if (isAuthenticated && user) {
+    if (user.role === 'group_admin')  return <Navigate to="/group" replace />;
+    if (user.role === 'coordinator')  return <Navigate to="/coordinator" replace />;
+    if (user.role === 'teacher')      return <Navigate to="/teacher" replace />;
+    if (user.role === 'student')      return <Navigate to="/student" replace />;
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (isLoading) return <PageLoader />;
+  if (siteData?.published) return <SchoolSitePage site={siteData} />;
+  return <Navigate to="/login" replace />;
 }
 
 function TenantRouter() {
@@ -222,7 +241,7 @@ function TenantRouter() {
         <Route path="roles"          element={<RolesHierarchyPage />} />
       </Route>
 
-      <Route path="/" element={<TenantRedirect />} />
+      <Route path="/" element={<TenantRoot />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
@@ -238,6 +257,7 @@ function EduRouter() {
     </Routes>
   );
 }
+
 
 // ── tws.enterprises (root domain) — WolfStack portfolio ──
 function PortfolioRouter() {
@@ -263,9 +283,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Suspense fallback={<PageLoader />}>
-          {admin          ? <AdminRouter />     :
+          {admin            ? <AdminRouter />    :
            product === 'edu' ? <EduRouter />    :
-           slug           ? <TenantRouter />    :
+           slug              ? <TenantRouter /> :
            <PortfolioRouter />}
         </Suspense>
       </BrowserRouter>

@@ -7,6 +7,7 @@ import {
   listOrganizations,
   getOrganization,
   updateOrganization,
+  updateSite,
   getUsageMetrics,
   getLogoUploadUrl,
   generateMobileQr,
@@ -34,6 +35,7 @@ router.delete('/:id/mobile-users/:userId/devices', requireSuperAdmin, revokeUser
 // Super-admin OR group_admin for their own org (controller enforces scoping)
 router.get('/:id', getOrganization);
 router.put('/:id', updateOrganization);
+router.put('/:id/site', updateSite);
 router.post('/:id/upload-logo', getLogoUploadUrl);
 
 // Group admin: generate printable QR for mobile onboarding

@@ -1,5 +1,5 @@
 import api from './api';
-import type { AuthUser, ApiResponse } from '../types';
+import type { AuthUser, ApiResponse, PublicSiteData } from '../types';
 
 interface LoginResponse {
   user: AuthUser;
@@ -44,6 +44,15 @@ export interface OrgBranding {
   welcomeMessage: string | null;
   tagline: string | null;
   primaryColor: string | null;
+}
+
+export async function getSchoolSite(slug: string): Promise<PublicSiteData | null> {
+  try {
+    const { data } = await api.get<{ success: boolean; data: PublicSiteData }>(`/public/orgs/${slug}/site`);
+    return data.success ? data.data : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function getOrgBranding(slug: string): Promise<OrgBranding | null> {

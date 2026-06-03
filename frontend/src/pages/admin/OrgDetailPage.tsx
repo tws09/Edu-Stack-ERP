@@ -185,7 +185,7 @@ export default function OrgDetailPage() {
       )}
 
       {/* Info card */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5 mb-5">
         <h2 className="font-semibold text-gray-900 dark:text-slate-100 mb-4">Details</h2>
         <dl className="space-y-3">
           {[
@@ -200,6 +200,27 @@ export default function OrgDetailPage() {
             </div>
           ))}
         </dl>
+      </div>
+
+      {/* Add-ons card */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+        <h2 className="font-semibold text-gray-900 dark:text-slate-100 mb-1">Add-ons</h2>
+        <p className="text-xs text-gray-400 dark:text-slate-500 mb-4">Premium features unlocked per organization.</p>
+        <div className="flex items-center justify-between py-3 border-b border-gray-50 dark:border-slate-700/50">
+          <div>
+            <p className="text-sm font-medium text-gray-900 dark:text-slate-100">Public Website Builder</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
+              Lets the school publish a branded website at their subdomain.
+            </p>
+          </div>
+          <button
+            onClick={() => update.mutate({ ...data, websiteAddon: !org.websiteAddon } as any)}
+            disabled={update.isPending}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none disabled:opacity-50 ${org.websiteAddon ? 'bg-blue-600' : 'bg-gray-200 dark:bg-slate-600'}`}
+          >
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${org.websiteAddon ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
+        </div>
       </div>
     </div>
   );

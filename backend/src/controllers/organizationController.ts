@@ -161,7 +161,7 @@ export async function updateOrganization(req: Request, res: Response): Promise<v
 
   // group_admin cannot change plan or status — only super_admin can
   const allowedFields = callerRole === 'super_admin'
-    ? ['name', 'contactEmail', 'contactPhone', 'address', 'status', 'plan', 'settings', 'logoUrl', 'welcomeMessage', 'tagline', 'primaryColor']
+    ? ['name', 'contactEmail', 'contactPhone', 'address', 'status', 'plan', 'settings', 'logoUrl', 'welcomeMessage', 'tagline', 'primaryColor', 'websiteAddon']
     : ['name', 'contactEmail', 'contactPhone', 'address', 'settings', 'logoUrl', 'welcomeMessage', 'tagline', 'primaryColor'];
 
   const update: Record<string, unknown> = {};
@@ -175,6 +175,26 @@ export async function updateOrganization(req: Request, res: Response): Promise<v
     return;
   }
   res.json({ success: true, data: org });
+}
+
+export async function updateSite(req: Request, res: Response): Promise<void> {
+  const { id } = req.params;
+
+  if (req.user!.orgId?.toString() !== id && req.user!.role !== 'super_admin') {
+    res.status(403).json({ success: false, message: 'Access denied' });
+    return;
+  }
+
+  const org = await Organization.findById(id).select('websiteAddon').lean();
+  if (!org) { res.status(404).json({ success: false, message: 'Organization not found' }); return; }
+  if (!org.websiteAddon) { res.status(403).json({ success: false, message: 'Website add-on not enabled for this organization' }); return; }
+
+  const updated = await Organization.findByIdAndUpdate(
+    id,
+    { $set: { site: req.body } },
+    { new: true, runValidators: true },
+  );
+  res.json({ success: true, data: updated?.site ?? null });
 }
 
 export async function getUsageMetrics(req: Request, res: Response): Promise<void> {
