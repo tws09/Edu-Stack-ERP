@@ -1,48 +1,160 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QRCodeCanvas } from 'qrcode.react';
 import api from '../../services/api';
 import type { Organization, ApiResponse } from '../../types';
 import { useAuthStore } from '../../stores/authStore';
 import PageHeader from '../../components/ui/PageHeader';
+import { cn } from '../../lib/utils';
 
-const PLAN_LABELS: Record<string, string> = {
-  starter: 'Starter',
-  growth: 'Growth',
-  scale: 'Scale',
+// ── Tab definitions ────────────────────────────────────────
+
+type Tab = 'profile' | 'branding' | 'mobile' | 'subscription' | 'danger';
+
+const TABS: { id: Tab; label: string; icon: React.ReactNode; danger?: boolean }[] = [
+  {
+    id: 'profile',
+    label: 'School Profile',
+    icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>,
+  },
+  {
+    id: 'branding',
+    label: 'Login Branding',
+    icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>,
+  },
+  {
+    id: 'mobile',
+    label: 'Mobile App',
+    icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>,
+  },
+  {
+    id: 'subscription',
+    label: 'Subscription',
+    icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>,
+  },
+  {
+    id: 'danger',
+    label: 'Danger Zone',
+    icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>,
+    danger: true,
+  },
+];
+
+// ── Plan / status display maps ─────────────────────────────
+
+const PLAN_DISPLAY: Record<string, { label: string; badge: string }> = {
+  starter:  { label: 'Starter',  badge: 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300' },
+  growth:   { label: 'Growth',   badge: 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' },
+  scale:    { label: 'Scale',    badge: 'bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300' },
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-green-100 text-green-700',
-  trial: 'bg-amber-100 text-amber-700',
-  suspended: 'bg-red-100 text-red-700',
+const STATUS_DISPLAY: Record<string, { label: string; dot: string; chip: string }> = {
+  active:    { label: 'Active',    dot: 'bg-emerald-500', chip: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' },
+  trial:     { label: 'Trial',     dot: 'bg-amber-400',   chip: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400' },
+  suspended: { label: 'Suspended', dot: 'bg-red-500',     chip: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' },
 };
+
+// ── Shared UI primitives ──────────────────────────────────
+
+const inputCls = [
+  'w-full rounded-xl border border-gray-200 dark:border-slate-600',
+  'bg-white dark:bg-slate-700/50 dark:text-slate-100',
+  'px-3.5 py-2.5 text-sm',
+  'focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500',
+  'transition-all duration-150',
+  'placeholder:text-gray-300 dark:placeholder:text-slate-600',
+].join(' ');
+
+function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
+  return (
+    <label className="block text-[10.5px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 mb-1.5">
+      {children}{required && <span className="text-red-400 ml-0.5 normal-case tracking-normal font-semibold"> *</span>}
+    </label>
+  );
+}
+
+function SavedBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
+      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+      Saved
+    </span>
+  );
+}
+
+function SectionCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.06)] dark:shadow-none overflow-hidden">
+      <div className="px-7 py-5 border-b border-gray-100 dark:border-slate-700/70">
+        <h3 className="font-semibold text-gray-900 dark:text-slate-50 text-[0.95rem] tracking-tight">{title}</h3>
+        {subtitle && <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{subtitle}</p>}
+      </div>
+      <div className="px-7 py-6">{children}</div>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────
 
 export default function GroupSettingsPage() {
-  const qc = useQueryClient();
+  const qc   = useQueryClient();
   const user = useAuthStore(s => s.user);
-  const [saved, setSaved] = useState(false);
-  const [brandSaved, setBrandSaved] = useState(false);
-  const [form, setForm] = useState({ name: '', contactEmail: '', contactPhone: '', address: '' });
-  const [brand, setBrand] = useState({ logoUrl: '', welcomeMessage: '' });
+
+  const [activeTab, setActiveTab] = useState<Tab>('profile');
+
+  // Profile form
+  const [form, setForm]     = useState({ name: '', contactEmail: '', contactPhone: '', address: '' });
+  const [profileSaved, setProfileSaved] = useState(false);
+
+  // Brand form
+  const [brand, setBrand]       = useState({ logoUrl: '', welcomeMessage: '' });
+  const [brandSaved, setBrandSaved]     = useState(false);
   const [logoUploading, setLogoUploading] = useState(false);
-  const [logoError, setLogoError] = useState('');
+  const [logoError, setLogoError]         = useState('');
+  const [isDragging, setIsDragging]       = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [qrData, setQrData] = useState<string | null>(null);
-  const [qrOrgName, setQrOrgName] = useState('');
+
+  // QR state
+  const [qrData, setQrData]         = useState<string | null>(null);
+  const [qrOrgName, setQrOrgName]   = useState('');
   const [qrGenerating, setQrGenerating] = useState(false);
-  const [qrError, setQrError] = useState('');
+  const [qrError, setQrError]           = useState('');
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
 
-  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setLogoError('');
-    if (file.size > 2 * 1024 * 1024) {
-      setLogoError('Image must be under 2 MB.');
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
+  // Danger zone
+  const [resetConfirm, setResetConfirm] = useState(false);
+
+  // ── Fetch org ──
+  const { data: org, isLoading } = useQuery({
+    queryKey: ['org', user?.orgId],
+    queryFn: () =>
+      api.get<ApiResponse<Organization>>(`/organizations/${user!.orgId}`).then(r => r.data.data!),
+    enabled: !!user?.orgId,
+  });
+
+  useEffect(() => {
+    if (org) {
+      setForm({ name: org.name, contactEmail: org.contactEmail, contactPhone: org.contactPhone ?? '', address: (org as any).address ?? '' });
+      setBrand({ logoUrl: (org as any).logoUrl ?? '', welcomeMessage: (org as any).welcomeMessage ?? '' });
     }
+  }, [org]);
+
+  // ── Mutations ──
+  const updateProfile = useMutation({
+    mutationFn: (body: typeof form) => api.put(`/organizations/${user!.orgId}`, body),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['org'] }); setProfileSaved(true); setTimeout(() => setProfileSaved(false), 3000); },
+  });
+
+  const updateBrand = useMutation({
+    mutationFn: (body: typeof brand) => api.put(`/organizations/${user!.orgId}`, body),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['org'] }); setBrandSaved(true); setTimeout(() => setBrandSaved(false), 3000); },
+  });
+
+  // ── Logo upload ──
+  const processLogoFile = useCallback(async (file: File) => {
+    if (!file.type.startsWith('image/')) { setLogoError('Please upload an image file (PNG, JPG, SVG, WebP).'); return; }
+    if (file.size > 2 * 1024 * 1024) { setLogoError('Image must be under 2 MB.'); return; }
+    setLogoError('');
     setLogoUploading(true);
     try {
       const base64 = await new Promise<string>((resolve, reject) => {
@@ -58,8 +170,9 @@ export default function GroupSettingsPage() {
       setLogoUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
-  }
+  }, []);
 
+  // ── QR code ──
   async function handleGenerateQr() {
     setQrError('');
     setQrGenerating(true);
@@ -69,11 +182,8 @@ export default function GroupSettingsPage() {
       );
       setQrData(data.data.qrData);
       setQrOrgName(data.data.org.name);
-    } catch {
-      setQrError('Failed to generate QR code. Please try again.');
-    } finally {
-      setQrGenerating(false);
-    }
+    } catch { setQrError('Failed to generate QR code. Please try again.'); }
+    finally { setQrGenerating(false); }
   }
 
   function handleDownloadQr() {
@@ -85,314 +195,491 @@ export default function GroupSettingsPage() {
     link.click();
   }
 
-  const { data: org, isLoading } = useQuery({
-    queryKey: ['org', user?.orgId],
-    queryFn: () =>
-      api.get<ApiResponse<Organization>>(`/organizations/${user!.orgId}`).then(r => r.data.data!),
-    enabled: !!user?.orgId,
-  });
-
-  useEffect(() => {
-    if (org) {
-      setForm({
-        name: org.name,
-        contactEmail: org.contactEmail,
-        contactPhone: org.contactPhone ?? '',
-        address: (org as any).address ?? '',
-      });
-      setBrand({
-        logoUrl: (org as any).logoUrl ?? '',
-        welcomeMessage: (org as any).welcomeMessage ?? '',
-      });
-    }
-  }, [org]);
-
-  const update = useMutation({
-    mutationFn: (body: typeof form) => api.put(`/organizations/${user!.orgId}`, body),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['org'] });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    },
-  });
-
-  const updateBrand = useMutation({
-    mutationFn: (body: typeof brand) => api.put(`/organizations/${user!.orgId}`, body),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['org'] });
-      setBrandSaved(true);
-      setTimeout(() => setBrandSaved(false), 3000);
-    },
-  });
-
   if (!user?.orgId) return null;
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <PageHeader title="Organization Settings" subtitle="Your school group profile and contact details" />
+    <div className="p-6 lg:p-8 max-w-[1080px] mx-auto">
+      <PageHeader
+        title="Settings"
+        subtitle="Manage your school group profile, branding, and configuration"
+      />
 
       {isLoading ? (
-        <div className="text-center py-12 text-gray-400 dark:text-slate-500 text-sm">Loading...</div>
+        <div className="flex items-center justify-center py-24 text-gray-300 dark:text-slate-600">
+          <div className="w-7 h-7 border-[3px] border-current border-t-blue-500 rounded-full animate-spin" />
+        </div>
       ) : (
-        <div className="space-y-5">
-          {/* Read-only plan/status info */}
-          {org && (
-            <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
-              <h2 className="font-semibold text-gray-900 dark:text-slate-100 mb-3 text-sm">Subscription</h2>
-              <div className="flex items-center gap-4">
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-slate-400">Plan</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5">{PLAN_LABELS[org.plan] ?? org.plan}</p>
+        <div className="mt-8 flex flex-col lg:flex-row gap-6 lg:gap-8">
+
+          {/* ── Left sidebar ── */}
+          <aside className="lg:w-48 flex-shrink-0">
+            {/* Mobile: horizontal scroll */}
+            <div className="flex lg:hidden gap-1 overflow-x-auto pb-1 -mx-1 px-1">
+              {TABS.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setActiveTab(t.id)}
+                  className={cn(
+                    'flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-medium transition-colors flex-shrink-0',
+                    activeTab === t.id
+                      ? t.danger ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                      : t.danger ? 'text-red-400 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10' : 'text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700/50',
+                  )}
+                >
+                  {t.icon}{t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Desktop: vertical list */}
+            <nav className="hidden lg:flex flex-col gap-0.5">
+              {TABS.map((t, i) => (
+                <div key={t.id}>
+                  {/* Divider before Danger Zone */}
+                  {t.danger && <div className="my-2 border-t border-gray-200 dark:border-slate-700" />}
+                  <button
+                    onClick={() => setActiveTab(t.id)}
+                    className={cn(
+                      'w-full flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150 text-left',
+                      activeTab === t.id
+                        ? t.danger
+                          ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 shadow-sm'
+                          : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 shadow-sm'
+                        : t.danger
+                          ? 'text-red-400 dark:text-red-500/80 hover:bg-red-50/60 dark:hover:bg-red-900/10 hover:text-red-600'
+                          : 'text-gray-500 dark:text-slate-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/50 hover:text-gray-700 dark:hover:text-slate-200',
+                    )}
+                  >
+                    <span className={cn('flex-shrink-0', activeTab === t.id && !t.danger ? 'text-blue-600 dark:text-blue-400' : '')}>{t.icon}</span>
+                    {t.label}
+                  </button>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-slate-400">Status</p>
-                  <span className={`inline-block mt-0.5 text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[org.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                    {org.status}
-                  </span>
-                </div>
-                {org.trialEndsAt && org.status === 'trial' && (
+              ))}
+            </nav>
+          </aside>
+
+          {/* ── Content area ── */}
+          <main className="flex-1 min-w-0 space-y-5">
+
+            {/* ════ PROFILE TAB ════ */}
+            {activeTab === 'profile' && (
+              <SectionCard title="School Profile" subtitle="Your school group's public identity and contact details.">
+                <form
+                  onSubmit={e => { e.preventDefault(); updateProfile.mutate(form); }}
+                  className="space-y-5"
+                >
                   <div>
-                    <p className="text-xs text-gray-500 dark:text-slate-400">Trial ends</p>
-                    <p className="text-sm font-medium text-amber-600 mt-0.5">
-                      {new Date(org.trialEndsAt).toLocaleDateString()}
-                    </p>
+                    <FieldLabel required>School Group Name</FieldLabel>
+                    <input
+                      className={inputCls}
+                      value={form.name}
+                      onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                      placeholder="e.g. Punjab Grammar Schools"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <FieldLabel required>Contact Email</FieldLabel>
+                      <input
+                        type="email"
+                        className={inputCls}
+                        value={form.contactEmail}
+                        onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))}
+                        placeholder="admin@school.pk"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <FieldLabel>Contact Phone</FieldLabel>
+                      <input
+                        type="tel"
+                        className={inputCls}
+                        value={form.contactPhone}
+                        onChange={e => setForm(f => ({ ...f, contactPhone: e.target.value }))}
+                        placeholder="+92 300 0000000"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <FieldLabel>Head Office Address</FieldLabel>
+                    <input
+                      className={inputCls}
+                      value={form.address}
+                      onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+                      placeholder="Street, City, Province"
+                    />
+                  </div>
+
+                  {updateProfile.isError && (
+                    <p className="text-xs text-red-500">{(updateProfile.error as any)?.response?.data?.message ?? 'Failed to save changes'}</p>
+                  )}
+
+                  <div className="flex items-center gap-4 pt-1">
+                    <button
+                      type="submit"
+                      disabled={updateProfile.isPending}
+                      className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-semibold rounded-xl disabled:opacity-50 transition-all shadow-[0_2px_8px_-2px_rgba(59,130,246,0.5)]"
+                    >
+                      {updateProfile.isPending ? 'Saving...' : 'Save Changes'}
+                    </button>
+                    {profileSaved && <SavedBadge />}
+                  </div>
+                </form>
+              </SectionCard>
+            )}
+
+            {/* ════ BRANDING TAB ════ */}
+            {activeTab === 'branding' && (
+              <SectionCard title="Login Page Branding" subtitle="Customise what staff and students see on your school's login page.">
+                <form
+                  onSubmit={e => { e.preventDefault(); updateBrand.mutate(brand); }}
+                  className="space-y-6"
+                >
+                  {/* Logo drag & drop */}
+                  <div>
+                    <FieldLabel>School Logo</FieldLabel>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={e => { const f = e.target.files?.[0]; if (f) processLogoFile(f); }}
+                    />
+
+                    {brand.logoUrl ? (
+                      /* Logo preview state */
+                      <div className="flex items-center gap-4">
+                        <div className="relative group w-20 h-20 rounded-2xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          <img src={brand.logoUrl} alt="School logo" className="w-full h-full object-contain p-2" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="text-white text-[10px] font-semibold"
+                            >
+                              Change
+                            </button>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 dark:text-slate-200">Logo uploaded</p>
+                          <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Shown on your school's login page</p>
+                          <div className="flex gap-3 mt-2">
+                            <button type="button" onClick={() => fileInputRef.current?.click()} className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline">Replace</button>
+                            <button type="button" onClick={() => setBrand(b => ({ ...b, logoUrl: '' }))} className="text-xs text-red-500 dark:text-red-400 font-medium hover:underline">Remove</button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Drop zone */
+                      <div
+                        onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={e => {
+                          e.preventDefault();
+                          setIsDragging(false);
+                          const f = e.dataTransfer.files?.[0];
+                          if (f) processLogoFile(f);
+                        }}
+                        onClick={() => fileInputRef.current?.click()}
+                        className={cn(
+                          'relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200 py-10 px-6',
+                          isDragging
+                            ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/10'
+                            : 'border-gray-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-slate-500 hover:bg-gray-50/60 dark:hover:bg-slate-700/30',
+                        )}
+                      >
+                        <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center transition-colors', isDragging ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-500' : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-slate-500')}>
+                          {logoUploading
+                            ? <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            : <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                          }
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-gray-700 dark:text-slate-200">
+                            {isDragging ? 'Drop your logo here' : 'Drag & drop or click to upload'}
+                          </p>
+                          <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">PNG, JPG, SVG or WebP &middot; Max 2 MB</p>
+                        </div>
+                      </div>
+                    )}
+                    {logoError && <p className="text-xs text-red-500 mt-1.5">{logoError}</p>}
+                  </div>
+
+                  {/* Welcome message */}
+                  <div>
+                    <FieldLabel>Welcome Message</FieldLabel>
+                    <textarea
+                      rows={3}
+                      className={cn(inputCls, 'resize-none')}
+                      value={brand.welcomeMessage}
+                      onChange={e => setBrand(b => ({ ...b, welcomeMessage: e.target.value }))}
+                      placeholder="Welcome back! Please sign in to continue."
+                    />
+                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-1.5">Displayed below your logo on the login page.</p>
+                  </div>
+
+                  {updateBrand.isError && (
+                    <p className="text-xs text-red-500">{(updateBrand.error as any)?.response?.data?.message ?? 'Failed to save branding'}</p>
+                  )}
+
+                  <div className="flex items-center gap-4 pt-1">
+                    <button
+                      type="submit"
+                      disabled={updateBrand.isPending}
+                      className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-semibold rounded-xl disabled:opacity-50 transition-all shadow-[0_2px_8px_-2px_rgba(59,130,246,0.5)]"
+                    >
+                      {updateBrand.isPending ? 'Saving...' : 'Save Branding'}
+                    </button>
+                    {brandSaved && <SavedBadge />}
+                  </div>
+                </form>
+              </SectionCard>
+            )}
+
+            {/* ════ MOBILE APP TAB ════ */}
+            {activeTab === 'mobile' && (
+              <SectionCard
+                title="Mobile App Onboarding"
+                subtitle="Generate a QR code that connects the EduStack Android app to your school."
+              >
+                {/* Step indicators */}
+                <div className="grid grid-cols-3 gap-3 mb-8">
+                  {[
+                    { n: 1, title: 'Generate', desc: 'Create your school\'s unique QR code below' },
+                    { n: 2, title: 'Open App', desc: 'Staff & students open EduStack on Android' },
+                    { n: 3, title: 'Scan & Connect', desc: 'Scan the QR to link the app to your school' },
+                  ].map(s => (
+                    <div key={s.n} className="relative flex flex-col items-center text-center gap-2 p-4 rounded-xl bg-gray-50 dark:bg-slate-700/40 border border-gray-100 dark:border-slate-700">
+                      <div className={cn(
+                        'w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold',
+                        qrData && s.n <= 1 ? 'bg-emerald-500 text-white' :
+                        s.n === 1 ? 'bg-blue-600 text-white' :
+                        'bg-gray-200 dark:bg-slate-600 text-gray-500 dark:text-slate-400',
+                      )}>
+                        {qrData && s.n === 1
+                          ? <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                          : s.n}
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-700 dark:text-slate-200">{s.title}</p>
+                        <p className="text-[10.5px] text-gray-400 dark:text-slate-500 mt-0.5 leading-snug">{s.desc}</p>
+                      </div>
+                      {s.n < 3 && (
+                        <div className="hidden sm:block absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-px bg-gray-200 dark:bg-slate-600" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {qrError && (
+                  <div className="mb-5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 text-red-700 dark:text-red-400 rounded-xl px-4 py-3 text-sm">
+                    {qrError}
                   </div>
                 )}
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-slate-400">URL slug</p>
-                  <p className="text-sm font-mono text-gray-700 dark:text-slate-300 mt-0.5">{org.slug}</p>
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* Editable org info */}
-          <form
-            onSubmit={e => { e.preventDefault(); update.mutate(form); }}
-            className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5 space-y-4"
-          >
-            <h2 className="font-semibold text-gray-900 dark:text-slate-100 text-sm">Profile</h2>
-
-            {saved && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
-                Changes saved successfully.
-              </div>
-            )}
-            {update.isError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-                {(update.error as any)?.response?.data?.message ?? 'Failed to save changes'}
-              </div>
-            )}
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">School Group Name *</label>
-              <input
-                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Contact Email *</label>
-                <input
-                  type="email"
-                  className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
-                  value={form.contactEmail}
-                  onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Contact Phone</label>
-                <input
-                  className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
-                  value={form.contactPhone}
-                  onChange={e => setForm(f => ({ ...f, contactPhone: e.target.value }))}
-                  placeholder="+92 300 0000000"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Head Office Address</label>
-              <input
-                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm"
-                value={form.address}
-                onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                placeholder="Street, City"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={update.isPending}
-              className="w-full py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors"
-            >
-              {update.isPending ? 'Saving...' : 'Save Changes'}
-            </button>
-          </form>
-
-          {/* Login Page Branding */}
-          <form
-            onSubmit={e => { e.preventDefault(); updateBrand.mutate(brand); }}
-            className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5 space-y-4"
-          >
-            <div>
-              <h2 className="font-semibold text-gray-900 dark:text-slate-100 text-sm">Login Page Branding</h2>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Customise what students and staff see on your school's login page.</p>
-            </div>
-
-            {brandSaved && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
-                Branding saved successfully.
-              </div>
-            )}
-            {updateBrand.isError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-                {(updateBrand.error as any)?.response?.data?.message ?? 'Failed to save branding'}
-              </div>
-            )}
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">School Logo</label>
-              <div className="flex items-center gap-3">
-                {brand.logoUrl && (
-                  <img src={brand.logoUrl} alt="Logo" className="h-12 w-12 rounded-xl object-contain border border-gray-200 dark:border-slate-600 bg-white" />
-                )}
-                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-                <button
-                  type="button"
-                  disabled={logoUploading}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
-                >
-                  {logoUploading ? (
-                    <>
-                      <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                      </svg>
-                      {brand.logoUrl ? 'Change Logo' : 'Upload Logo'}
-                    </>
-                  )}
-                </button>
-                {brand.logoUrl && (
-                  <button
-                    type="button"
-                    onClick={() => setBrand(b => ({ ...b, logoUrl: '' }))}
-                    className="text-xs text-red-500 hover:text-red-700 transition-colors"
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-              {logoError && <p className="mt-1.5 text-xs text-red-500">{logoError}</p>}
-              <p className="mt-1.5 text-xs text-gray-400 dark:text-slate-500">PNG, JPG, SVG or WebP. Shown on the login page.</p>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-slate-400 mb-1">Welcome Message</label>
-              <textarea
-                rows={2}
-                className="w-full border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 text-sm resize-none"
-                value={brand.welcomeMessage}
-                onChange={e => setBrand(b => ({ ...b, welcomeMessage: e.target.value }))}
-                placeholder="Welcome back! Please sign in to continue."
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={updateBrand.isPending}
-              className="w-full py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors"
-            >
-              {updateBrand.isPending ? 'Saving...' : 'Save Branding'}
-            </button>
-          </form>
-
-          {/* Mobile App QR Code */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5 space-y-4">
-            <div>
-              <h2 className="font-semibold text-gray-900 dark:text-slate-100 text-sm">Mobile App Onboarding</h2>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
-                Generate a QR code that staff and students scan to connect the EduStack mobile app to your school.
-              </p>
-            </div>
-
-            {qrError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{qrError}</div>
-            )}
-
-            {qrData ? (
-              <div className="flex flex-col items-center gap-4">
-                <div className="p-4 bg-white rounded-xl border border-gray-200 dark:border-slate-600 inline-block">
-                  <QRCodeCanvas
-                    ref={qrCanvasRef}
-                    value={qrData}
-                    size={200}
-                    level="M"
-                    includeMargin
-                  />
-                </div>
-                <p className="text-xs text-gray-500 dark:text-slate-400 text-center font-medium">{qrOrgName}</p>
-                <p className="text-xs text-gray-400 dark:text-slate-500 text-center -mt-2">
-                  Scan with the EduStack mobile app to onboard your school
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={handleDownloadQr}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Download PNG
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleGenerateQr}
-                    disabled={qrGenerating}
-                    className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
-                  >
-                    Regenerate
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={handleGenerateQr}
-                disabled={qrGenerating}
-                className="w-full py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-              >
-                {qrGenerating ? (
-                  <>
-                    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Generating...
-                  </>
+                {qrData ? (
+                  /* QR generated state */
+                  <div className="flex flex-col sm:flex-row items-center gap-8">
+                    <div className="flex-shrink-0 p-5 bg-white dark:bg-white rounded-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.15)] border border-gray-100">
+                      <QRCodeCanvas
+                        ref={qrCanvasRef}
+                        value={qrData}
+                        size={180}
+                        level="M"
+                        includeMargin
+                      />
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <div className="inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold px-2.5 py-1 rounded-full mb-3">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        QR code ready
+                      </div>
+                      <p className="text-base font-semibold text-gray-900 dark:text-slate-50">{qrOrgName}</p>
+                      <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">
+                        Share this code with your staff and students.<br />
+                        They scan it once to connect the mobile app.
+                      </p>
+                      <div className="flex flex-wrap gap-3 mt-5">
+                        <button
+                          type="button"
+                          onClick={handleDownloadQr}
+                          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-[0_2px_8px_-2px_rgba(59,130,246,0.5)]"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                          Download PNG
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleGenerateQr}
+                          disabled={qrGenerating}
+                          className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 text-sm font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                        >
+                          {qrGenerating ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>}
+                          Regenerate
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
-                  <>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8H3m2 0V6m0 2v2M5 8H3m5-4h2M5 8h.01" />
-                    </svg>
-                    Generate QR Code
-                  </>
+                  /* No QR yet */
+                  <div className="flex flex-col items-center text-center py-4 gap-5">
+                    <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-slate-500 flex items-center justify-center">
+                      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8H3m2 0V6m0 2v2M5 8H3m5-4h2M5 8h.01" /></svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">No QR code yet</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-1 max-w-xs">
+                        Generate your school's unique onboarding QR code — each school gets one that never changes unless regenerated.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleGenerateQr}
+                      disabled={qrGenerating}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl disabled:opacity-50 transition-all shadow-[0_2px_8px_-2px_rgba(59,130,246,0.5)]"
+                    >
+                      {qrGenerating
+                        ? <><div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin" />Generating...</>
+                        : <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8H3m2 0V6m0 2v2M5 8H3m5-4h2M5 8h.01" /></svg>Generate QR Code</>
+                      }
+                    </button>
+                  </div>
                 )}
-              </button>
+              </SectionCard>
             )}
-          </div>
+
+            {/* ════ SUBSCRIPTION TAB ════ */}
+            {activeTab === 'subscription' && org && (
+              <SectionCard title="Subscription" subtitle="Your current plan and account status.">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {/* Plan */}
+                  <div className="rounded-xl bg-gray-50 dark:bg-slate-700/40 border border-gray-100 dark:border-slate-700 p-4">
+                    <p className="text-[10.5px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 mb-2">Plan</p>
+                    <span className={cn('text-sm font-semibold px-2.5 py-1 rounded-lg', (PLAN_DISPLAY[org.plan] ?? PLAN_DISPLAY.starter).badge)}>
+                      {(PLAN_DISPLAY[org.plan] ?? { label: org.plan }).label}
+                    </span>
+                  </div>
+
+                  {/* Status */}
+                  <div className="rounded-xl bg-gray-50 dark:bg-slate-700/40 border border-gray-100 dark:border-slate-700 p-4">
+                    <p className="text-[10.5px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 mb-2">Status</p>
+                    {(() => {
+                      const s = STATUS_DISPLAY[org.status] ?? { label: org.status, dot: 'bg-gray-400', chip: 'bg-gray-100 text-gray-600' };
+                      return (
+                        <span className={cn('inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg', s.chip)}>
+                          <span className={cn('w-1.5 h-1.5 rounded-full', s.dot)} />
+                          {s.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Trial end date */}
+                  {org.trialEndsAt && org.status === 'trial' && (
+                    <div className="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 p-4">
+                      <p className="text-[10.5px] font-bold uppercase tracking-wider text-amber-500/70 mb-2">Trial ends</p>
+                      <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                        {new Date(org.trialEndsAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* URL slug */}
+                  <div className="rounded-xl bg-gray-50 dark:bg-slate-700/40 border border-gray-100 dark:border-slate-700 p-4">
+                    <p className="text-[10.5px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 mb-2">URL slug</p>
+                    <p className="text-sm font-mono font-medium text-gray-700 dark:text-slate-300">{org.slug}</p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-5">
+                  To change your plan or view invoices, contact{' '}
+                  <a href="mailto:billing@tws.enterprises" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                    billing@tws.enterprises
+                  </a>.
+                </p>
+              </SectionCard>
+            )}
+
+            {/* ════ DANGER ZONE TAB ════ */}
+            {activeTab === 'danger' && (
+              <div className="rounded-2xl border border-red-200 dark:border-red-800/50 shadow-[0_2px_16px_-4px_rgba(239,68,68,0.08)] overflow-hidden">
+                <div className="px-7 py-5 border-b border-red-100 dark:border-red-800/40 bg-red-50/60 dark:bg-red-900/10">
+                  <h3 className="font-semibold text-red-700 dark:text-red-400 text-[0.95rem] tracking-tight flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    Danger Zone
+                  </h3>
+                  <p className="text-xs text-red-500/80 dark:text-red-400/70 mt-0.5">
+                    Actions here are destructive and may not be reversible. Proceed with caution.
+                  </p>
+                </div>
+
+                <div className="px-7 py-6 bg-white dark:bg-slate-800 space-y-5">
+                  {/* Reset branding */}
+                  <div className="flex items-start justify-between gap-6 py-4 border-b border-gray-100 dark:border-slate-700">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-slate-100">Reset Login Branding</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
+                        Removes your school logo and welcome message from the login page.
+                      </p>
+                    </div>
+                    {resetConfirm ? (
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-xs text-red-600 dark:text-red-400 font-medium whitespace-nowrap">Sure?</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBrand({ logoUrl: '', welcomeMessage: '' });
+                            updateBrand.mutate({ logoUrl: '', welcomeMessage: '' });
+                            setResetConfirm(false);
+                          }}
+                          className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg transition-colors"
+                        >
+                          Yes, reset
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setResetConfirm(false)}
+                          className="px-3 py-1.5 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 text-xs font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setResetConfirm(true)}
+                        className="flex-shrink-0 px-4 py-2 border border-red-200 dark:border-red-700/60 text-red-600 dark:text-red-400 text-xs font-semibold rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        Reset Branding
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Placeholder for future destructive actions */}
+                  <div className="flex items-start justify-between gap-6 py-4 opacity-50 cursor-not-allowed">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-slate-100">Archive School Group</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
+                        Deactivate this school group and all associated branches. Contact support to re-activate.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled
+                      className="flex-shrink-0 px-4 py-2 border border-red-200 dark:border-red-700/60 text-red-400 text-xs font-semibold rounded-xl cursor-not-allowed"
+                    >
+                      Archive
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </main>
         </div>
       )}
     </div>
