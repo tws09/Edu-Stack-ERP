@@ -1,7 +1,7 @@
 const BASE = import.meta.env.VITE_BASE_DOMAIN ?? 'tws.enterprises';
 
 // Subdomains that are never org slugs
-const RESERVED = new Set(['admin', 'api', 'www', 'app', 'edu']);
+const RESERVED = new Set(['admin', 'api', 'www', 'app', 'edu', 'swh']);
 
 // Subdomains that map to specific product landing pages
 // Extend this set as new products launch (e.g. 'hospital', 'hr')
