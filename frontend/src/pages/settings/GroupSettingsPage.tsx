@@ -233,7 +233,7 @@ export default function GroupSettingsPage() {
 
             {/* Desktop: vertical list */}
             <nav className="hidden lg:flex flex-col gap-0.5">
-              {TABS.map((t, i) => (
+              {TABS.map((t) => (
                 <div key={t.id}>
                   {/* Divider before Danger Zone */}
                   {t.danger && <div className="my-2 border-t border-gray-200 dark:border-slate-700" />}
