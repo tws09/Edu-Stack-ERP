@@ -6,7 +6,7 @@ export async function getOrgBySlug(req: Request, res: Response): Promise<void> {
   const slug = String(req.params.slug).toLowerCase();
 
   const org = await Organization.findOne({ slug })
-    .select('name slug logoUrl welcomeMessage status')
+    .select('name slug logoUrl welcomeMessage tagline primaryColor status')
     .lean();
 
   if (!org || org.status === 'suspended') {
@@ -21,6 +21,8 @@ export async function getOrgBySlug(req: Request, res: Response): Promise<void> {
       slug: org.slug,
       logoUrl: org.logoUrl ?? null,
       welcomeMessage: org.welcomeMessage ?? null,
+      tagline: org.tagline ?? null,
+      primaryColor: org.primaryColor ?? null,
     },
   });
 }

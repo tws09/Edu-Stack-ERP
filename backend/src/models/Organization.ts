@@ -13,6 +13,8 @@ export interface IOrganization extends Document {
   address?: string;
   logoUrl?: string;
   welcomeMessage?: string;
+  tagline?: string;
+  primaryColor?: string;
   settings: {
     timezone: string;
     currency: string;
@@ -44,6 +46,8 @@ const organizationSchema = new Schema<IOrganization>(
     address: String,
     logoUrl: String,
     welcomeMessage: { type: String, trim: true },
+    tagline: { type: String, trim: true },
+    primaryColor: { type: String, default: '#2563eb' },
     settings: {
       timezone: { type: String, default: 'Asia/Karachi' },
       currency: { type: String, default: 'PKR' },
