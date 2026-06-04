@@ -47,6 +47,8 @@ import LandingPage from './pages/landing/LandingPage';
 import PortfolioPage from './pages/portfolio/PortfolioPage';
 import SchoolSitePage from './pages/public/SchoolSitePage';
 import WebsiteEditorPage from './pages/settings/WebsiteEditorPage';
+import AdmissionPortalPage from './pages/public/AdmissionPortalPage';
+import AdmissionPage from './pages/admission/AdmissionPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -125,6 +127,9 @@ function TenantRouter() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
 
+      {/* Public admission portal — no auth */}
+      <Route path="/admission" element={<AdmissionPortalPage />} />
+
       {/* Branch-level staff */}
       <Route
         path="/dashboard"
@@ -150,6 +155,7 @@ function TenantRouter() {
         <Route path="exam-paper"     element={<ExamPaperPage />} />
         <Route path="settings"       element={<SettingsPage />} />
         <Route path="staff"          element={<StaffPage />} />
+        <Route path="admission"      element={<AdmissionPage />} />
       </Route>
 
       {/* Coordinator */}
@@ -169,6 +175,7 @@ function TenantRouter() {
         <Route path="exam-paper"    element={<ExamPaperPage />} />
         <Route path="assignments"   element={<AssignmentsPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="admission"     element={<AdmissionPage />} />
       </Route>
 
       {/* Teacher */}
@@ -250,6 +257,7 @@ function TenantRouter() {
         <Route path="exam-paper"     element={<ExamPaperPage />} />
         <Route path="settings"       element={<GroupSettingsPage />} />
         <Route path="roles"          element={<RolesHierarchyPage />} />
+        <Route path="admission"      element={<AdmissionPage />} />
       </Route>
 
       <Route path="/" element={<TenantRoot />} />

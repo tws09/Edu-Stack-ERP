@@ -33,6 +33,7 @@ import questionBankRoutes from './routes/questionBank';
 import examPaperDraftRoutes from './routes/examPaperDrafts';
 import branchHeaderRoutes from './routes/branchHeader';
 import examScheduleRoutes from './routes/examSchedules';
+import admissionRoutes from './routes/admission';
 
 const app = express();
 
@@ -88,6 +89,7 @@ app.use('/api/question-bank', questionBankRoutes);
 app.use('/api/exam-paper-drafts', examPaperDraftRoutes);
 app.use('/api/branch-header', branchHeaderRoutes);
 app.use('/api/exam-schedules', examScheduleRoutes);
+app.use('/api/admission', admissionRoutes);
 
 app.use(notFoundHandler);
 app.use(globalErrorHandler);

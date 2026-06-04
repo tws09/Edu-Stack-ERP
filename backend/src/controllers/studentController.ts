@@ -5,6 +5,7 @@ import { randomBytes } from 'crypto';
 import { Student } from '../models/Student';
 import { User } from '../models/User';
 import { Sequence } from '../models/Sequence';
+import { Challan } from '../models/Challan';
 import { hashPassword } from '../services/authService';
 import { getUploadUrl, getPublicUrl } from '../services/s3Service';
 
@@ -190,4 +191,126 @@ export async function getMyProfile(req: Request, res: Response): Promise<void> {
 
   if (!student) { res.status(404).json({ success: false, message: 'Student profile not found' }); return; }
   res.json({ success: true, data: student });
+}
+
+// ─── Student Leaving Flow ─────────────────────────────────────────────────────
+
+export async function initiateLeavingProcess(req: Request, res: Response): Promise<void> {
+  const { orgId } = req.user!;
+  const name = req.user!.doc?.name ?? 'Admin';
+  const { reason } = req.body;
+  if (!reason?.trim()) { res.status(400).json({ success: false, message: 'Leaving reason required' }); return; }
+
+  const student = await Student.findOne({ _id: req.params.id, orgId });
+  if (!student) { res.status(404).json({ success: false, message: 'Student not found' }); return; }
+  if (['transferred', 'withdrawn', 'graduated'].includes(student.status)) {
+    res.status(400).json({ success: false, message: 'Student has already left' });
+    return;
+  }
+
+  student.status = 'leaving';
+  student.leavingInfo = {
+    initiatedAt: new Date(),
+    initiatedByName: name ?? 'Admin',
+    reason: reason.trim(),
+    financeCleared: false,
+  };
+  await student.save();
+  res.json({ success: true, data: student });
+}
+
+export async function checkAndClearFinanceDues(req: Request, res: Response): Promise<void> {
+  const { orgId } = req.user!;
+
+  const student = await Student.findOne({ _id: req.params.id, orgId });
+  if (!student) { res.status(404).json({ success: false, message: 'Student not found' }); return; }
+  if (student.status !== 'leaving') {
+    res.status(400).json({ success: false, message: 'Leaving process not initiated' });
+    return;
+  }
+
+  // Check for outstanding fee dues
+  const outstanding = await Challan.countDocuments({
+    orgId,
+    studentId: student._id,
+    status: { $in: ['unpaid', 'partial', 'overdue'] },
+  });
+
+  if (outstanding > 0 && !req.body.override) {
+    res.json({
+      success: true,
+      data: { financeCleared: false, outstandingChallans: outstanding },
+    });
+    return;
+  }
+
+  if (!student.leavingInfo) {
+    res.status(400).json({ success: false, message: 'Leaving process not initiated' });
+    return;
+  }
+  student.leavingInfo.financeCleared = true;
+  student.leavingInfo.financeClearedAt = new Date();
+  await student.save();
+
+  res.json({ success: true, data: { financeCleared: true, outstandingChallans: 0 } });
+}
+
+export async function issueTc(req: Request, res: Response): Promise<void> {
+  const { orgId } = req.user!;
+
+  const student = await Student.findOne({ _id: req.params.id, orgId });
+  if (!student) { res.status(404).json({ success: false, message: 'Student not found' }); return; }
+  if (student.status !== 'leaving') {
+    res.status(400).json({ success: false, message: 'Leaving process not initiated' });
+    return;
+  }
+  if (!student.leavingInfo?.financeCleared) {
+    res.status(400).json({ success: false, message: 'Finance dues not cleared. Cannot issue TC.' });
+    return;
+  }
+
+  const reason = student.leavingInfo.reason ?? 'withdrawal';
+  const statusMap: Record<string, 'transferred' | 'withdrawn' | 'graduated'> = {
+    migration: 'transferred',
+    transfer: 'transferred',
+    'completed course': 'graduated',
+  };
+  const finalStatus = statusMap[reason.toLowerCase()] ?? 'withdrawn';
+
+  student.status = finalStatus;
+  student.leavingInfo!.tcIssuedAt = new Date();
+  student.leavingInfo!.leftAt = new Date();
+  await student.save();
+
+  res.json({ success: true, data: student });
+}
+
+export async function issueCharacterCert(req: Request, res: Response): Promise<void> {
+  const { orgId } = req.user!;
+
+  const student = await Student.findOne({ _id: req.params.id, orgId });
+  if (!student) { res.status(404).json({ success: false, message: 'Student not found' }); return; }
+  if (!student.leavingInfo) {
+    res.status(400).json({ success: false, message: 'Leaving process not initiated' });
+    return;
+  }
+
+  student.leavingInfo!.charCertIssuedAt = new Date();
+  await student.save();
+  res.json({ success: true, data: { charCertIssuedAt: student.leavingInfo!.charCertIssuedAt } });
+}
+
+export async function getLeavingStatus(req: Request, res: Response): Promise<void> {
+  const { orgId } = req.user!;
+
+  const student = await Student.findOne({ _id: req.params.id, orgId })
+    .populate('classId', 'name level')
+    .populate('sectionId', 'name');
+  if (!student) { res.status(404).json({ success: false, message: 'Student not found' }); return; }
+
+  const outstanding = student.status === 'leaving'
+    ? await Challan.countDocuments({ orgId, studentId: student._id, status: { $in: ['unpaid', 'partial', 'overdue'] } })
+    : 0;
+
+  res.json({ success: true, data: { student, outstandingChallans: outstanding } });
 }

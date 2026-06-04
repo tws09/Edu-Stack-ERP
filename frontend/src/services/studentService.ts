@@ -36,4 +36,23 @@ export const studentService = {
     api.put<ApiResponse<StudentDoc>>(`/students/${id}`, data).then(r => r.data.data!),
 
   getMe: () => api.get<ApiResponse<StudentDoc>>('/students/me').then(r => r.data.data!),
+
+  // Leaving flow
+  getLeavingStatus: (id: string) =>
+    api.get<ApiResponse<{
+      student: StudentDoc & { leavingInfo?: { initiatedAt?: string; reason?: string; financeCleared?: boolean; financeClearedAt?: string; tcIssuedAt?: string; charCertIssuedAt?: string; leftAt?: string } };
+      outstandingChallans: number;
+    }>>(`/students/${id}/leaving-status`).then(r => r.data.data!),
+
+  initiateLeavingProcess: (id: string, reason: string) =>
+    api.post<ApiResponse<StudentDoc>>(`/students/${id}/initiate-leaving`, { reason }).then(r => r.data.data!),
+
+  clearFinanceDues: (id: string, override = false) =>
+    api.post<ApiResponse<{ financeCleared: boolean; outstandingChallans: number }>>(`/students/${id}/clear-dues`, { override }).then(r => r.data.data!),
+
+  issueTc: (id: string) =>
+    api.post<ApiResponse<StudentDoc>>(`/students/${id}/issue-tc`).then(r => r.data.data!),
+
+  issueCharCert: (id: string) =>
+    api.post<ApiResponse<{ charCertIssuedAt: string }>>(`/students/${id}/issue-char-cert`).then(r => r.data.data!),
 };

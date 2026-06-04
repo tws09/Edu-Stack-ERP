@@ -1,17 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentService } from '../../services/studentService';
 import type { CreateStudentPayload } from '../../services/studentService';
 import { academicService } from '../../services/academicService';
 import { branchHeaderService } from '../../services/branchHeaderService';
 import { downloadTransferCertPdf } from '../../lib/transferCertPdf';
+import { downloadCharacterCertPdf } from '../../lib/characterCertPdf';
 import PageHeader from '../../components/ui/PageHeader';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import { formatDate } from '../../lib/utils';
 import { useAuthStore } from '../../stores/authStore';
 
-const STATUS_VARIANTS = { applied: 'warning', enrolled: 'info', active: 'success', graduated: 'default', transferred: 'purple', withdrawn: 'danger' } as const;
+const STATUS_VARIANTS = { applied: 'warning', enrolled: 'info', active: 'success', leaving: 'warning', graduated: 'default', transferred: 'purple', withdrawn: 'danger' } as const;
 
 function InfoRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -92,6 +93,7 @@ function StaffStudentsView() {
   const [sectionFilter, setSectionFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [addResult, setAddResult] = useState<{ tempPassword: string; admissionNo: string } | null>(null);
+  const [leavingStudent, setLeavingStudent] = useState<import('../../services/studentService').StudentDoc | null>(null);
 
   const { data: branchHeader } = useQuery({ queryKey: ['branch-header'], queryFn: branchHeaderService.get });
   const orgName = branchHeader?.schoolName ?? orgSlug ?? 'School';
@@ -147,7 +149,7 @@ function StaffStudentsView() {
         </select>
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200">
           <option value="">All Status</option>
-          {['applied', 'enrolled', 'active', 'graduated', 'transferred', 'withdrawn'].map(s => (
+          {['applied', 'enrolled', 'active', 'leaving', 'graduated', 'transferred', 'withdrawn'].map(s => (
             <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
           ))}
         </select>
@@ -164,7 +166,7 @@ function StaffStudentsView() {
               <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Guardian</th>
               <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Admitted</th>
               <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
-              <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">TC</th>
+              <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
@@ -193,13 +195,24 @@ function StaffStudentsView() {
                   </Badge>
                 </td>
                 <td className="px-4 py-3 text-center">
-                  <button
-                    onClick={() => downloadTransferCertPdf(s, orgName)}
-                    title="Download Transfer Certificate"
-                    className="text-xs px-2 py-1 rounded border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    ↓ TC
-                  </button>
+                  <div className="flex items-center justify-center gap-1.5">
+                    <button
+                      onClick={() => downloadTransferCertPdf(s, orgName)}
+                      title="Download Transfer Certificate"
+                      className="text-xs px-2 py-1 rounded border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      ↓ TC
+                    </button>
+                    {!['transferred', 'withdrawn', 'graduated'].includes(s.status) && (
+                      <button
+                        onClick={() => setLeavingStudent(s)}
+                        title="Initiate Leaving Process"
+                        className="text-xs px-2 py-1 rounded border border-amber-200 text-amber-700 hover:bg-amber-50 transition-colors"
+                      >
+                        Leave
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -232,6 +245,13 @@ function StaffStudentsView() {
             <p className="text-xs text-gray-400">Student should change password on first login.</p>
             <button onClick={() => setAddResult(null)} className="btn-primary w-full">Done</button>
           </div>
+        </Modal>
+      )}
+
+      {/* Leaving modal */}
+      {leavingStudent && (
+        <Modal open={!!leavingStudent} onClose={() => { setLeavingStudent(null); qc.invalidateQueries({ queryKey: ['students'] }); }} title={`Leaving Process — ${leavingStudent.profile.name}`} size="xl">
+          <LeavingModal student={leavingStudent} orgName={orgName} onDone={() => { setLeavingStudent(null); qc.invalidateQueries({ queryKey: ['students'] }); }} />
         </Modal>
       )}
     </div>
@@ -316,5 +336,216 @@ function AdmissionForm({ classes, sections, years, selectedClassId, onClassChang
         {loading ? 'Registering...' : 'Register Student'}
       </button>
     </form>
+  );
+}
+
+// ── Leaving flow ─────────────────────────────────────────────────────────────
+
+type LeavingStep = 'init' | 'dues' | 'certs';
+
+const LEAVING_REASONS = [
+  { value: 'withdrawal', label: 'Withdrawal by parent/guardian' },
+  { value: 'migration', label: 'Migration to another city/school' },
+  { value: 'completed', label: 'Completed course / Graduated' },
+  { value: 'fee_nonpayment', label: 'Fee non-payment' },
+  { value: 'expelled', label: 'Expelled / Disciplinary action' },
+  { value: 'other', label: 'Other' },
+];
+
+function LeavingModal({
+  student,
+  orgName,
+  onDone,
+}: {
+  student: import('../../services/studentService').StudentDoc;
+  orgName: string;
+  onDone: () => void;
+}) {
+  const qc = useQueryClient();
+  const [step, setStep] = useState<LeavingStep>('init');
+  const [reason, setReason] = useState('withdrawal');
+  const [duesResult, setDuesResult] = useState<{ financeCleared: boolean; outstandingChallans: number } | null>(null);
+  const [tcIssued, setTcIssued] = useState(false);
+  const [charCertIssued, setCharCertIssued] = useState(false);
+
+  const { data: leavingStatus } = useQuery({
+    queryKey: ['leaving-status', student._id],
+    queryFn: () => studentService.getLeavingStatus(student._id),
+  });
+
+  const currentStudent = leavingStatus?.student ?? student;
+  const leavingInfo = leavingStatus?.student?.leavingInfo;
+
+  useEffect(() => {
+    if (leavingInfo?.initiatedAt && step === 'init') setStep('dues');
+    if (leavingInfo?.financeCleared && step === 'dues') setStep('certs');
+  }, [leavingInfo, step]);
+
+  const initiate = useMutation({
+    mutationFn: () => studentService.initiateLeavingProcess(student._id, reason),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['leaving-status', student._id] });
+      setStep('dues');
+    },
+  });
+
+  const checkDues = useMutation({
+    mutationFn: (override: boolean) => studentService.clearFinanceDues(student._id, override),
+    onSuccess: (data) => {
+      setDuesResult(data ?? null);
+      if (data?.financeCleared) {
+        qc.invalidateQueries({ queryKey: ['leaving-status', student._id] });
+      }
+    },
+  });
+
+  const issueTcMut = useMutation({
+    mutationFn: () => studentService.issueTc(student._id),
+    onSuccess: (data) => {
+      setTcIssued(true);
+      qc.invalidateQueries({ queryKey: ['leaving-status', student._id] });
+      downloadTransferCertPdf(data ?? currentStudent, orgName);
+    },
+  });
+
+  const issueCharMut = useMutation({
+    mutationFn: () => studentService.issueCharCert(student._id),
+    onSuccess: () => {
+      setCharCertIssued(true);
+      qc.invalidateQueries({ queryKey: ['leaving-status', student._id] });
+      downloadCharacterCertPdf(currentStudent, orgName);
+    },
+  });
+
+  if (step === 'init') {
+    return (
+      <div className="space-y-5">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-4">
+          <p className="text-sm text-amber-800 dark:text-amber-300 font-medium">⚠ This will initiate the student leaving workflow.</p>
+          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">The student status will change to "leaving". You will be guided through finance clearance and certificate issuance.</p>
+        </div>
+        <div>
+          <label className="label">Reason for Leaving *</label>
+          <select className="input" value={reason} onChange={e => setReason(e.target.value)}>
+            {LEAVING_REASONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+          </select>
+        </div>
+        <button onClick={() => initiate.mutate()} disabled={initiate.isPending} className="btn-primary w-full">
+          {initiate.isPending ? 'Processing...' : 'Initiate Leaving Process'}
+        </button>
+      </div>
+    );
+  }
+
+  if (step === 'dues') {
+    const cleared = duesResult?.financeCleared ?? !!(leavingInfo?.financeCleared);
+    const outstanding = duesResult?.outstandingChallans ?? leavingStatus?.outstandingChallans ?? 0;
+    return (
+      <div className="space-y-5">
+        <div className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-700 rounded-lg p-4">
+          <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center shrink-0">
+            <span className="text-blue-600 dark:text-blue-300 text-sm font-bold">2</span>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-blue-800 dark:text-blue-300">Finance Clearance</p>
+            <p className="text-xs text-blue-600 dark:text-blue-400">Check and clear all outstanding fee challans before issuing certificates.</p>
+          </div>
+        </div>
+
+        {cleared ? (
+          <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+            <span className="text-green-600 text-lg">✓</span>
+            <p className="text-sm text-green-700 dark:text-green-300 font-medium">Finance cleared — no outstanding dues.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {duesResult !== null && outstanding > 0 && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 space-y-2">
+                <p className="text-sm text-red-700 dark:text-red-300 font-medium">⚠ {outstanding} outstanding challan(s) found.</p>
+                <p className="text-xs text-red-500 dark:text-red-400">Finance dues must be cleared before issuing TC. You can override if the matter is being handled separately.</p>
+                <button
+                  onClick={() => checkDues.mutate(true)}
+                  disabled={checkDues.isPending}
+                  className="text-xs px-3 py-1.5 rounded border border-red-300 text-red-700 hover:bg-red-50 transition-colors"
+                >
+                  Override & Mark Finance Cleared
+                </button>
+              </div>
+            )}
+            <button onClick={() => checkDues.mutate(false)} disabled={checkDues.isPending} className="btn-primary w-full">
+              {checkDues.isPending ? 'Checking...' : 'Check Finance Status'}
+            </button>
+          </div>
+        )}
+
+        {cleared && (
+          <button onClick={() => setStep('certs')} className="btn-primary w-full">
+            Continue to Certificates →
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // step === 'certs'
+  const tcIssuedAt = leavingInfo?.tcIssuedAt;
+  const charCertIssuedAt = leavingInfo?.charCertIssuedAt;
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center gap-3 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-700 rounded-lg p-4">
+        <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center shrink-0">
+          <span className="text-green-600 dark:text-green-300 text-sm font-bold">3</span>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-green-800 dark:text-green-300">Issue Certificates</p>
+          <p className="text-xs text-green-600 dark:text-green-400">Issue and download the Transfer Certificate and Character Certificate.</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="border border-gray-200 dark:border-slate-600 rounded-lg p-4 space-y-3">
+          <div>
+            <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">Transfer Certificate</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Official TC for school records.</p>
+          </div>
+          {(tcIssuedAt || tcIssued) ? (
+            <div className="space-y-2">
+              <p className="text-xs text-green-600 dark:text-green-400">✓ Issued {tcIssuedAt ? formatDate(tcIssuedAt) : 'just now'}</p>
+              <button onClick={() => downloadTransferCertPdf(currentStudent, orgName)} className="text-xs px-3 py-1.5 w-full rounded border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors">
+                ↓ Download Again
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => issueTcMut.mutate()} disabled={issueTcMut.isPending} className="btn-primary w-full text-sm py-2">
+              {issueTcMut.isPending ? 'Issuing...' : 'Issue TC & Download'}
+            </button>
+          )}
+        </div>
+
+        <div className="border border-gray-200 dark:border-slate-600 rounded-lg p-4 space-y-3">
+          <div>
+            <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">Character Certificate</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Official character certificate for the student.</p>
+          </div>
+          {(charCertIssuedAt || charCertIssued) ? (
+            <div className="space-y-2">
+              <p className="text-xs text-green-600 dark:text-green-400">✓ Issued {charCertIssuedAt ? formatDate(charCertIssuedAt) : 'just now'}</p>
+              <button onClick={() => downloadCharacterCertPdf(currentStudent, orgName)} className="text-xs px-3 py-1.5 w-full rounded border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors">
+                ↓ Download Again
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => issueCharMut.mutate()} disabled={issueCharMut.isPending} className="btn-primary w-full text-sm py-2">
+              {issueCharMut.isPending ? 'Issuing...' : 'Issue Cert & Download'}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <button onClick={onDone} className="w-full text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors py-2">
+        Close & Finish
+      </button>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 import { Schema, model, Document, Types } from 'mongoose';
 
-export type StudentStatus = 'applied' | 'enrolled' | 'active' | 'graduated' | 'transferred' | 'withdrawn';
+export type StudentStatus = 'applied' | 'enrolled' | 'active' | 'leaving' | 'graduated' | 'transferred' | 'withdrawn';
 export type Gender = 'male' | 'female' | 'other';
 
 export interface IStudent extends Document {
@@ -41,6 +41,16 @@ export interface IStudent extends Document {
   status: StudentStatus;
   previousSchool?: string;
   admissionDate: Date;
+  leavingInfo?: {
+    initiatedAt: Date;
+    initiatedByName: string;
+    reason: string;
+    financeCleared: boolean;
+    financeClearedAt?: Date;
+    tcIssuedAt?: Date;
+    charCertIssuedAt?: Date;
+    leftAt?: Date;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -85,11 +95,21 @@ const studentSchema = new Schema<IStudent>(
     ],
     status: {
       type: String,
-      enum: ['applied', 'enrolled', 'active', 'graduated', 'transferred', 'withdrawn'],
+      enum: ['applied', 'enrolled', 'active', 'leaving', 'graduated', 'transferred', 'withdrawn'],
       default: 'applied',
     },
     previousSchool: String,
     admissionDate: { type: Date, default: Date.now },
+    leavingInfo: {
+      initiatedAt:       Date,
+      initiatedByName:   String,
+      reason:            String,
+      financeCleared:    { type: Boolean, default: false },
+      financeClearedAt:  Date,
+      tcIssuedAt:        Date,
+      charCertIssuedAt:  Date,
+      leftAt:            Date,
+    },
   },
   { timestamps: true }
 );

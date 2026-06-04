@@ -7,6 +7,7 @@ type Module =
   | 'branch_management'
   | 'user_management'
   | 'student_admissions'
+  | 'admission_management'
   | 'attendance'
   | 'staff_attendance'
   | 'timetable'
@@ -48,6 +49,14 @@ export const PERMISSIONS: Record<Module, PermissionRule[]> = {
     { roles: ['group_admin'], actions: ['create', 'read', 'update', 'delete'] },
     { roles: ['branch_principal'], actions: ['create', 'read', 'update', 'delete'] },
     { roles: ['it_admin'], actions: ['create', 'read', 'update', 'delete'] },
+  ],
+
+  admission_management: [
+    { roles: ['group_admin'], actions: ['read', 'export'] },
+    { roles: ['branch_principal'], actions: ['create', 'read', 'update', 'delete', 'configure', 'approve'] },
+    { roles: ['coordinator'], actions: ['create', 'read', 'update', 'delete'] },
+    { roles: ['it_admin'], actions: ['configure', 'read'] },
+    { roles: ['accountant'], actions: ['read'] },
   ],
 
   student_admissions: [
