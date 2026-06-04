@@ -52,7 +52,7 @@ export const PERMISSIONS: Record<Module, PermissionRule[]> = {
   ],
 
   admission_management: [
-    { roles: ['group_admin'], actions: ['read', 'export'] },
+    { roles: ['group_admin'], actions: ['create', 'read', 'update', 'delete', 'configure', 'approve', 'export'] },
     { roles: ['branch_principal'], actions: ['create', 'read', 'update', 'delete', 'configure', 'approve'] },
     { roles: ['coordinator'], actions: ['create', 'read', 'update', 'delete'] },
     { roles: ['it_admin'], actions: ['configure', 'read'] },
