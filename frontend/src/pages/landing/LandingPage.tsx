@@ -173,7 +173,7 @@ const FAQS = [
   },
   {
     q: 'How does pricing work?',
-    a: 'Pricing is per active student per branch per month in PKR — proportional to your school size. The Starter plan is free for up to 150 students. The Pro plan is Rs 35/student/mo and unlocks everything for growing institutions.',
+    a: 'Pricing is per active student per branch per month in PKR — proportional to your school size. Every new school gets a 7-day free trial with full access to all modules. After the trial, the Pro plan is Rs 35/student/mo.',
   },
 ];
 
@@ -287,7 +287,7 @@ export default function LandingPage() {
               to="/register"
               className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-600/30"
             >
-              Get Started Free
+              Start Free Trial
             </Link>
           </div>
 
@@ -326,7 +326,7 @@ export default function LandingPage() {
             ))}
             <div className="pt-2 border-t border-gray-100 flex flex-col gap-2 mt-1">
               <Link to="/login" className="py-2 px-3 text-center rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">Sign In</Link>
-              <Link to="/register" className="py-3 px-4 rounded-xl bg-blue-600 text-white text-center text-sm font-bold hover:bg-blue-700">Get Started Free</Link>
+              <Link to="/register" className="py-3 px-4 rounded-xl bg-blue-600 text-white text-center text-sm font-bold hover:bg-blue-700">Start Free Trial</Link>
             </div>
           </div>
         )}
@@ -379,7 +379,7 @@ export default function LandingPage() {
               className="px-8 py-4 rounded-2xl font-bold text-base text-white transition-all hover:-translate-y-0.5"
               style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)', boxShadow: '0 8px 32px rgba(37,99,235,0.45)' }}
             >
-              Start Free — Register Your School
+              Start Your 1-Week Free Trial
             </Link>
             <a
               href="#features"
@@ -520,7 +520,7 @@ export default function LandingPage() {
               className="inline-block px-9 py-4 rounded-2xl font-bold text-white transition-all hover:-translate-y-0.5"
               style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)', boxShadow: '0 8px 32px rgba(37,99,235,0.4)' }}
             >
-              Get Started Free →
+              Start Your Free Trial →
             </Link>
           </div>
         </div>
@@ -771,13 +771,13 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-7 max-w-5xl mx-auto">
-            {/* Starter */}
+            {/* Trial */}
             <div className="bg-white rounded-3xl border-2 border-gray-200 p-8 flex flex-col">
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Starter</div>
-              <div className="text-5xl font-extrabold text-gray-900 mb-1">Free</div>
-              <div className="text-gray-400 text-sm mb-7">Perfect to get started</div>
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Trial</div>
+              <div className="text-5xl font-extrabold text-gray-900 mb-1">7 Days</div>
+              <div className="text-gray-400 text-sm mb-7">Full access — no commitment</div>
               <ul className="space-y-3 text-sm text-gray-600 mb-8 flex-1">
-                {['1 branch', 'Up to 150 students', 'All 10 modules included', 'Mobile app access', '9-document PDF suite', 'Email support'].map((item) => (
+                {['All 10 modules unlocked', 'All branches & students', 'Mobile app access', '9-document PDF suite', 'JazzCash & EasyPaisa', 'Email support'].map((item) => (
                   <li key={item} className="flex items-center gap-2.5">
                     <CheckIcon className="w-4 h-4 text-emerald-500 shrink-0" />
                     {item}
@@ -785,7 +785,7 @@ export default function LandingPage() {
                 ))}
               </ul>
               <Link to="/register" className="block text-center px-6 py-3.5 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-50 transition-colors">
-                Start Free
+                Start Free Trial
               </Link>
             </div>
 
@@ -836,7 +836,7 @@ export default function LandingPage() {
           </div>
 
           <p className="text-center text-gray-400 text-sm mt-8">
-            All plans include full feature access. No credit card required to start.
+            7-day free trial includes full access to all modules. Upgrade to Pro after trial ends.
           </p>
         </div>
       </section>
@@ -920,7 +920,7 @@ export default function LandingPage() {
             Ready to go digital?
           </h2>
           <p className="text-xl mb-10 max-w-xl mx-auto" style={{ color: 'rgba(191,219,254,0.7)' }}>
-            Join schools across Pakistan already using EduStack PK. Free to start — no technical knowledge needed.
+            Join schools across Pakistan already using EduStack PK. 7-day free trial — no technical knowledge needed.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -928,7 +928,7 @@ export default function LandingPage() {
               className="px-10 py-4 rounded-2xl font-bold text-lg text-white transition-all hover:-translate-y-0.5"
               style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)', boxShadow: '0 8px 32px rgba(37,99,235,0.4)' }}
             >
-              Register Your School Free →
+              Start Your 7-Day Free Trial →
             </Link>
             <a href="#features"
               className="px-10 py-4 rounded-2xl text-white font-semibold text-lg transition-all"
