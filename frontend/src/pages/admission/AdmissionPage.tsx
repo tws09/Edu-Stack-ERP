@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { admissionService, type Application, type ApplicationDetail, type SeatOccupancy } from '../../services/admissionService';
+import { admissionService, type Application, type ApplicationDetail } from '../../services/admissionService';
 import { downloadOfferLetterPdf } from '../../lib/offerLetterPdf';
 import { downloadProvisionalCertPdf } from '../../lib/provisionalCertPdf';
 import { downloadStudentIdCardPdf } from '../../lib/studentIdCardPdf';

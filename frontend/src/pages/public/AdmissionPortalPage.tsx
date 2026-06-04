@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getOrgSlug } from '../../utils/tenant';
 import { getAdmissionConfig, getPublicUploadUrl, submitApplication, type AdmissionProgram } from '../../services/admissionService';
@@ -85,8 +85,6 @@ export default function AdmissionPortalPage() {
     retry: false,
   });
 
-  const fileInput = useRef<HTMLInputElement>(null);
-
   if (!slug) return null;
   if (isLoading) return <PageLoader />;
   if (isError || !config?.isOpen) return <ClosedPortal config={config} />;
@@ -111,7 +109,7 @@ export default function AdmissionPortalPage() {
   async function handleFileChange(docType: keyof typeof docs, file: File) {
     setDocs((d) => ({ ...d, [docType]: { file, uploading: true } }));
     try {
-      const key = await uploadFile(slug, file);
+      const key = await uploadFile(slug!, file);
       setDocs((d) => ({ ...d, [docType]: { file, key, uploading: false } }));
     } catch {
       setDocs((d) => ({ ...d, [docType]: { file, error: 'Upload failed. Try again.', uploading: false } }));
@@ -160,7 +158,7 @@ export default function AdmissionPortalPage() {
     setError('');
     setLoading(true);
     try {
-      const result = await submitApplication(slug, {
+      const result = await submitApplication(slug!, {
         preferences: prefs,
         personal,
         academic: {
