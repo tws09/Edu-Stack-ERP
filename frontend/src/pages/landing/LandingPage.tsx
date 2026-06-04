@@ -1,179 +1,155 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
-// ── Data ──────────────────────────────────────────────────────────────────────
+// ── Pain → Solution Stories ───────────────────────────────────────────────────
 
-const colorMap: Record<string, { bg: string; text: string; badge: string }> = {
-  blue:    { bg: 'bg-blue-50',    text: 'text-blue-600',    badge: 'bg-blue-100 text-blue-700'    },
-  purple:  { bg: 'bg-purple-50',  text: 'text-purple-600',  badge: 'bg-purple-100 text-purple-700'  },
-  emerald: { bg: 'bg-emerald-50', text: 'text-emerald-600', badge: 'bg-emerald-100 text-emerald-700' },
-  orange:  { bg: 'bg-orange-50',  text: 'text-orange-600',  badge: 'bg-orange-100 text-orange-700'  },
-  green:   { bg: 'bg-green-50',   text: 'text-green-600',   badge: 'bg-green-100 text-green-700'   },
-  indigo:  { bg: 'bg-indigo-50',  text: 'text-indigo-600',  badge: 'bg-indigo-100 text-indigo-700'  },
-  rose:    { bg: 'bg-rose-50',    text: 'text-rose-600',    badge: 'bg-rose-100 text-rose-700'    },
-  sky:     { bg: 'bg-sky-50',     text: 'text-sky-600',     badge: 'bg-sky-100 text-sky-700'      },
-  teal:    { bg: 'bg-teal-50',    text: 'text-teal-600',    badge: 'bg-teal-100 text-teal-700'    },
-  violet:  { bg: 'bg-violet-50',  text: 'text-violet-600',  badge: 'bg-violet-100 text-violet-700'  },
-};
-
-const FEATURES = [
+const STORIES = [
   {
-    color: 'blue',
+    id: 'attendance',
     emoji: '📋',
-    title: 'Attendance Management',
-    badge: 'PDF + CSV',
-    desc: 'Mark attendance per period or daily. Shortage alerts, student calendar heatmaps, and landscape A4 register PDFs.',
-    points: ['Daily & period-wise marking', 'Shortage alert at custom %', 'Student calendar heatmap view', 'PDF register + CSV export'],
+    color: { pill: 'bg-blue-100 text-blue-700', icon: 'bg-blue-50 text-blue-600', check: 'text-blue-500' },
+    pain: {
+      label: 'Every. Single. Morning.',
+      scene: `A teacher reads 40 names out loud. Students shout "present" for friends who aren't there. The register is a crumpled notebook that lives in a drawer. When a parent calls demanding to know why their child got a shortage — you go silent. Because you genuinely don't know.`,
+    },
+    fix: {
+      headline: 'Every mark. Every period. On record. Forever.',
+      desc: 'Attendance is marked digitally per period or per day. Shortage alerts fire the moment a student crosses your threshold — automatically. Parents see the record. No arguments. No calls.',
+      points: ['Period-wise digital marking', 'Auto shortage alerts', 'Student calendar heatmap', 'Landscape PDF register + CSV export'],
+    },
   },
   {
-    color: 'purple',
-    emoji: '🗓️',
-    title: 'Timetable & Scheduling',
-    badge: 'Conflict-free',
-    desc: 'Build conflict-free period schedules per class. Assign substitute teachers on the fly and export printable timetable PDFs.',
-    points: ['Conflict detection engine', 'Substitute teacher assignment', 'Per-class timetable PDF', 'Exam schedule integration'],
-  },
-  {
-    color: 'emerald',
-    emoji: '📊',
-    title: 'Exams & Results',
-    badge: 'Result Card PDF',
-    desc: 'Custom grading configs, marks entry by teacher, class position ranking, and printable result card PDFs for parents.',
-    points: ['Custom grading per class', 'Marks entry by subject teacher', 'Class position ranking', 'Printable result card PDF'],
-  },
-  {
-    color: 'orange',
-    emoji: '📝',
-    title: 'Assignments',
-    badge: 'S3 File Upload',
-    desc: 'Create, distribute, and grade assignments with file uploads. Auto late-submission flags and teacher feedback system.',
-    points: ['File upload via S3', 'Deadline enforcement', 'Auto late-submission flag', 'Marks & feedback system'],
-  },
-  {
-    color: 'green',
+    id: 'fees',
     emoji: '💵',
-    title: 'Fee Management',
-    badge: 'JazzCash + EasyPaisa',
-    desc: 'BullMQ auto-challan generation, HBL/UBL PDF challans, online payment via JazzCash & EasyPaisa, discounts, and analytics.',
-    points: ['Auto challan (BullMQ)', 'HBL/UBL dual-copy format', 'JazzCash & EasyPaisa online', 'Discounts & waiver management'],
+    color: { pill: 'bg-green-100 text-green-700', icon: 'bg-green-50 text-green-600', check: 'text-green-500' },
+    pain: {
+      label: 'The accountant's nightmare.',
+      scene: `Hand-writing 300 challans. Calling 300 parents, one by one, every month. Cash sitting in a drawer without a record. A parent walks in claiming they paid last week — you have no proof. Your accountant goes home at 10 PM for three weeks straight and still the reconciliation is wrong.`,
+    },
+    fix: {
+      headline: 'Challans generate themselves. Parents pay from their phone.',
+      desc: 'BullMQ auto-generates every challan every month. Parents pay via JazzCash or EasyPaisa in 30 seconds. Every payment is logged, timestamped, and receipted. Your accountant leaves at 5.',
+      points: ['Auto challan generation (BullMQ)', 'JazzCash & EasyPaisa online payments', 'HBL/UBL dual-copy PDF challans', 'Discounts, waivers & fee analytics'],
+    },
   },
   {
-    color: 'indigo',
+    id: 'exams',
+    emoji: '📊',
+    color: { pill: 'bg-violet-100 text-violet-700', icon: 'bg-violet-50 text-violet-600', check: 'text-violet-500' },
+    pain: {
+      label: 'It\'s 2 AM the night before result day.',
+      scene: `Your staff is still calculating grades on paper. Someone made an arithmetic error in Class 9 and nobody caught it. The result cards won't be ready by morning. Parents are calling. Children are anxious. You've been awake since yesterday. And there's still next week's exams to schedule.`,
+    },
+    fix: {
+      headline: 'Marks go in. Results come out. Instantly.',
+      desc: 'Teachers enter marks per subject online. The system calculates grades, positions, and GPA automatically — no errors. Result cards are generated as printable PDFs the moment entry is done.',
+      points: ['Custom grading config per class', 'Marks entry by subject teacher', 'Class position auto-ranking', 'Printable result card PDF'],
+    },
+  },
+  {
+    id: 'timetable',
+    emoji: '🗓️',
+    color: { pill: 'bg-purple-100 text-purple-700', icon: 'bg-purple-50 text-purple-600', check: 'text-purple-500' },
+    pain: {
+      label: '7:30 AM. A teacher calls in sick.',
+      scene: `You scramble. 40 students are sitting in a classroom with no teacher. You reassign someone, but now their class is unattended. Period clashes happen every week. The paper timetable is a maze of corrections and arrows. Monday morning is always chaos.`,
+    },
+    fix: {
+      headline: 'Conflicts caught before they happen. Substitutes assigned in seconds.',
+      desc: 'Build conflict-free timetables that the system validates automatically. When a teacher is absent, assign a substitute from available staff in one click. Everyone's schedule updates instantly.',
+      points: ['Conflict detection engine', 'One-click substitute assignment', 'Printable timetable PDF per class', 'Exam schedule integration'],
+    },
+  },
+  {
+    id: 'payroll',
     emoji: '👔',
-    title: 'Payroll',
-    badge: 'Payslip PDF',
-    desc: 'Salary structures with allowances and deductions. Attendance-linked auto-deductions, one-click payroll run, payslip PDFs.',
-    points: ['Basic + allowances + deductions', 'Attendance-linked deduction', 'One-click payroll approval', 'Printable payslip PDF'],
+    color: { pill: 'bg-indigo-100 text-indigo-700', icon: 'bg-indigo-50 text-indigo-600', check: 'text-indigo-500' },
+    pain: {
+      label: 'Your accountant spends 4 days on payroll.',
+      scene: `Manual calculations. Attendance deductions done wrong. A teacher disputes their salary — and they're right. There's no paper trail. The trust between management and staff quietly erodes, every single month. Your best teachers start looking elsewhere.`,
+    },
+    fix: {
+      headline: 'One click. Every salary calculated correctly. Every time.',
+      desc: 'Salary structures, allowances, and deductions are configured once. Attendance-linked deductions apply automatically. Run payroll in one click. Print payslips. Staff disputes end.',
+      points: ['Salary structure with allowances & deductions', 'Attendance-linked auto-deduction', 'One-click payroll approval', 'Printable payslip PDF'],
+    },
   },
   {
-    color: 'rose',
+    id: 'assignments',
+    emoji: '📝',
+    color: { pill: 'bg-orange-100 text-orange-700', icon: 'bg-orange-50 text-orange-600', check: 'text-orange-500' },
+    pain: {
+      label: 'The assignment was due Monday.',
+      scene: `Some students submitted on paper. Some sent photos on WhatsApp. One claims they submitted — you can't find it. Half the class gets credit, half doesn't, and nobody can prove anything. Grading takes three evenings and you still haven't given feedback.`,
+    },
+    fix: {
+      headline: 'Submitted on time. Graded fast. No disputes.',
+      desc: 'Students submit files online. Late submissions are flagged automatically. Teachers grade and leave feedback from a single screen. Every submission is timestamped and stored on S3.',
+      points: ['Online file submission (S3)', 'Auto late-submission flagging', 'Marks & written feedback', 'Deadline enforcement per class'],
+    },
+  },
+  {
+    id: 'notifications',
     emoji: '🔔',
-    title: 'Real-time Notifications',
-    badge: 'Socket.IO',
-    desc: 'Live notification bell powered by Socket.IO. Principals and teachers broadcast announcements to any role instantly.',
-    points: ['Real-time notification bell', 'Unread count badge', 'Role-targeted broadcasts', 'Full notification history'],
+    color: { pill: 'bg-rose-100 text-rose-700', icon: 'bg-rose-50 text-rose-600', check: 'text-rose-500' },
+    pain: {
+      label: 'You announced it in the WhatsApp group.',
+      scene: `It got buried under 200 voice notes and memes. Half the parents never saw it. Three called in angry on event day. You're spending 2 hours a day on personal WhatsApp, in a dozen different groups, just to communicate with people you're supposed to be managing.`,
+    },
+    fix: {
+      headline: 'One announcement. Every screen. Instantly.',
+      desc: 'Socket.IO-powered notifications reach every staff member and student the moment you send. Target by role — all teachers, all students, or the whole school. Everyone gets it. No group chats needed.',
+      points: ['Real-time notification bell (Socket.IO)', 'Role-targeted broadcasts', 'Unread badge count per user', 'Full notification history log'],
+    },
   },
   {
-    color: 'sky',
-    emoji: '🌐',
-    title: 'School Website Builder',
-    badge: '3 Themes',
-    desc: 'Every school gets a public website — Classic, Modern, or Minimal themes. Click-to-edit live preview, no coding needed.',
-    points: ['Classic, Modern, Minimal themes', 'Click-to-edit live preview', 'Custom branding & logo', 'SEO-ready public pages'],
-  },
-  {
-    color: 'teal',
+    id: 'admissions',
     emoji: '🎓',
-    title: 'Online Admissions',
-    badge: 'Public Portal',
-    desc: 'Students apply via a public admission form at your school subdomain. Staff manage, approve, and generate offer letters.',
-    points: ['Public admission form URL', 'Application management flow', 'Offer letter PDF', 'Student ID card PDF'],
+    color: { pill: 'bg-teal-100 text-teal-700', icon: 'bg-teal-50 text-teal-600', check: 'text-teal-500' },
+    pain: {
+      label: 'Admission season. Your phone doesn\'t stop.',
+      scene: `Students coming in person just to collect a paper form. Applications on loose sheets, stuffed in a drawer. No way to know how many applied. No way to track who was approved and who wasn't. Every year you miss registrations. Every year, seats go unfilled that shouldn't.`,
+    },
+    fix: {
+      headline: 'Apply online. Track every application. Fill every seat.',
+      desc: 'Students apply via your school's public admission portal — from home, on mobile. Staff review and approve from the dashboard. Generate offer letters and ID cards in one click.',
+      points: ['Public online admission form', 'Application tracking dashboard', 'Offer letter PDF generation', 'Student ID card PDF'],
+    },
   },
-  {
-    color: 'violet',
-    emoji: '🏢',
-    title: 'Multi-tenant & Multi-branch',
-    badge: 'Unlimited Scale',
-    desc: 'One platform, unlimited institutions. Each school gets its own subdomain, isolated data, and branding. Group admin oversight.',
-    points: ['Subdomain per school', 'Full cross-tenant isolation', 'Group admin cross-branch view', 'Branch-level configuration'],
-  },
-];
-
-const HOW_IT_WORKS = [
-  {
-    step: '01',
-    icon: '🏫',
-    title: 'Register Your School',
-    desc: 'Sign up in minutes. Your institution gets a dedicated subdomain and isolated workspace — no data shared with others.',
-  },
-  {
-    step: '02',
-    icon: '⚙️',
-    title: 'Set Up & Invite Your Team',
-    desc: 'Configure branches, classes, subjects, fee structures. Invite staff with specific roles — teacher, accountant, IT admin.',
-  },
-  {
-    step: '03',
-    icon: '🚀',
-    title: 'Run Your School Digitally',
-    desc: 'Mark attendance, enter results, collect fees online, run payroll, and communicate — all from one dashboard.',
-  },
-];
-
-const ROLES = [
-  { icon: '👨‍💼', label: 'Super Admin',  bg: 'bg-slate-50',   text: 'text-slate-700',   desc: 'Platform-wide oversight — all organisations, billing, system config.' },
-  { icon: '🏢', label: 'Group Admin',  bg: 'bg-violet-50',  text: 'text-violet-700',  desc: 'Manage multiple branches under one institution. Cross-branch analytics.' },
-  { icon: '🏫', label: 'Principal',    bg: 'bg-blue-50',    text: 'text-blue-700',    desc: 'Full branch control — staff, students, reports, announcements, admissions.' },
-  { icon: '👨‍🏫', label: 'Teacher',      bg: 'bg-emerald-50', text: 'text-emerald-700', desc: 'Mark attendance, assign tasks, enter marks, grade assignments, view timetable.' },
-  { icon: '🎓', label: 'Student',      bg: 'bg-amber-50',   text: 'text-amber-700',   desc: 'View results, timetable, assignments, fee status. Mobile-first dashboard.' },
-  { icon: '💰', label: 'Accountant',   bg: 'bg-green-50',   text: 'text-green-700',   desc: 'Fee collection, challans, online payment tracking, discounts, payroll.' },
-  { icon: '🔧', label: 'IT Admin',     bg: 'bg-rose-50',    text: 'text-rose-700',    desc: 'User management, role assignment, system settings, website builder.' },
-];
-
-const PDFS = [
-  { emoji: '📄', title: 'Result Card',        desc: 'Per-student result card with grades, position, and school letterhead.' },
-  { emoji: '🧾', title: 'Fee Challan',        desc: 'HBL/UBL dual-copy auto-generated challan per student per month.' },
-  { emoji: '💼', title: 'Payslip',            desc: 'Detailed salary breakdown with allowances, deductions, and net pay.' },
-  { emoji: '📋', title: 'Attendance Register', desc: 'Landscape A4 register with color-coded cells and shortage alerts.' },
-  { emoji: '🎓', title: 'Offer Letter',       desc: 'Admission offer letter with student details and conditional terms.' },
-  { emoji: '🪪', title: 'Student ID Card',    desc: 'Printable ID cards with photo placeholder and school info.' },
-  { emoji: '📜', title: 'Character Certificate', desc: 'Formal character certificate with student conduct record.' },
-  { emoji: '🔄', title: 'Transfer Certificate', desc: 'Official TC document when a student transfers schools.' },
-  { emoji: '📅', title: 'Timetable PDF',      desc: 'Per-class printable timetable with period-wise slot mapping.' },
 ];
 
 const FAQS = [
   {
-    q: 'Is EduStack PK suitable for both schools and colleges?',
-    a: 'Yes. The platform handles both with configurable academic structures, class/section setups, and grading configurations. Grades 1–12 and Intermediate Part I & II are fully supported.',
+    q: 'How long is the free trial and what does it include?',
+    a: 'You get 7 full days of complete access — every module, every feature, every role. No restrictions. After the trial, choose the Pro plan to continue.',
   },
   {
-    q: 'Which online payment methods are supported?',
-    a: 'JazzCash and EasyPaisa are fully integrated with HMAC-SHA256 secure signing. Cash and bank payment recording with receipt numbers is also built in as a fallback.',
+    q: 'Can my teachers and accountant use it without training?',
+    a: 'Yes. The system is designed for Pakistani school staff, not software engineers. Teachers mark attendance in 2 taps. Accountants generate challans in one click. Most staff are confident within a day.',
   },
   {
-    q: 'Can I manage multiple branches from one account?',
-    a: 'Absolutely. Group Admin accounts give you oversight of all branches — cross-branch analytics, staff management, and fee summaries — from a single dashboard.',
+    q: 'Which payment methods can parents use to pay fees?',
+    a: 'JazzCash and EasyPaisa are fully integrated — parents pay from their mobile wallet in under a minute. Manual cash and bank payment recording with receipt numbers is also available.',
+  },
+  {
+    q: 'We have 3 campuses. Can we manage all of them from one account?',
+    a: 'Yes. The Group Admin role gives you a single dashboard across all your branches — cross-branch fee summaries, attendance, staff, and analytics. Each branch still has its own isolated data.',
   },
   {
     q: 'Is there a mobile app for students and teachers?',
-    a: 'Yes — a Flutter app for Android and iOS. Students view results, timetable, fee status, and assignments. Teachers mark attendance and grade assignments on mobile. Result card PDFs are also downloadable from the app.',
+    a: 'Yes — a Flutter app for Android and iOS. Students check results, timetable, and fee status. Teachers mark attendance and grade assignments. Works on any smartphone.',
   },
   {
-    q: "How is my school's data kept secure and isolated?",
-    a: "Every organisation gets a fully isolated multi-tenant environment. JWT authentication, 7-level RBAC, and a cross-tenant firewall guard every API endpoint. No school can access another school's data.",
+    q: "Is our school's data secure? Can other schools see it?",
+    a: 'Absolutely not. Every school is a fully isolated tenant — separate data, separate subdomain, JWT authentication, and role-based access on every single API endpoint. Cross-tenant access is architecturally impossible.',
   },
   {
-    q: 'Can students apply for admission online?',
-    a: 'Yes. Each school gets a public-facing admission portal at its subdomain. Students fill the form online, and school staff manage, review, and approve applications from the dashboard — then generate offer letters and ID cards.',
+    q: 'What happens after the 7-day trial ends?',
+    a: "Your data stays intact. You choose whether to upgrade to the Pro plan at Rs 35 per active student per month. If you don't upgrade, your account is paused — nothing is deleted.",
   },
   {
-    q: 'What does the school website builder include?',
-    a: 'Every school gets a public website with 3 themes (Classic, Modern, Minimal). Principals and IT Admins edit content live via a click-to-edit preview. No coding or web designer needed.',
-  },
-  {
-    q: 'How does pricing work?',
-    a: 'Pricing is per active student per branch per month in PKR — proportional to your school size. Every new school gets a 7-day free trial with full access to all modules. After the trial, the Pro plan is Rs 35/student/mo.',
+    q: 'Does the school get its own website?',
+    a: 'Yes. Every school gets a public-facing website at their subdomain with 3 premium themes — Classic, Modern, and Minimal. The Principal or IT Admin can edit all content live, no coding needed. The admission portal is built in.',
   },
 ];
 
@@ -181,24 +157,32 @@ const TESTIMONIALS = [
   {
     name: 'Mr. Tariq Mehmood',
     role: 'Principal, Al-Huda Academy, Lahore',
-    text: 'Fee collection used to take our accountant 3 days each month. With EduStack PK, challans are auto-generated and parents pay via JazzCash. It has transformed how we run the school.',
-    rating: 5,
+    quote: 'Our accountant used to come to me stressed every month-end. Now she sends me a report by noon. I didn\'t realise how much of our energy was going into paperwork until it stopped.',
+    highlight: 'Accountant went from 10 PM finishes to done by noon.',
   },
   {
     name: 'Ms. Ayesha Siddiqui',
-    role: 'Group Admin, Crescent Schools, Karachi',
-    text: 'Managing 4 branches from one dashboard is something I never thought possible. The cross-branch analytics and attendance reports save me hours every single week.',
-    rating: 5,
+    role: 'Group Admin, Crescent Schools Network, Karachi',
+    quote: 'I was flying between three campuses just to understand what was happening. Now I open one screen in the morning and I know everything — fees, attendance, staff, everything.',
+    highlight: 'From 3 campuses to one dashboard.',
   },
   {
     name: 'Sir Bilal Khurshid',
     role: 'IT Admin, Future Stars College, Islamabad',
-    text: 'Setup was straightforward. The role-based access is very well-designed — teachers only see what they need, and nothing more. Very professional platform built for Pakistan.',
-    rating: 5,
+    quote: 'Parents used to call me directly with complaints about attendance records. That stopped within a week of going live. They could see everything themselves. That alone saved me hours.',
+    highlight: 'Parent complaints dropped to zero in one week.',
   },
 ];
 
 // ── Components ────────────────────────────────────────────────────────────────
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className ?? 'w-4 h-4'} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
 
 function StarRating({ count }: { count: number }) {
   return (
@@ -212,15 +196,7 @@ function StarRating({ count }: { count: number }) {
   );
 }
 
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className ?? 'w-4 h-4'} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
-  );
-}
-
-// ── Main Page ─────────────────────────────────────────────────────────────────
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -228,7 +204,7 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
+    const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -237,17 +213,11 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white text-gray-900 font-sans antialiased">
 
       {/* ── NAVBAR ────────────────────────────────────────────────────────── */}
-      <header
-        className={`sticky top-0 z-50 transition-all duration-200 ${
-          scrolled
-            ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100'
-            : 'bg-transparent'
-        }`}
-      >
+      <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-transparent'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-md shadow-blue-600/30 flex-shrink-0">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"
+              style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)', boxShadow: '0 4px 12px rgba(37,99,235,0.35)' }}>
               <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
               </svg>
@@ -257,355 +227,315 @@ export default function LandingPage() {
             </span>
           </div>
 
-          {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-7 text-sm font-medium">
-            {[
-              { href: '#features',     label: 'Features'     },
-              { href: '#how-it-works', label: 'How it Works' },
-              { href: '#roles',        label: 'For Your Team'},
-              { href: '#pricing',      label: 'Pricing'      },
-              { href: '#faq',          label: 'FAQ'          },
-            ].map(({ href, label }) => (
-              <a
-                key={href}
-                href={href}
-                className={`hover:text-blue-400 transition-colors ${scrolled ? 'text-gray-500 hover:text-blue-600' : 'text-blue-100 hover:text-white'}`}
-              >
+            {[['#problem', 'The Problem'], ['#modules', 'How We Fix It'], ['#pricing', 'Pricing'], ['#faq', 'FAQ']].map(([href, label]) => (
+              <a key={href} href={href}
+                className={`transition-colors ${scrolled ? 'text-gray-500 hover:text-gray-900' : 'text-blue-100 hover:text-white'}`}>
                 {label}
               </a>
             ))}
           </nav>
 
           <div className="hidden lg:flex items-center gap-3">
-            <Link
-              to="/login"
-              className={`text-sm font-medium transition-colors px-3 py-2 ${scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-blue-100 hover:text-white'}`}
-            >
+            <Link to="/login" className={`text-sm font-medium px-3 py-2 transition-colors ${scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-blue-100 hover:text-white'}`}>
               Sign In
             </Link>
-            <Link
-              to="/register"
-              className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-600/30"
-            >
+            <Link to="/register"
+              className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-600/30">
               Start Free Trial
             </Link>
           </div>
 
-          {/* Mobile hamburger */}
-          <button
-            className={`lg:hidden p-2 rounded-lg ${scrolled ? 'text-gray-500 hover:bg-gray-100' : 'text-white hover:bg-white/10'}`}
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
-          >
-            {menuOpen ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
+          <button className={`lg:hidden p-2 rounded-lg ${scrolled ? 'text-gray-500 hover:bg-gray-100' : 'text-white hover:bg-white/10'}`}
+            onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              {menuOpen
+                ? <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                : <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />}
+            </svg>
           </button>
         </div>
 
-        {/* Mobile menu */}
         {menuOpen && (
           <div className="lg:hidden bg-white border-t border-gray-100 px-4 py-4 flex flex-col gap-2 shadow-lg">
-            {[
-              { href: '#features',     label: 'Features'     },
-              { href: '#how-it-works', label: 'How it Works' },
-              { href: '#roles',        label: 'For Your Team'},
-              { href: '#pricing',      label: 'Pricing'      },
-              { href: '#faq',          label: 'FAQ'          },
-            ].map(({ href, label }) => (
+            {[['#problem', 'The Problem'], ['#modules', 'How We Fix It'], ['#pricing', 'Pricing'], ['#faq', 'FAQ']].map(([href, label]) => (
               <a key={href} href={href} onClick={() => setMenuOpen(false)}
-                className="py-2 px-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-blue-600">
-                {label}
-              </a>
+                className="py-2 px-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-blue-600">{label}</a>
             ))}
-            <div className="pt-2 border-t border-gray-100 flex flex-col gap-2 mt-1">
-              <Link to="/login" className="py-2 px-3 text-center rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">Sign In</Link>
-              <Link to="/register" className="py-3 px-4 rounded-xl bg-blue-600 text-white text-center text-sm font-bold hover:bg-blue-700">Start Free Trial</Link>
+            <div className="pt-2 border-t border-gray-100 flex flex-col gap-2">
+              <Link to="/login" className="py-2 text-center text-sm font-medium text-gray-600">Sign In</Link>
+              <Link to="/register" className="py-3 rounded-xl bg-blue-600 text-white text-center text-sm font-bold hover:bg-blue-700">Start Free Trial</Link>
             </div>
           </div>
         )}
       </header>
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0a0e1a 0%, #0f1628 50%, #0d1535 100%)' }}>
-        {/* Dot grid */}
+      <section className="relative overflow-hidden" style={{ background: 'linear-gradient(150deg, #0a0e1a 0%, #0f1628 55%, #0c1420 100%)' }}>
         <div className="absolute inset-0 pointer-events-none"
-          style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0)', backgroundSize: '36px 36px' }}
-        />
-        {/* Glowing orbs */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse, rgba(59,130,246,0.18) 0%, transparent 70%)' }}
-        />
-        <div className="absolute top-1/3 -left-40 w-80 h-80 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, transparent 70%)' }}
-        />
-        <div className="absolute top-1/4 -right-32 w-96 h-96 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse, rgba(139,92,246,0.10) 0%, transparent 70%)' }}
-        />
+          style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.035) 1px, transparent 0)', backgroundSize: '38px 38px' }} />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+          style={{ width: '900px', height: '500px', background: 'radial-gradient(ellipse, rgba(59,130,246,0.16) 0%, transparent 68%)' }} />
+        <div className="absolute top-1/3 -right-32 pointer-events-none"
+          style={{ width: '500px', height: '500px', background: 'radial-gradient(ellipse, rgba(139,92,246,0.09) 0%, transparent 65%)' }} />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24 lg:pt-36 lg:pb-32">
-          {/* Badge */}
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-2.5 bg-blue-600/10 border border-blue-500/25 rounded-full px-4 py-1.5 backdrop-blur">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24 lg:pt-36 lg:pb-32 text-center">
+          {/* Status badge */}
+          <div className="flex justify-center mb-10">
+            <div className="inline-flex items-center gap-2.5 rounded-full px-4 py-1.5"
+              style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
               <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse flex-shrink-0" />
-              <span className="text-sm font-medium text-blue-200">Pakistan's First School & College ERP SaaS</span>
+              <span className="text-sm font-medium text-blue-200">Built for Pakistani Schools & Colleges</span>
             </div>
           </div>
 
-          {/* Headline */}
-          <h1 className="text-center font-extrabold tracking-tight leading-[1.06] mb-7" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)' }}>
-            <span className="text-white">Run Your Entire </span>
-            <span style={{ background: 'linear-gradient(135deg, #60a5fa, #a78bfa, #60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              School or College
+          {/* Headline — the pain hook */}
+          <h1 className="font-extrabold tracking-tight leading-[1.08] mb-8 text-white" style={{ fontSize: 'clamp(2.4rem, 5.5vw, 4rem)' }}>
+            Running a school on paper<br />
+            <span style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              is costing you more
             </span>
-            <span className="text-white"> From One Platform.</span>
+            <br />than you realise.
           </h1>
 
-          <p className="text-center max-w-2xl mx-auto text-lg sm:text-xl mb-10" style={{ color: 'rgba(191,219,254,0.75)', lineHeight: '1.7' }}>
-            Attendance, timetable, exams, fees, payroll, admissions, website — everything your institution needs.{' '}
-            <span className="text-blue-300 font-semibold">JazzCash &amp; EasyPaisa built in.</span>
-          </p>
+          {/* The scene */}
+          <div className="max-w-3xl mx-auto mb-10 rounded-2xl p-6 text-left"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <p className="text-base sm:text-lg leading-relaxed" style={{ color: 'rgba(191,219,254,0.8)' }}>
+              Your accountant hand-writes 300 challans every month.{' '}
+              <span className="text-blue-300">A teacher called in sick and 40 students are sitting idle.</span>{' '}
+              It's 2 AM and the result cards still aren't ready.{' '}
+              <span className="text-blue-300">You announced something important — it got buried in the WhatsApp group.</span>{' '}
+              A parent is calling to dispute their child's attendance, and you have no record to show them.
+            </p>
+            <p className="mt-4 text-base font-semibold" style={{ color: 'rgba(251,191,36,0.9)' }}>
+              This is what running a school without the right system looks like. It doesn't have to be this way.
+            </p>
+          </div>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20">
-            <Link
-              to="/register"
-              className="px-8 py-4 rounded-2xl font-bold text-base text-white transition-all hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)', boxShadow: '0 8px 32px rgba(37,99,235,0.45)' }}
-            >
-              Start Your 1-Week Free Trial
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/register"
+              className="px-9 py-4 rounded-2xl font-bold text-base text-white transition-all hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)', boxShadow: '0 8px 32px rgba(37,99,235,0.45)' }}>
+              Start Your 7-Day Free Trial
             </Link>
-            <a
-              href="#features"
-              className="px-8 py-4 rounded-2xl text-white font-semibold text-base transition-all"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)' }}
-            >
-              See All Features →
+            <a href="#problem"
+              className="px-9 py-4 rounded-2xl text-white font-semibold text-base transition-all"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              See How We Solve It →
             </a>
           </div>
 
-          {/* Stats bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
+          <p className="mt-5 text-sm" style={{ color: 'rgba(147,197,253,0.5)' }}>
+            7 days full access · No credit card required · Takes 5 minutes to set up
+          </p>
+        </div>
+
+        <div className="h-16 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, white)' }} />
+      </section>
+
+      {/* ── THE REAL COST ─────────────────────────────────────────────────── */}
+      <section id="problem" className="py-20 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Sound familiar?</p>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-6 leading-tight">
+            Every school in Pakistan is running on the same broken system.
+          </h2>
+          <p className="text-gray-500 text-lg leading-relaxed mb-14 max-w-2xl mx-auto">
+            Manual registers. WhatsApp groups. Excel payroll. Paper challans. It worked in 1995.
+            It's destroying your school's efficiency — and your staff's sanity — in 2025.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
             {[
-              { value: '10+',             label: 'Core Modules'       },
-              { value: '7',              label: 'User Roles'          },
-              { value: 'JazzCash + EasyPaisa', label: 'Online Payments' },
-              { value: '🇵🇰 100%',        label: 'Built for Pakistan'  },
-            ].map((s) => (
-              <div key={s.label}
-                className="rounded-2xl py-5 px-4 text-center"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', backdropFilter: 'blur(8px)' }}
-              >
-                <div className="text-xl font-extrabold text-white leading-tight">{s.value}</div>
-                <div className="text-xs font-medium mt-1.5" style={{ color: 'rgba(147,197,253,0.7)' }}>{s.label}</div>
+              {
+                stat: '3 weeks',
+                label: 'every month lost to fee collection',
+                desc: 'Chasing parents. Writing challans. Reconciling cash. Your accountant deserves better.',
+              },
+              {
+                stat: '40+ hours',
+                label: 'per result cycle on manual calculation',
+                desc: 'Marks on paper. Excel formulas. All-nighters before result day. Errors that humiliate everyone.',
+              },
+              {
+                stat: 'Zero record',
+                label: 'when a parent disputes attendance',
+                desc: 'A crumpled notebook is not evidence. You need a system — not an argument.',
+              },
+            ].map((item) => (
+              <div key={item.stat} className="p-6 rounded-2xl bg-red-50 border border-red-100">
+                <div className="text-3xl font-extrabold text-red-600 mb-1">{item.stat}</div>
+                <div className="text-sm font-bold text-red-700 mb-2">{item.label}</div>
+                <div className="text-red-600/80 text-sm leading-relaxed">{item.desc}</div>
               </div>
             ))}
           </div>
         </div>
-
-        {/* Bottom gradient fade */}
-        <div className="h-20 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, #f9fafb)' }} />
       </section>
 
-      {/* ── TRUST STRIP ───────────────────────────────────────────────────── */}
-      <section className="bg-gray-50 border-b border-gray-100 py-5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
-            <span className="text-gray-300 uppercase text-xs tracking-widest font-semibold">Everything included</span>
-            {[
-              '✓ RBAC Security',
-              '✓ Multi-branch Ready',
-              '✓ Real-time Notifications',
-              '✓ 9-document PDF Suite',
-              '✓ Flutter Mobile App',
-              '✓ JazzCash &amp; EasyPaisa',
-            ].map((t) => (
-              <span key={t} className="text-gray-500 text-sm font-medium" dangerouslySetInnerHTML={{ __html: t }} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── FEATURES ──────────────────────────────────────────────────────── */}
-      <section id="features" className="py-24 lg:py-32 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="inline-block bg-blue-50 text-blue-600 font-semibold text-xs uppercase tracking-widest rounded-full px-3 py-1 mb-4">Complete Platform</span>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
-              10 modules. One subscription.
+      {/* ── MODULE STORIES ────────────────────────────────────────────────── */}
+      <section id="modules" className="py-4 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-16">
+            <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-4">The Solution</p>
+            <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight">
+              Every problem your school has.<br />
+              <span className="text-blue-600">One platform solves all of them.</span>
             </h2>
-            <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-              No feature locked behind a higher tier. Every module — attendance, exams, fees, payroll, website — ships with your account from day one.
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {FEATURES.map((f) => {
-              const c = colorMap[f.color];
-              return (
-                <div
-                  key={f.title}
-                  className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-xl hover:shadow-gray-100 hover:-translate-y-0.5 transition-all duration-200 flex flex-col"
-                >
-                  {/* Icon + badge row */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`w-12 h-12 rounded-xl ${c.bg} flex items-center justify-center text-2xl`}>
-                      {f.emoji}
+          <div className="space-y-6 pb-20">
+            {STORIES.map((story, i) => (
+              <div key={story.id}
+                className={`rounded-3xl overflow-hidden border ${i % 2 === 0 ? 'border-gray-200 bg-white' : 'border-gray-200 bg-white'}`}>
+                <div className={`grid grid-cols-1 lg:grid-cols-2 ${i % 2 !== 0 ? 'lg:grid-flow-dense' : ''}`}>
+
+                  {/* Pain side */}
+                  <div className={`p-8 lg:p-10 bg-gray-950 flex flex-col justify-center ${i % 2 !== 0 ? 'lg:col-start-2' : ''}`}>
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="text-3xl">{story.emoji}</div>
+                      <span className="text-xs font-bold uppercase tracking-widest text-red-400 bg-red-900/30 px-2.5 py-1 rounded-full border border-red-800/40">
+                        The Problem
+                      </span>
                     </div>
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${c.badge}`}>{f.badge}</span>
+                    <div className="text-lg font-bold text-white mb-4">{story.pain.label}</div>
+                    <p className="text-gray-400 leading-relaxed text-sm sm:text-base">{story.pain.scene}</p>
                   </div>
-                  <h3 className="font-bold text-gray-900 mb-2">{f.title}</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed mb-4 flex-1">{f.desc}</p>
-                  <ul className="space-y-1.5">
-                    {f.points.map((p) => (
-                      <li key={p} className="flex items-center gap-2 text-xs text-gray-500">
-                        <CheckIcon className={`w-3.5 h-3.5 ${c.text} shrink-0`} />
-                        {p}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
-      {/* ── HOW IT WORKS ──────────────────────────────────────────────────── */}
-      <section id="how-it-works" className="py-24 lg:py-32 relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #0f172a 100%)' }}
-      >
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)', backgroundSize: '32px 32px' }}
-        />
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="inline-block text-blue-200 font-semibold text-xs uppercase tracking-widest rounded-full px-3 py-1 mb-4"
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}>
-              Simple Setup
-            </span>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">Up and running in minutes.</h2>
-            <p className="text-lg max-w-xl mx-auto" style={{ color: 'rgba(191,219,254,0.65)' }}>
-              No technical knowledge required. Get your school live in three steps.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-            {HOW_IT_WORKS.map((step, i) => (
-              <div key={step.step} className="flex flex-col items-center text-center">
-                <div className="relative mb-6">
-                  <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl"
-                    style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.25)' }}>
-                    {step.icon}
-                  </div>
-                  <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shadow-lg">
-                    {i + 1}
+                  {/* Solution side */}
+                  <div className={`p-8 lg:p-10 flex flex-col justify-center ${i % 2 !== 0 ? 'lg:col-start-1 lg:row-start-1' : ''}`}>
+                    <span className={`inline-block text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-full mb-5 w-fit ${story.color.pill}`}>
+                      How EduStack Fixes It
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-3 leading-tight">
+                      {story.fix.headline}
+                    </h3>
+                    <p className="text-gray-500 text-sm sm:text-base leading-relaxed mb-6">
+                      {story.fix.desc}
+                    </p>
+                    <ul className="space-y-2.5">
+                      {story.fix.points.map((p) => (
+                        <li key={p} className="flex items-center gap-2.5 text-sm text-gray-600">
+                          <CheckIcon className={`w-4 h-4 shrink-0 ${story.color.check}`} />
+                          {p}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'rgba(191,219,254,0.65)' }}>{step.desc}</p>
               </div>
             ))}
           </div>
-
-          <div className="text-center mt-14">
-            <Link
-              to="/register"
-              className="inline-block px-9 py-4 rounded-2xl font-bold text-white transition-all hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)', boxShadow: '0 8px 32px rgba(37,99,235,0.4)' }}
-            >
-              Start Your Free Trial →
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* ── ROLES ─────────────────────────────────────────────────────────── */}
-      <section id="roles" className="py-24 lg:py-32 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ── THE BIGGER PICTURE ────────────────────────────────────────────── */}
+      <section className="py-24 bg-white border-t border-gray-100">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <span className="inline-block bg-violet-50 text-violet-600 font-semibold text-xs uppercase tracking-widest rounded-full px-3 py-1 mb-4">Role-based Access</span>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
-              7 roles. Everyone covered.
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Beyond the basics</p>
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-4">
+              Things your school never had — but always needed.
             </h2>
             <p className="text-gray-500 text-lg max-w-xl mx-auto">
-              Granular permissions mean every staff member sees exactly what they need — nothing more, nothing less.
+              Built on top of the core modules — and included in the same plan.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {ROLES.map((r) => (
-              <div key={r.label}
-                className="flex flex-col gap-4 p-6 rounded-2xl bg-white border border-gray-100 hover:shadow-lg hover:shadow-gray-100 transition-all hover:-translate-y-0.5">
-                <div className={`w-14 h-14 rounded-2xl ${r.bg} ${r.text} flex items-center justify-center text-3xl`}>
-                  {r.icon}
-                </div>
-                <div>
-                  <div className="font-bold text-gray-900 mb-1">{r.label}</div>
-                  <div className="text-gray-500 text-sm leading-relaxed">{r.desc}</div>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Website Builder */}
+            <div className="rounded-2xl border border-violet-100 bg-violet-50/40 p-7 flex flex-col gap-4">
+              <div className="text-3xl">🌐</div>
+              <div>
+                <div className="font-bold text-gray-900 text-base mb-0.5">School Website — included.</div>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  A competitor's school shows up on Google. Yours doesn't. Every school on EduStack PK gets a live public website — 3 premium themes, click-to-edit, no coding needed.
+                </p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── PAKISTAN PAYMENTS ─────────────────────────────────────────────── */}
-      <section className="py-20 lg:py-28 relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #059669, #047857)' }}
-      >
-        <div className="absolute inset-0 pointer-events-none opacity-10"
-          style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '28px 28px' }}
-        />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
-            <div>
-              <span className="inline-block font-semibold text-xs uppercase tracking-widest rounded-full px-3 py-1 mb-5"
-                style={{ background: 'rgba(255,255,255,0.15)', color: 'rgba(209,250,229,0.9)' }}>
-                Built for Pakistan
-              </span>
-              <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-5 leading-tight">
-                Online fee collection<br />the way Pakistan pays.
-              </h2>
-              <p className="text-lg mb-8 leading-relaxed" style={{ color: 'rgba(209,250,229,0.85)' }}>
-                Students and parents pay school fees directly via JazzCash or EasyPaisa wallets. No bank account needed. HBL/UBL format challans for traditional bank payments are auto-generated too.
-              </p>
-              <ul className="space-y-3 text-sm" style={{ color: 'rgba(209,250,229,0.85)' }}>
-                {[
-                  'HMAC-SHA256 secured payment transactions',
-                  'BullMQ auto-challan generation every month',
-                  'HBL/UBL dual-copy challan format PDFs',
-                  'Manual cash & bank payment recording with receipts',
-                  'Discount & fee waiver management per student',
-                  'Fee analytics dashboard (paid / pending / overdue)',
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-2.5">
-                    <CheckIcon className="w-4 h-4 text-emerald-300 shrink-0" />
-                    {item}
+              <ul className="space-y-2 mt-auto">
+                {['Classic, Modern & Minimal themes', 'Click-to-edit live preview', 'Public admission portal built in'].map(p => (
+                  <li key={p} className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckIcon className="w-3.5 h-3.5 text-violet-500 shrink-0" />{p}
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* Mobile App */}
+            <div className="rounded-2xl border border-blue-100 bg-blue-50/40 p-7 flex flex-col gap-4">
+              <div className="text-3xl">📱</div>
+              <div>
+                <div className="font-bold text-gray-900 text-base mb-0.5">Flutter Mobile App.</div>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  Students checking results at midnight on their phone. Teachers marking attendance before entering the classroom. Parents paying fees while standing in a shop. All of it, from the app.
+                </p>
+              </div>
+              <ul className="space-y-2 mt-auto">
+                {['Android & iOS via Flutter', 'Results, timetable, fee status', 'Real-time push notifications'].map(p => (
+                  <li key={p} className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckIcon className="w-3.5 h-3.5 text-blue-500 shrink-0" />{p}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* PDF Suite */}
+            <div className="rounded-2xl border border-amber-100 bg-amber-50/40 p-7 flex flex-col gap-4">
+              <div className="text-3xl">📄</div>
+              <div>
+                <div className="font-bold text-gray-900 text-base mb-0.5">9 official documents. On demand.</div>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  Result cards, challans, payslips, attendance registers, offer letters, ID cards, transfer certificates, character certificates, timetables — generated instantly. No Word. No Excel. No printing shop.
+                </p>
+              </div>
+              <ul className="space-y-2 mt-auto">
+                {['Professional PDF output', 'School letterhead & branding', 'One click, any document'].map(p => (
+                  <li key={p} className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckIcon className="w-3.5 h-3.5 text-amber-500 shrink-0" />{p}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── MULTI-TENANT / ROLES ──────────────────────────────────────────── */}
+      <section className="py-20 bg-gray-950 text-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-4">7 Roles · Complete Control</p>
+              <h2 className="text-4xl font-extrabold mb-5 leading-tight">
+                Everyone sees exactly what they should. Nothing more.
+              </h2>
+              <p className="text-gray-400 text-lg leading-relaxed mb-6">
+                Teachers don't see payroll. Students don't see staff records. Accountants don't get into exam settings. You configure it once — the system enforces it forever.
+              </p>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Multi-branch institutions? A Group Admin sees across all campuses — fees, attendance, staff — from one dashboard. Each branch stays completely isolated underneath.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               {[
-                { name: 'JazzCash',    emoji: '💳', from: 'rgba(239,68,68,0.2)',   to: 'rgba(185,28,28,0.2)',   border: 'rgba(239,68,68,0.3)'   },
-                { name: 'EasyPaisa',   emoji: '📱', from: 'rgba(16,185,129,0.2)',  to: 'rgba(4,120,87,0.2)',    border: 'rgba(16,185,129,0.3)'  },
-                { name: 'Cash',        emoji: '💵', from: 'rgba(245,158,11,0.2)',  to: 'rgba(180,83,9,0.2)',    border: 'rgba(245,158,11,0.3)'  },
-                { name: 'Bank Challan',emoji: '🏦', from: 'rgba(59,130,246,0.2)',  to: 'rgba(29,78,216,0.2)',   border: 'rgba(59,130,246,0.3)'  },
-              ].map((m) => (
-                <div key={m.name}
-                  className="p-6 rounded-2xl text-center flex flex-col items-center gap-2"
-                  style={{ background: `linear-gradient(135deg, ${m.from}, ${m.to})`, border: `1px solid ${m.border}`, backdropFilter: 'blur(8px)' }}
-                >
-                  <div className="text-5xl">{m.emoji}</div>
-                  <div className="font-bold text-white text-sm">{m.name}</div>
+                { icon: '👨‍💼', label: 'Super Admin',  desc: 'Full platform control'            },
+                { icon: '🏢', label: 'Group Admin',  desc: 'All branches, one view'           },
+                { icon: '🏫', label: 'Principal',    desc: 'Branch-level oversight'           },
+                { icon: '👨‍🏫', label: 'Teacher',      desc: 'Class, marks, attendance'        },
+                { icon: '🎓', label: 'Student',      desc: 'Results, fees, timetable'         },
+                { icon: '💰', label: 'Accountant',   desc: 'Fees, payroll, challans'          },
+                { icon: '🔧', label: 'IT Admin',     desc: 'Users, settings, website'         },
+              ].map((r) => (
+                <div key={r.label}
+                  className="p-4 rounded-xl flex items-center gap-3"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="text-2xl flex-shrink-0">{r.icon}</div>
+                  <div>
+                    <div className="text-sm font-bold text-white">{r.label}</div>
+                    <div className="text-xs text-gray-500">{r.desc}</div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -613,187 +543,96 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── PDF DOCUMENT SUITE ────────────────────────────────────────────── */}
-      <section className="py-24 lg:py-32 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="inline-block bg-amber-50 text-amber-600 font-semibold text-xs uppercase tracking-widest rounded-full px-3 py-1 mb-4">Document Suite</span>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
-              Every document your school needs.
-            </h2>
-            <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-              9 professional PDFs generated on-demand — no Word templates, no Excel, no manual formatting. Ever.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {PDFS.map((p) => (
-              <div key={p.title}
-                className="p-5 rounded-2xl bg-gray-50 border border-gray-100 hover:border-amber-200 hover:bg-amber-50/40 transition-all text-center group cursor-default">
-                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-200">{p.emoji}</div>
-                <div className="font-bold text-gray-900 text-sm mb-1.5">{p.title}</div>
-                <div className="text-gray-500 text-xs leading-relaxed">{p.desc}</div>
+      {/* ── PAYMENTS ──────────────────────────────────────────────────────── */}
+      <section className="py-20" style={{ background: 'linear-gradient(135deg, #047857, #065f46)' }}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="text-5xl mb-6">🇵🇰</div>
+          <h2 className="text-4xl font-extrabold text-white mb-4">Built for the way Pakistan pays.</h2>
+          <p className="text-emerald-100 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+            Most parents don't have a credit card or an online banking account. They have JazzCash. They have EasyPaisa. Now they can pay school fees in under a minute — without leaving home.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            {[
+              { name: 'JazzCash',     emoji: '💳', sub: 'Mobile wallet payment' },
+              { name: 'EasyPaisa',    emoji: '📱', sub: 'Mobile wallet payment' },
+              { name: 'Bank Challan', emoji: '🏦', sub: 'HBL/UBL format PDF'   },
+              { name: 'Cash',         emoji: '💵', sub: 'With receipt record'   },
+            ].map((m) => (
+              <div key={m.name} className="flex items-center gap-3 px-5 py-4 rounded-2xl"
+                style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                <div className="text-3xl">{m.emoji}</div>
+                <div className="text-left">
+                  <div className="text-white font-bold text-sm">{m.name}</div>
+                  <div className="text-emerald-200 text-xs">{m.sub}</div>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── SCHOOL WEBSITE BUILDER ────────────────────────────────────────── */}
-      <section className="py-24 lg:py-32 bg-gradient-to-br from-violet-50 via-white to-blue-50 border-y border-violet-100">
+      {/* ── TESTIMONIALS ──────────────────────────────────────────────────── */}
+      <section className="py-24 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
-            <div>
-              <span className="inline-block bg-violet-100 text-violet-700 font-semibold text-xs uppercase tracking-widest rounded-full px-3 py-1 mb-5">Built-in Feature</span>
-              <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-5 leading-tight">
-                Your school's public website — included.
-              </h2>
-              <p className="text-gray-600 text-lg mb-8 leading-relaxed">
-                Every school on EduStack PK gets a full public-facing website with 3 premium themes. Edit content live with a click-to-edit preview — no coding or web designer needed.
-              </p>
-              <div className="space-y-3">
-                {[
-                  { icon: '🎨', title: 'Classic Theme',  desc: 'Traditional school aesthetic with a professional header and structured layout.'   },
-                  { icon: '✨', title: 'Modern Theme',   desc: 'Contemporary design with bold sections, cards, and hero imagery.'                  },
-                  { icon: '⬜', title: 'Minimal Theme',  desc: 'Elegant minimal look — less clutter, more clarity. Clean and premium.'             },
-                ].map((t) => (
-                  <div key={t.title} className="flex items-start gap-3.5 p-4 rounded-xl bg-white border border-violet-100 shadow-sm">
-                    <div className="text-2xl flex-shrink-0">{t.icon}</div>
-                    <div>
-                      <div className="font-bold text-gray-900 text-sm mb-0.5">{t.title}</div>
-                      <div className="text-gray-500 text-sm">{t.desc}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Mock website preview */}
-            <div className="bg-white rounded-3xl border border-violet-200 shadow-2xl shadow-violet-100/60 overflow-hidden">
-              {/* Browser chrome */}
-              <div className="bg-gray-100 border-b border-gray-200 px-4 py-3 flex items-center gap-2">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-400" />
-                  <div className="w-3 h-3 rounded-full bg-amber-400" />
-                  <div className="w-3 h-3 rounded-full bg-green-400" />
-                </div>
-                <div className="flex-1 mx-4 bg-white rounded-md px-3 py-1 text-xs text-gray-400 border border-gray-200">
-                  alhuda.edu.tws.enterprises
-                </div>
-              </div>
-              {/* Site content mock */}
-              <div className="p-5 flex flex-col gap-3">
-                <div className="rounded-xl p-5 text-white" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
-                  <div className="text-xs font-medium mb-1" style={{ color: 'rgba(221,214,254,0.8)' }}>Al-Huda Academy, Lahore</div>
-                  <div className="font-extrabold text-xl mb-0.5">Where Knowledge Meets Character</div>
-                  <div className="text-sm" style={{ color: 'rgba(221,214,254,0.8)' }}>Est. 1998 · Grades 1–12</div>
-                </div>
-                <div className="grid grid-cols-4 gap-2">
-                  {['About', 'Admissions', 'Gallery', 'Contact'].map((label) => (
-                    <div key={label} className="bg-gray-50 rounded-lg py-2 text-xs font-medium text-gray-600 text-center border border-gray-100">{label}</div>
-                  ))}
-                </div>
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                  <div className="text-amber-700 font-bold text-sm mb-0.5">Admissions Open 2025-26</div>
-                  <div className="text-amber-600 text-xs">Apply online — results in 3 business days</div>
-                </div>
-                <div className="rounded-xl py-3 text-sm font-bold text-white text-center" style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)' }}>
-                  Apply for Admission →
-                </div>
-              </div>
-            </div>
+          <div className="text-center mb-14">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">From the field</p>
+            <h2 className="text-4xl font-extrabold text-gray-900">
+              What actually changes when schools go live.
+            </h2>
           </div>
-        </div>
-      </section>
 
-      {/* ── MOBILE APP ────────────────────────────────────────────────────── */}
-      <section className="py-24 lg:py-32 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
-            <div className="order-2 lg:order-1">
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { emoji: '📊', title: 'Results & Grades',    role: 'Student'   },
-                  { emoji: '📋', title: 'Mark Attendance',     role: 'Teacher'   },
-                  { emoji: '🗓️', title: 'Class Timetable',     role: 'Student'   },
-                  { emoji: '💵', title: 'Fee Status',          role: 'Student'   },
-                  { emoji: '📝', title: 'Grade Assignments',   role: 'Teacher'   },
-                  { emoji: '🔔', title: 'Live Notifications',  role: 'All Roles' },
-                ].map((item) => (
-                  <div key={item.title} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-colors">
-                    <div className="text-3xl mb-2">{item.emoji}</div>
-                    <div className="font-semibold text-gray-900 text-sm">{item.title}</div>
-                    <div className="text-xs text-gray-400 mt-0.5">{item.role}</div>
-                  </div>
-                ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {TESTIMONIALS.map((t) => (
+              <div key={t.name} className="bg-white rounded-2xl border border-gray-100 p-7 flex flex-col shadow-sm">
+                <StarRating count={5} />
+                <div className="mt-4 mb-2 text-xs font-bold text-blue-600 uppercase tracking-wide bg-blue-50 px-2.5 py-1 rounded-full w-fit">
+                  {t.highlight}
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed my-4 flex-1">&ldquo;{t.quote}&rdquo;</p>
+                <div className="border-t border-gray-50 pt-4">
+                  <div className="font-bold text-gray-900 text-sm">{t.name}</div>
+                  <div className="text-gray-400 text-xs mt-0.5">{t.role}</div>
+                </div>
               </div>
-            </div>
-
-            <div className="order-1 lg:order-2">
-              <span className="inline-block bg-blue-50 text-blue-600 font-semibold text-xs uppercase tracking-widest rounded-full px-3 py-1 mb-5">Flutter Mobile App</span>
-              <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-5 leading-tight">
-                Your school in your pocket.
-              </h2>
-              <p className="text-gray-600 text-lg mb-8 leading-relaxed">
-                A full-featured Flutter app for Android &amp; iOS. Students check results, teachers mark attendance, and parents track fee status — on the go.
-              </p>
-              <ul className="space-y-3 text-gray-600 text-sm">
-                {[
-                  'Students: results, timetable, assignments, fee status',
-                  'Teachers: attendance marking, assignment grading',
-                  'Real-time push notifications for all roles',
-                  'Result card PDF download from mobile',
-                  'Multi-language support (English + Urdu ready)',
-                  'Available on Android & iOS via Flutter',
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-2.5">
-                    <CheckIcon className="w-4 h-4 text-blue-500 shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ── PRICING ───────────────────────────────────────────────────────── */}
-      <section id="pricing" className="py-24 lg:py-32 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="inline-block bg-green-50 text-green-700 font-semibold text-xs uppercase tracking-widest rounded-full px-3 py-1 mb-4">Transparent Pricing</span>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
-              Fair pricing in PKR.
-            </h2>
+      <section id="pricing" className="py-24 bg-white border-t border-gray-100">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Simple Pricing</p>
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-4">Pay as you grow. In PKR.</h2>
             <p className="text-gray-500 text-lg max-w-lg mx-auto">
-              Pay per active student — scale as you grow. No feature paywalls. Every module included from day one.
+              Start with a 7-day free trial. Then pay per active student — you only pay for what you use.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-7 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
             {/* Trial */}
             <div className="bg-white rounded-3xl border-2 border-gray-200 p-8 flex flex-col">
               <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Trial</div>
               <div className="text-5xl font-extrabold text-gray-900 mb-1">7 Days</div>
-              <div className="text-gray-400 text-sm mb-7">Full access — no commitment</div>
+              <div className="text-gray-400 text-sm mb-7">Full access · No commitment</div>
               <ul className="space-y-3 text-sm text-gray-600 mb-8 flex-1">
-                {['All 10 modules unlocked', 'All branches & students', 'Mobile app access', '9-document PDF suite', 'JazzCash & EasyPaisa', 'Email support'].map((item) => (
+                {['All 10 modules unlocked', 'All branches & students', 'JazzCash & EasyPaisa', 'Mobile app included', '9-document PDF suite', 'Email support'].map((item) => (
                   <li key={item} className="flex items-center gap-2.5">
-                    <CheckIcon className="w-4 h-4 text-emerald-500 shrink-0" />
-                    {item}
+                    <CheckIcon className="w-4 h-4 text-emerald-500 shrink-0" />{item}
                   </li>
                 ))}
               </ul>
-              <Link to="/register" className="block text-center px-6 py-3.5 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-50 transition-colors">
+              <Link to="/register"
+                className="block text-center px-6 py-3.5 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-50 transition-colors">
                 Start Free Trial
               </Link>
             </div>
 
             {/* Pro */}
-            <div className="rounded-3xl p-8 flex flex-col text-white relative shadow-2xl"
-              style={{ background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)', boxShadow: '0 20px 60px rgba(37,99,235,0.35)' }}
-            >
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-amber-400 text-gray-900 text-xs font-bold uppercase tracking-wide px-4 py-1 rounded-full shadow">
+            <div className="rounded-3xl p-8 flex flex-col text-white relative"
+              style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)', boxShadow: '0 20px 60px rgba(37,99,235,0.3)' }}>
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-amber-400 text-gray-900 text-xs font-bold uppercase tracking-wide px-4 py-1 rounded-full">
                 Most Popular
               </div>
               <div className="text-xs font-bold text-blue-200 uppercase tracking-widest mb-3">Pro</div>
@@ -803,15 +642,23 @@ export default function LandingPage() {
               </div>
               <div className="text-blue-200 text-sm mb-7">Per branch · billed monthly in PKR</div>
               <ul className="space-y-3 text-sm text-blue-100 mb-8 flex-1">
-                {['Unlimited students', 'Unlimited branches', 'JazzCash & EasyPaisa payments', 'Priority support', 'Custom school branding', 'Website builder (3 themes)', 'Online admission portal', 'Dedicated onboarding call'].map((item) => (
+                {[
+                  'Unlimited students & branches',
+                  'JazzCash & EasyPaisa payments',
+                  'Priority support',
+                  'Custom school branding',
+                  'Website builder (3 themes)',
+                  'Online admission portal',
+                  'Dedicated onboarding call',
+                ].map((item) => (
                   <li key={item} className="flex items-center gap-2.5">
-                    <CheckIcon className="w-4 h-4 text-amber-400 shrink-0" />
-                    {item}
+                    <CheckIcon className="w-4 h-4 text-amber-400 shrink-0" />{item}
                   </li>
                 ))}
               </ul>
-              <Link to="/register" className="block text-center px-6 py-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold transition-colors">
-                Get Started
+              <Link to="/register"
+                className="block text-center px-6 py-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold transition-colors">
+                Start Free Trial
               </Link>
             </div>
 
@@ -819,12 +666,18 @@ export default function LandingPage() {
             <div className="bg-slate-900 rounded-3xl border-2 border-slate-700 p-8 flex flex-col text-white">
               <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Enterprise</div>
               <div className="text-5xl font-extrabold mb-1">Custom</div>
-              <div className="text-slate-400 text-sm mb-7">For large institution chains</div>
+              <div className="text-slate-400 text-sm mb-7">Large institution chains</div>
               <ul className="space-y-3 text-sm text-slate-300 mb-8 flex-1">
-                {['On-premise deployment option', 'SLA agreement', 'Dedicated account manager', 'Custom integrations', 'White-label branding', 'Staff training sessions', 'Custom reporting & exports'].map((item) => (
+                {[
+                  'On-premise deployment',
+                  'SLA agreement',
+                  'Dedicated account manager',
+                  'Custom integrations',
+                  'White-label branding',
+                  'Staff training included',
+                ].map((item) => (
                   <li key={item} className="flex items-center gap-2.5">
-                    <CheckIcon className="w-4 h-4 text-blue-400 shrink-0" />
-                    {item}
+                    <CheckIcon className="w-4 h-4 text-blue-400 shrink-0" />{item}
                   </li>
                 ))}
               </ul>
@@ -836,34 +689,8 @@ export default function LandingPage() {
           </div>
 
           <p className="text-center text-gray-400 text-sm mt-8">
-            7-day free trial includes full access to all modules. Upgrade to Pro after trial ends.
+            7-day trial includes full access. Upgrade to Pro after it ends. If you don't — your data stays safe.
           </p>
-        </div>
-      </section>
-
-      {/* ── TESTIMONIALS ──────────────────────────────────────────────────── */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <span className="inline-block bg-blue-50 text-blue-600 font-semibold text-xs uppercase tracking-widest rounded-full px-3 py-1 mb-4">Early Adopters</span>
-            <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
-              Schools love EduStack PK.
-            </h2>
-            <p className="text-gray-500 text-lg">Here's what our pilot schools are saying.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="p-7 rounded-2xl bg-gray-50 border border-gray-100 flex flex-col">
-                <StarRating count={t.rating} />
-                <p className="text-gray-700 text-sm leading-relaxed mt-4 mb-5 flex-1">&ldquo;{t.text}&rdquo;</p>
-                <div className="border-t border-gray-100 pt-4">
-                  <div className="font-bold text-gray-900 text-sm">{t.name}</div>
-                  <div className="text-gray-400 text-xs mt-0.5">{t.role}</div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -871,22 +698,18 @@ export default function LandingPage() {
       <section id="faq" className="py-24 bg-gray-50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <span className="inline-block bg-gray-200 text-gray-600 font-semibold text-xs uppercase tracking-widest rounded-full px-3 py-1 mb-4">FAQ</span>
-            <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">Common questions</h2>
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Questions</p>
+            <h2 className="text-4xl font-extrabold text-gray-900">Things people ask before signing up.</h2>
           </div>
-
           <div className="space-y-3">
             {FAQS.map((faq, i) => (
               <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                 <button
-                  className="w-full text-left px-6 py-5 flex items-center justify-between gap-4 font-semibold text-gray-900 hover:bg-gray-50 transition-colors"
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                >
-                  <span className="text-sm sm:text-base">{faq.q}</span>
-                  <svg
-                    className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                  >
+                  className="w-full text-left px-6 py-5 flex items-center justify-between gap-4 font-semibold text-gray-900 hover:bg-gray-50 transition-colors text-sm sm:text-base"
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                  <span>{faq.q}</span>
+                  <svg className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
@@ -903,107 +726,82 @@ export default function LandingPage() {
 
       {/* ── FINAL CTA ─────────────────────────────────────────────────────── */}
       <section className="py-28 relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #0a0e1a 0%, #0f1628 60%, #0d1535 100%)' }}
-      >
+        style={{ background: 'linear-gradient(150deg, #0a0e1a 0%, #0f1628 60%, #0c1420 100%)' }}>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-          style={{ width: '700px', height: '400px', background: 'radial-gradient(ellipse, rgba(59,130,246,0.2) 0%, transparent 65%)' }}
-        />
+          style={{ width: '700px', height: '400px', background: 'radial-gradient(ellipse, rgba(59,130,246,0.18) 0%, transparent 65%)' }} />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-7 shadow-2xl"
-            style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)', boxShadow: '0 12px 40px rgba(37,99,235,0.45)' }}
-          >
-            <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-            </svg>
-          </div>
-          <h2 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
-            Ready to go digital?
+          <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-5 leading-tight">
+            Your school deserves better<br />than a paper register.
           </h2>
-          <p className="text-xl mb-10 max-w-xl mx-auto" style={{ color: 'rgba(191,219,254,0.7)' }}>
-            Join schools across Pakistan already using EduStack PK. 7-day free trial — no technical knowledge needed.
+          <p className="text-xl mb-3 max-w-xl mx-auto" style={{ color: 'rgba(191,219,254,0.7)' }}>
+            Start your 7-day free trial. The whole system, all modules, every feature — unlocked from day one.
+          </p>
+          <p className="text-sm mb-10" style={{ color: 'rgba(147,197,253,0.45)' }}>
+            Takes 5 minutes to set up. No credit card. No commitment.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/register"
+            <Link to="/register"
               className="px-10 py-4 rounded-2xl font-bold text-lg text-white transition-all hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)', boxShadow: '0 8px 32px rgba(37,99,235,0.4)' }}
-            >
+              style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)', boxShadow: '0 8px 32px rgba(37,99,235,0.45)' }}>
               Start Your 7-Day Free Trial →
             </Link>
-            <a href="#features"
+            <a href="#modules"
               className="px-10 py-4 rounded-2xl text-white font-semibold text-lg transition-all"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
-            >
-              See Features
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              See How It Works
             </a>
           </div>
         </div>
       </section>
 
       {/* ── FOOTER ────────────────────────────────────────────────────────── */}
-      <footer className="bg-gray-950 text-gray-400 py-16">
+      <footer className="bg-gray-950 text-gray-400 py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
-            {/* Brand */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
             <div className="sm:col-span-2 lg:col-span-1">
               <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow shadow-blue-600/30">
-                  <svg className="w-4.5 h-4.5 text-white w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                   </svg>
                 </div>
                 <span className="font-extrabold text-white text-lg">EduStack <span className="text-blue-500">PK</span></span>
               </div>
-              <p className="text-sm text-gray-500 leading-relaxed mb-4">
-                Pakistan's complete School &amp; College ERP SaaS — built and maintained by WolfStack.
-              </p>
-              <div className="text-sm font-medium text-gray-500">🇵🇰 Made in Pakistan</div>
+              <p className="text-sm text-gray-500 leading-relaxed mb-3">Pakistan's School & College ERP SaaS. Built by WolfStack.</p>
+              <div className="text-sm text-gray-600">🇵🇰 Made in Pakistan</div>
             </div>
 
-            {/* Product */}
             <div>
               <div className="font-semibold text-white text-sm mb-5">Platform</div>
               <ul className="space-y-3 text-sm">
-                {[
-                  { href: '#features',     label: 'All Features'   },
-                  { href: '#how-it-works', label: 'How it Works'   },
-                  { href: '#pricing',      label: 'Pricing'        },
-                  { href: '#roles',        label: 'For Your Team'  },
-                  { href: '#faq',          label: 'FAQ'            },
-                ].map(({ href, label }) => (
+                {[['#problem', 'The Problem'], ['#modules', 'How We Fix It'], ['#pricing', 'Pricing'], ['#faq', 'FAQ']].map(([href, label]) => (
                   <li key={href}><a href={href} className="hover:text-white transition-colors">{label}</a></li>
                 ))}
               </ul>
             </div>
 
-            {/* Modules */}
             <div>
               <div className="font-semibold text-white text-sm mb-5">Modules</div>
               <ul className="space-y-3 text-sm text-gray-500">
-                {['Attendance Management', 'Exams & Results', 'Fee Management', 'Payroll', 'Admissions Portal', 'Website Builder', 'Mobile App'].map((m) => (
+                {['Attendance', 'Fee Management', 'Exams & Results', 'Payroll', 'Admissions', 'Website Builder', 'Mobile App'].map((m) => (
                   <li key={m}>{m}</li>
                 ))}
               </ul>
             </div>
 
-            {/* Company */}
             <div>
               <div className="font-semibold text-white text-sm mb-5">Company</div>
               <ul className="space-y-3 text-sm">
                 <li><Link to="/register" className="hover:text-white transition-colors">Register School</Link></li>
-                <li><Link to="/login"    className="hover:text-white transition-colors">Sign In</Link></li>
-                <li>
-                  <a href="mailto:hello@wolfstack.io" className="hover:text-white transition-colors">
-                    hello@wolfstack.io
-                  </a>
-                </li>
+                <li><Link to="/login" className="hover:text-white transition-colors">Sign In</Link></li>
+                <li><a href="mailto:hello@wolfstack.io" className="hover:text-white transition-colors">hello@wolfstack.io</a></li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <p>&copy; {new Date().getFullYear()} WolfStack. All rights reserved.</p>
-            <p>EduStack PK — Pakistan's School &amp; College ERP</p>
+            <p>EduStack PK — School & College ERP for Pakistan</p>
           </div>
         </div>
       </footer>
