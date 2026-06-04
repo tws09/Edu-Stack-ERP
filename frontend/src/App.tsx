@@ -46,6 +46,7 @@ import MobileDevicesPage from './pages/admin/MobileDevicesPage';
 import LandingPage from './pages/landing/LandingPage';
 import PortfolioPage from './pages/portfolio/PortfolioPage';
 import SchoolSitePage from './pages/public/SchoolSitePage';
+import WebsiteEditorPage from './pages/settings/WebsiteEditorPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -211,6 +212,16 @@ function TenantRouter() {
         <Route path="resources"      element={<ResourcesPage />} />
         <Route path="sops"           element={<SopsPage />} />
       </Route>
+
+      {/* Group admin — full-screen website editor (no AppLayout) */}
+      <Route
+        path="/group/website-editor"
+        element={
+          <ProtectedRoute allowedRoles={['group_admin']}>
+            <WebsiteEditorPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Group admin */}
       <Route

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QRCodeCanvas } from 'qrcode.react';
 import api from '../../services/api';
@@ -179,10 +180,14 @@ function LoginPreviewCard({ brand, orgName }: { brand: BrandState; orgName: stri
 // ── Main component ────────────────────────────────────────
 
 export default function GroupSettingsPage() {
-  const qc   = useQueryClient();
-  const user = useAuthStore(s => s.user);
+  const qc       = useQueryClient();
+  const user     = useAuthStore(s => s.user);
+  const location = useLocation();
 
-  const [activeTab, setActiveTab] = useState<Tab>('profile');
+  const [activeTab, setActiveTab] = useState<Tab>(() => {
+    const p = new URLSearchParams(location.search).get('tab') as Tab | null;
+    return p && TABS.some(t => t.id === p) ? p : 'profile';
+  });
 
   // Profile form
   const [form, setForm]     = useState({ name: '', contactEmail: '', contactPhone: '', address: '' });

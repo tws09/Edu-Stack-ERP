@@ -92,7 +92,7 @@ function ClassicTemplate({ site }: { site: PublicSiteData }) {
 
       {/* HERO */}
       {site.hero?.enabled && (
-        <section id="home" className="relative overflow-hidden" style={{ backgroundColor: '#0f172a' }}>
+        <section data-section="hero" id="home" className="relative overflow-hidden" style={{ backgroundColor: '#0f172a' }}>
           <div className="absolute inset-0 opacity-5" style={{
             backgroundImage: 'repeating-linear-gradient(45deg, white 0, white 1px, transparent 0, transparent 50%)',
             backgroundSize: '20px 20px',
@@ -146,7 +146,7 @@ function ClassicTemplate({ site }: { site: PublicSiteData }) {
 
       {/* STATS */}
       {site.stats?.enabled && site.stats.items.length > 0 && (
-        <section style={{ backgroundColor: '#1e293b' }}>
+        <section data-section="stats" style={{ backgroundColor: '#1e293b' }}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {site.stats.items.map((item, i) => (
@@ -162,7 +162,7 @@ function ClassicTemplate({ site }: { site: PublicSiteData }) {
 
       {/* ABOUT */}
       {site.about?.enabled && (
-        <section id="about" className="py-20 md:py-28 bg-white">
+        <section data-section="about" id="about" className="py-20 md:py-28 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-start">
               <div>
@@ -226,7 +226,7 @@ function ClassicTemplate({ site }: { site: PublicSiteData }) {
 
       {/* ADMISSIONS */}
       {site.admissions?.enabled && (
-        <section id="admissions" className="py-20 md:py-28 bg-slate-50">
+        <section data-section="admissions" id="admissions" className="py-20 md:py-28 bg-slate-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="h-px w-12 opacity-40" style={{ backgroundColor: primary }} />
@@ -269,7 +269,7 @@ function ClassicTemplate({ site }: { site: PublicSiteData }) {
 
       {/* CONTACT */}
       {site.contact?.enabled && (
-        <section id="contact" className="py-20 md:py-28" style={{ backgroundColor: '#0f172a' }}>
+        <section data-section="contact" id="contact" className="py-20 md:py-28" style={{ backgroundColor: '#0f172a' }}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="h-px w-12 opacity-30" style={{ backgroundColor: primary }} />
@@ -323,7 +323,7 @@ function ClassicTemplate({ site }: { site: PublicSiteData }) {
 
       {/* NEWS */}
       {site.news?.enabled && site.news.posts.length > 0 && (
-        <section id="news" className="py-20 md:py-28 bg-slate-50">
+        <section data-section="news" id="news" className="py-20 md:py-28 bg-slate-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="h-px w-12 opacity-40" style={{ backgroundColor: primary }} />
@@ -352,7 +352,7 @@ function ClassicTemplate({ site }: { site: PublicSiteData }) {
 
       {/* POLICIES */}
       {site.policies?.enabled && (site.policies.privacy || site.policies.conduct) && (
-        <section className="py-16 bg-white border-t border-slate-100">
+        <section data-section="policies" className="py-16 bg-white border-t border-slate-100">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <h2 className="text-xl font-bold text-slate-900 mb-6">Policies</h2>
             <div className="space-y-3">
@@ -471,7 +471,7 @@ function ModernTemplate({ site }: { site: PublicSiteData }) {
 
       {/* HERO */}
       {site.hero?.enabled && (
-        <section id="home" className="relative overflow-hidden">
+        <section data-section="hero" id="home" className="relative overflow-hidden">
           <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, rgba(${rgb},0.04) 0%, rgba(${rgb},0.12) 100%)` }} />
           <div className="absolute inset-0 dark:opacity-30" style={{
             backgroundImage: `radial-gradient(circle, rgba(${rgb},0.15) 1px, transparent 1px)`,
@@ -518,7 +518,7 @@ function ModernTemplate({ site }: { site: PublicSiteData }) {
 
       {/* STATS */}
       {site.stats?.enabled && site.stats.items.length > 0 && (
-        <section className="border-y border-gray-100 dark:border-slate-800" style={{ backgroundColor: `rgba(${rgb},0.04)` }}>
+        <section data-section="stats" className="border-y border-gray-100 dark:border-slate-800" style={{ backgroundColor: `rgba(${rgb},0.04)` }}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {site.stats.items.map((item, i) => (
@@ -534,7 +534,7 @@ function ModernTemplate({ site }: { site: PublicSiteData }) {
 
       {/* ABOUT */}
       {site.about?.enabled && (
-        <section id="about" className="py-20 md:py-28">
+        <section data-section="about" id="about" className="py-20 md:py-28">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-start">
               <div>
@@ -588,7 +588,7 @@ function ModernTemplate({ site }: { site: PublicSiteData }) {
 
       {/* ADMISSIONS */}
       {site.admissions?.enabled && (
-        <section id="admissions" className="py-20 md:py-28 bg-gray-50 dark:bg-slate-900/60">
+        <section data-section="admissions" id="admissions" className="py-20 md:py-28 bg-gray-50 dark:bg-slate-900/60">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="max-w-2xl mx-auto text-center mb-14">
               <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: primary }}>Admissions</p>
@@ -637,7 +637,7 @@ function ModernTemplate({ site }: { site: PublicSiteData }) {
 
       {/* CONTACT */}
       {site.contact?.enabled && (
-        <section id="contact" className="py-20 md:py-28">
+        <section data-section="contact" id="contact" className="py-20 md:py-28">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="max-w-2xl mx-auto text-center mb-14">
               <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: primary }}>Contact</p>
@@ -691,7 +691,7 @@ function ModernTemplate({ site }: { site: PublicSiteData }) {
 
       {/* NEWS */}
       {site.news?.enabled && site.news.posts.length > 0 && (
-        <section id="news" className="py-20 md:py-28 bg-gray-50 dark:bg-slate-900/60">
+        <section data-section="news" id="news" className="py-20 md:py-28 bg-gray-50 dark:bg-slate-900/60">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="max-w-2xl mx-auto text-center mb-14">
               <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: primary }}>News</p>
@@ -720,7 +720,7 @@ function ModernTemplate({ site }: { site: PublicSiteData }) {
 
       {/* POLICIES */}
       {site.policies?.enabled && (site.policies.privacy || site.policies.conduct) && (
-        <section className="py-16 border-t border-gray-100 dark:border-slate-800">
+        <section data-section="policies" className="py-16 border-t border-gray-100 dark:border-slate-800">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-slate-50 mb-6">Policies</h2>
             <div className="space-y-4">
@@ -839,7 +839,7 @@ function MinimalTemplate({ site }: { site: PublicSiteData }) {
 
       {/* HERO */}
       {site.hero?.enabled && (
-        <section id="home" className="border-b border-gray-100">
+        <section data-section="hero" id="home" className="border-b border-gray-100">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-20 md:py-32">
             <div className="flex items-center gap-2.5 mb-8">
               <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: primary }} />
@@ -877,7 +877,7 @@ function MinimalTemplate({ site }: { site: PublicSiteData }) {
 
       {/* STATS */}
       {site.stats?.enabled && site.stats.items.length > 0 && (
-        <section className="border-b border-gray-100">
+        <section data-section="stats" className="border-b border-gray-100">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
             <div className="flex flex-wrap gap-10 md:gap-16">
               {site.stats.items.map((item, i) => (
@@ -893,7 +893,7 @@ function MinimalTemplate({ site }: { site: PublicSiteData }) {
 
       {/* ABOUT */}
       {site.about?.enabled && (
-        <section id="about" className="border-b border-gray-100">
+        <section data-section="about" id="about" className="border-b border-gray-100">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-20 md:py-28">
             <div className="grid md:grid-cols-[1fr_2fr] gap-12 lg:gap-20">
               <div>
@@ -950,7 +950,7 @@ function MinimalTemplate({ site }: { site: PublicSiteData }) {
 
       {/* ADMISSIONS */}
       {site.admissions?.enabled && (
-        <section id="admissions" className="border-b border-gray-100">
+        <section data-section="admissions" id="admissions" className="border-b border-gray-100">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-20 md:py-28">
             <div className="grid md:grid-cols-[1fr_2fr] gap-12 lg:gap-20">
               <div>
@@ -984,7 +984,7 @@ function MinimalTemplate({ site }: { site: PublicSiteData }) {
 
       {/* CONTACT */}
       {site.contact?.enabled && (
-        <section id="contact" className="border-b border-gray-100">
+        <section data-section="contact" id="contact" className="border-b border-gray-100">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-20 md:py-28">
             <div className="grid md:grid-cols-[1fr_2fr] gap-12 lg:gap-20">
               <div>
@@ -1025,7 +1025,7 @@ function MinimalTemplate({ site }: { site: PublicSiteData }) {
 
       {/* NEWS */}
       {site.news?.enabled && site.news.posts.length > 0 && (
-        <section id="news" className="border-b border-gray-100">
+        <section data-section="news" id="news" className="border-b border-gray-100">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-20 md:py-28">
             <div className="grid md:grid-cols-[1fr_2fr] gap-12 lg:gap-20">
               <div>
@@ -1059,7 +1059,7 @@ function MinimalTemplate({ site }: { site: PublicSiteData }) {
 
       {/* POLICIES */}
       {site.policies?.enabled && (site.policies.privacy || site.policies.conduct) && (
-        <section className="border-b border-gray-100">
+        <section data-section="policies" className="border-b border-gray-100">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
             <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-8">Policies</p>
             <div className="space-y-3">
