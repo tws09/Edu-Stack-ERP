@@ -33,6 +33,20 @@
   "fee_challan": "Fee Challan",
   "download": "Download",
   "share": "Share",
+  "auth": {
+    "admin": "Admin",
+    "teacher": "Teacher",
+    "student": "Student",
+    "email": "Email address",
+    "password": "Password",
+    "signIn": "Sign In",
+    "signInToContinue": "Sign in to continue",
+    "switchSchool": "Switch School",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Enter a valid email",
+    "passwordRequired": "Password is required",
+    "passwordTooShort": "Password must be at least 6 characters"
+  },
   "onboarding": {
     "scanQr": "Scan School QR Code",
     "scanInstructions": "Point your camera at the QR code provided by your school admin",

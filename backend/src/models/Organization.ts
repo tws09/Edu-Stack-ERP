@@ -7,6 +7,7 @@ export interface ISiteNewsPost { id: string; title: string; body: string; date: 
 
 export interface ISiteConfig {
   published: boolean;
+  templateId?: 'classic' | 'modern' | 'minimal';
   hero:        { enabled: boolean; headline: string; subtext: string; ctaText: string; imageUrl?: string };
   about:       { enabled: boolean; body: string; founded: string; principalName: string; principalQuote: string; vision: string; mission: string };
   stats:       { enabled: boolean; items: { label: string; value: string }[] };
@@ -65,8 +66,9 @@ const organizationSchema = new Schema<IOrganization>(
     primaryColor: { type: String, default: '#2563eb' },
     websiteAddon: { type: Boolean, default: false },
     site: {
-      published:  { type: Boolean, default: false },
-      hero:       { enabled: Boolean, headline: String, subtext: String, ctaText: String, imageUrl: String },
+      published:   { type: Boolean, default: false },
+      templateId:  { type: String, enum: ['classic', 'modern', 'minimal'] },
+      hero:        { enabled: Boolean, headline: String, subtext: String, ctaText: String, imageUrl: String },
       about:      { enabled: Boolean, body: String, founded: String, principalName: String, principalQuote: String, vision: String, mission: String },
       stats:      { enabled: Boolean, items: [{ label: String, value: String, _id: false }] },
       admissions: { enabled: Boolean, body: String, criteria: String, process: String },

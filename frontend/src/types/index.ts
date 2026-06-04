@@ -35,6 +35,7 @@ export interface SiteNewsPost { id: string; title: string; body: string; date: s
 
 export interface SiteConfig {
   published: boolean;
+  templateId?: 'classic' | 'modern' | 'minimal';
   hero:        { enabled: boolean; headline: string; subtext: string; ctaText: string; imageUrl?: string };
   about:       { enabled: boolean; body: string; founded: string; principalName: string; principalQuote: string; vision: string; mission: string };
   stats:       { enabled: boolean; items: { label: string; value: string }[] };
