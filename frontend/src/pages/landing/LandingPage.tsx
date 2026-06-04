@@ -23,7 +23,7 @@ const STORIES = [
     emoji: '💵',
     color: { pill: 'bg-green-100 text-green-700', icon: 'bg-green-50 text-green-600', check: 'text-green-500' },
     pain: {
-      label: 'The accountant's nightmare.',
+      label: "The accountant's nightmare.",
       scene: `Hand-writing 300 challans. Calling 300 parents, one by one, every month. Cash sitting in a drawer without a record. A parent walks in claiming they paid last week — you have no proof. Your accountant goes home at 10 PM for three weeks straight and still the reconciliation is wrong.`,
     },
     fix: {
@@ -56,7 +56,7 @@ const STORIES = [
     },
     fix: {
       headline: 'Conflicts caught before they happen. Substitutes assigned in seconds.',
-      desc: 'Build conflict-free timetables that the system validates automatically. When a teacher is absent, assign a substitute from available staff in one click. Everyone's schedule updates instantly.',
+      desc: "Build conflict-free timetables that the system validates automatically. When a teacher is absent, assign a substitute from available staff in one click. Everyone's schedule updates instantly.",
       points: ['Conflict detection engine', 'One-click substitute assignment', 'Printable timetable PDF per class', 'Exam schedule integration'],
     },
   },
@@ -112,7 +112,7 @@ const STORIES = [
     },
     fix: {
       headline: 'Apply online. Track every application. Fill every seat.',
-      desc: 'Students apply via your school's public admission portal — from home, on mobile. Staff review and approve from the dashboard. Generate offer letters and ID cards in one click.',
+      desc: "Students apply via your school's public admission portal — from home, on mobile. Staff review and approve from the dashboard. Generate offer letters and ID cards in one click.",
       points: ['Public online admission form', 'Application tracking dashboard', 'Offer letter PDF generation', 'Student ID card PDF'],
     },
   },
