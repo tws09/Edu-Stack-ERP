@@ -577,12 +577,21 @@ function ProgramsTab() {
           </div>
           <div className="flex gap-2">
             <button onClick={() => editing ? updateMut.mutate() : createMut.mutate()}
-              disabled={!form.name || !form.code || !form.totalSeats || createMut.isPending || updateMut.isPending}
+              disabled={!form.name || !form.code || Number(form.totalSeats) < 1 || createMut.isPending || updateMut.isPending}
               className={btn('bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60')}>
               {editing ? 'Update Program' : 'Create Program'}
             </button>
             <button onClick={resetForm} className={btn('border border-gray-300 text-gray-600 hover:bg-gray-50')}>Cancel</button>
           </div>
+          {(createMut.isError || updateMut.isError) && (
+            <p className="text-sm text-red-600">
+              {(() => {
+                const err = (createMut.error ?? updateMut.error) as { response?: { data?: { errors?: { msg: string }[]; message?: string } } };
+                const d = err?.response?.data;
+                return d?.errors?.[0]?.msg ?? d?.message ?? 'Something went wrong. Please try again.';
+              })()}
+            </p>
+          )}
         </div>
       )}
 
