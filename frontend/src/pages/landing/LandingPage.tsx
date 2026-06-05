@@ -70,18 +70,21 @@ const TESTIMONIALS = [
     role: 'Principal, Al-Huda Academy, Lahore',
     quote: "Our accountant used to come to me stressed every month-end. Now she sends me a report by noon. I didn't realise how much energy was going into paperwork until it stopped.",
     highlight: 'Accountant: 10 PM -> done by noon',
+    initials: 'TM',
   },
   {
     name: 'Ms. Ayesha Siddiqui',
     role: 'Group Admin, Crescent Schools, Karachi',
     quote: 'I was flying between three campuses just to understand what was happening. Now I open one screen in the morning and I know everything - fees, attendance, staff, all of it.',
     highlight: '3 campuses -> one dashboard',
+    initials: 'AS',
   },
   {
     name: 'Sir Bilal Khurshid',
     role: 'IT Admin, Future Stars College, Islamabad',
     quote: 'Parents used to call me directly with attendance complaints. That stopped in the first week. They could see everything themselves. That alone saved me hours every day.',
     highlight: 'Parent complaints dropped to zero',
+    initials: 'BK',
   },
 ];
 
@@ -104,7 +107,7 @@ function Navbar({ scrolled, menuOpen, setMenuOpen }: { scrolled: boolean; menuOp
         </div>
 
         <nav className="hidden lg:flex items-center gap-7 text-sm font-medium">
-          {[['#problem','The Problem'],['#modules','How We Fix It'],['#pricing','Pricing'],['#faq','FAQ']].map(([href,label]) => (
+          {[['#problem','The Problem'],['#features','Features'],['#pricing','Pricing'],['#faq','FAQ']].map(([href,label]) => (
             <a key={href} href={href} className={`transition-colors ${scrolled ? 'text-gray-500 hover:text-gray-900' : 'text-blue-100 hover:text-white'}`}>{label}</a>
           ))}
         </nav>
@@ -113,6 +116,9 @@ function Navbar({ scrolled, menuOpen, setMenuOpen }: { scrolled: boolean; menuOp
           <Link to="/login" className={`text-sm font-medium px-3 py-2 transition-colors ${scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-blue-100 hover:text-white'}`}>
             Sign In
           </Link>
+          <a href="mailto:hello@wolfstack.io?subject=Book%20a%20Demo%20-%20EduStack%20PK" className={`text-sm font-medium px-3 py-2 transition-colors ${scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-blue-100 hover:text-white'}`}>
+            Book a Demo
+          </a>
           <Link to="/register" className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-600/30">
             Start Free Trial
           </Link>
@@ -130,12 +136,13 @@ function Navbar({ scrolled, menuOpen, setMenuOpen }: { scrolled: boolean; menuOp
 
       {menuOpen && (
         <div className="lg:hidden bg-white border-t border-gray-100 px-4 py-4 flex flex-col gap-2 shadow-lg">
-          {[['#problem','The Problem'],['#modules','How We Fix It'],['#pricing','Pricing'],['#faq','FAQ']].map(([href,label]) => (
+          {[['#problem','The Problem'],['#features','Features'],['#pricing','Pricing'],['#faq','FAQ']].map(([href,label]) => (
             <a key={href} href={href} onClick={() => setMenuOpen(false)}
               className="py-2 px-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-blue-600">{label}</a>
           ))}
           <div className="pt-2 border-t border-gray-100 flex flex-col gap-2">
             <Link to="/login" className="py-2 text-center text-sm text-gray-600">Sign In</Link>
+            <a href="mailto:hello@wolfstack.io?subject=Book%20a%20Demo%20-%20EduStack%20PK" className="py-2 text-center text-sm text-gray-600 hover:text-blue-600">Book a Demo</a>
             <Link to="/register" className="py-3 rounded-xl bg-blue-600 text-white text-center text-sm font-bold hover:bg-blue-700">
               Start Free Trial
             </Link>
@@ -192,16 +199,16 @@ function HeroSection() {
           <Link to="/register"
             className="px-9 py-4 rounded-2xl font-bold text-base text-white transition-all hover:-translate-y-0.5"
             style={{ background:'linear-gradient(135deg,#2563eb,#4f46e5)', boxShadow:'0 8px 32px rgba(37,99,235,.45)' }}>
-            Start Your 7-Day Free Trial
+            Start Free Trial
           </Link>
-          <a href="#problem"
-            className="px-9 py-4 rounded-2xl text-white font-semibold text-base transition-all"
+          <a href="mailto:hello@wolfstack.io?subject=Book%20a%20Demo%20-%20EduStack%20PK"
+            className="px-9 py-4 rounded-2xl text-white font-semibold text-base transition-all hover:bg-white/10"
             style={{ background:'rgba(255,255,255,.06)', border:'1px solid rgba(255,255,255,.1)' }}>
-            See How We Solve It
+            Book a Live Demo
           </a>
         </div>
         <p className="mt-5 text-sm" style={{ color:'rgba(147,197,253,.45)' }}>
-          7 days full access &middot; No credit card &middot; 5 minutes to set up
+          <a href="#features" className="underline hover:text-white transition-colors">See features</a> &middot; No credit card &middot; 5 minutes to set up
         </p>
       </div>
 
@@ -246,587 +253,302 @@ function PainStatsSection() {
   );
 }
 
-// 1. Attendance - horizontal split
+// Interactive Features Showcase
 
-function AttendanceSection() {
-  return (
-    <section id="modules" className="grid grid-cols-1 lg:grid-cols-2 min-h-130">
-      <div className="bg-slate-950 p-10 lg:p-14 flex flex-col justify-center relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none" style={DOT_GRID_DARK} />
-        <div className="relative">
-          <div className="inline-flex items-center gap-2 bg-red-900/30 border border-red-800/40 text-red-400 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-6">
-            Attendance - The Problem
+function FeaturesShowcase() {
+  const [activeTab, setActiveTab] = useState<'finance' | 'academics' | 'attendance' | 'payroll' | 'admissions'>('finance');
+
+  const tabData = {
+    finance: {
+      badge: 'Fee Management & Payments',
+      title: 'Challans generate themselves. Parents pay online.',
+      desc: 'Tired of hand-writing 300 challans? Generate dual-copy PDF challans automatically. Parents pay instantly via JazzCash or EasyPaisa in under a minute, with real-time automatic ledger reconciliation.',
+      bullets: [
+        'Automated monthly challan batch generation',
+        'JazzCash and EasyPaisa mobile wallet integration',
+        'Professional dual-copy bank PDF challan format',
+        'Fee waivers, discounts, and outstanding analytics'
+      ],
+      mockup: (
+        <div className="bg-white rounded-2xl shadow-xl p-6 w-72 border border-gray-100 text-gray-800">
+          <div className="text-center border-b-2 border-dashed border-gray-200 pb-4 mb-4">
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Al-Huda Academy</div>
+            <div className="text-base font-extrabold text-gray-900">FEE CHALLAN</div>
+            <div className="text-xs text-gray-400 mt-0.5">HBL Bank - Student Copy</div>
           </div>
-          <div className="text-4xl font-black text-white mb-4 leading-tight">Every. Single. Morning.</div>
-          <p className="text-gray-400 leading-relaxed text-base">
-            A teacher reads 40 names out loud. Students shout "present" for absent friends.
-            The register is a crumpled notebook that lives in a drawer.
-            When a parent calls about a shortage -{' '}
-            <span className="text-white font-semibold">you have no answer. Because you have no record.</span>
-          </p>
-        </div>
-      </div>
-      <div className="bg-blue-50 p-10 lg:p-14 flex flex-col justify-center relative" style={DOT_GRID}>
-        <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-6 w-fit">
-          How EduStack Fixes It
-        </div>
-        <div className="text-5xl font-black text-blue-600 leading-none mb-1">Zero</div>
-        <div className="text-sm font-bold text-blue-700 uppercase tracking-wide mb-4">arguments about attendance. Ever again.</div>
-        <p className="text-gray-600 text-sm leading-relaxed mb-6">
-          Digital attendance per period or daily. Shortage alerts fire automatically. Students see their own calendar. Parents see the live record. No calls. No disputes. No crumpled notebooks.
-        </p>
-        <ul className="space-y-2.5">
-          {['Daily and period-wise digital marking','Auto shortage alert at your threshold','Student attendance calendar heatmap','PDF register and CSV export in one click'].map(p => (
-            <li key={p} className="flex items-center gap-2.5 text-sm text-gray-600">
-              <CheckIcon className="w-4 h-4 text-blue-500 shrink-0" />{p}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-// 2. Fees - full-width dark, oversized stat + challan mockup
-
-function FeesSection() {
-  return (
-    <section className="bg-slate-950 py-20 relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none" style={DOT_GRID_DARK} />
-      <div className="absolute -top-40 right-0 pointer-events-none"
-        style={{ width:'500px', height:'500px', background:'radial-gradient(ellipse,rgba(16,185,129,.08) 0%,transparent 65%)' }} />
-
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-red-900/30 border border-red-800/40 text-red-400 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-8">
-            Fee Management - The Problem
-          </div>
-          <div className="font-black leading-none mb-4" style={{ fontSize:'clamp(5rem,18vw,12rem)', color:'rgba(255,255,255,.06)' }}>
-            300
-          </div>
-          <div className="-mt-8 sm:-mt-12 lg:-mt-16 relative z-10">
-            <div className="text-3xl sm:text-4xl font-extrabold text-white mb-3">challans written by hand.</div>
-            <p className="text-gray-400 text-lg max-w-xl mx-auto">
-              Every month. Every year. Then your accountant spends three weeks chasing each one by phone.
-              Cash sits in a drawer, unreconciled. A parent claims they paid - you have no proof.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 bg-emerald-900/30 border border-emerald-700/30 text-emerald-400 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-6">
-              How EduStack Fixes It
-            </div>
-            <h3 className="text-3xl font-extrabold text-white mb-4">
-              Challans generate themselves.<br />Parents pay from their phone.
-            </h3>
-            <p className="text-gray-400 leading-relaxed mb-6">
-              BullMQ auto-generates every challan every month. Parents pay via JazzCash or EasyPaisa in 30 seconds.
-              Every payment logged, timestamped, and receipted. Your accountant leaves at 5 PM.
-            </p>
-            <ul className="space-y-3">
-              {['Auto challan generation every month (BullMQ)','JazzCash and EasyPaisa online payments','HBL/UBL dual-copy PDF challan format','Discounts, waivers and fee status analytics'].map(p => (
-                <li key={p} className="flex items-center gap-2.5 text-sm text-gray-300">
-                  <CheckIcon className="w-4 h-4 text-emerald-400 shrink-0" />{p}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="flex justify-center lg:justify-end">
-            <div className="bg-white rounded-2xl shadow-2xl p-6 w-72 border border-gray-100">
-              <div className="text-center border-b-2 border-dashed border-gray-200 pb-4 mb-4">
-                <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Al-Huda Academy</div>
-                <div className="text-base font-extrabold text-gray-900">FEE CHALLAN</div>
-                <div className="text-xs text-gray-400 mt-0.5">HBL Bank - Student Copy</div>
+          <div className="space-y-2.5 text-xs mb-4">
+            {[
+              ['Student', 'Ali Hassan - Class 9A'],
+              ['Month', 'June 2025'],
+              ['Due Date', '15 June 2025']
+            ].map(([k, v]) => (
+              <div key={k} className="flex justify-between items-center">
+                <span className="text-gray-400">{k}</span>
+                <span className="font-semibold text-gray-700">{v}</span>
               </div>
-              <div className="space-y-2.5 text-xs mb-4">
-                {[['Student','Ali Hassan - Class 9A'],['Month','June 2025'],['Due Date','15 June 2025']].map(([k,v]) => (
-                  <div key={k} className="flex justify-between items-center">
-                    <span className="text-gray-400">{k}</span>
-                    <span className="font-semibold text-gray-700">{v}</span>
-                  </div>
-                ))}
-                <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                  <span className="text-gray-400 font-bold">Amount Due</span>
-                  <span className="font-extrabold text-emerald-700 text-base">Rs 3,500</span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-red-50 border border-red-100 rounded-lg p-2 text-center">
-                  <div className="text-xs font-bold text-red-600">JazzCash</div>
-                  <div className="text-xs text-red-500 mt-0.5">Pay online</div>
-                </div>
-                <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-2 text-center">
-                  <div className="text-xs font-bold text-emerald-700">EasyPaisa</div>
-                  <div className="text-xs text-emerald-600 mt-0.5">Pay online</div>
-                </div>
-              </div>
-              <div className="mt-3 text-center text-xs text-gray-300">Auto-generated by EduStack PK</div>
+            ))}
+            <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+              <span className="text-gray-400 font-bold">Amount Due</span>
+              <span className="font-extrabold text-blue-600 text-base">Rs 3,500</span>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// 3. Exams - pull quote on deep violet
-
-function ExamsSection() {
-  return (
-    <section>
-      <div className="relative overflow-hidden py-20 text-center" style={{ background:'linear-gradient(135deg,#1e1b4b,#2e1065)' }}>
-        <div className="absolute inset-0 pointer-events-none" style={DOT_GRID_DARK} />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="inline-flex items-center gap-2 bg-violet-900/50 border border-violet-700/40 text-violet-300 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-8">
-            Exams and Results - The Problem
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-red-50 border border-red-100 rounded-lg p-2 text-center">
+              <div className="text-xs font-bold text-red-600">JazzCash</div>
+              <div className="text-xs text-red-500 mt-0.5">Pay online</div>
+            </div>
+            <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-2 text-center">
+              <div className="text-xs font-bold text-emerald-700">EasyPaisa</div>
+              <div className="text-xs text-emerald-600 mt-0.5">Pay online</div>
+            </div>
           </div>
-          <div className="font-black text-white mb-4 leading-none" style={{ fontSize:'clamp(4rem,14vw,9rem)' }}>2 AM.</div>
-          <p className="text-2xl sm:text-3xl font-bold text-violet-200 mb-4">The night before result day.</p>
-          <p className="text-violet-300/80 text-lg max-w-xl mx-auto leading-relaxed">
-            Your staff is still calculating grades on paper. Someone made an arithmetic error in Class 9 and nobody caught it.
-            The result cards will not be ready by morning. Parents are calling. You have been awake since yesterday.
-          </p>
+          <div className="mt-3 text-center text-[10px] text-gray-400">Auto-generated by EduStack PK</div>
         </div>
-      </div>
-      <div className="bg-violet-50 py-16 relative" style={DOT_GRID}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+      )
+    },
+    academics: {
+      badge: 'Exams & Grading',
+      title: 'Marks go in. Results come out. Instantly.',
+      desc: 'Calculate class rankings, averages, subject totals, and grades instantly. Teachers enter marks from a single portal, eliminating human arithmetic errors. Printable result cards are ready immediately.',
+      bullets: [
+        'Flexible custom grading configurations per class',
+        'Secure marks entry by subject teacher',
+        'Automatic class position and average ranking',
+        'Professional printable result card PDF export'
+      ],
+      mockup: (
+        <div className="bg-white rounded-2xl border border-blue-100 p-6 shadow-xl text-gray-800 w-72">
+          <div className="text-xs font-bold text-blue-600 uppercase tracking-wide mb-4">Result Card - Class 9A</div>
+          <div className="space-y-2 mb-4">
+            {[
+              ['Mathematics', '92 / 100', 'A+'],
+              ['Physics', '88 / 100', 'A'],
+              ['English', '79 / 100', 'B+'],
+              ['Chemistry', '85 / 100', 'A']
+            ].map(([sub, marks, grade]) => (
+              <div key={sub} className="flex items-center justify-between text-xs py-1.5 border-b border-gray-50">
+                <span className="text-gray-500">{sub}</span>
+                <span className="text-gray-700 font-medium">{marks}</span>
+                <span className="font-extrabold text-blue-600 w-8 text-right">{grade}</span>
+              </div>
+            ))}
+          </div>
+          <div className="bg-blue-50 rounded-xl p-3 flex items-center justify-between">
             <div>
-              <div className="inline-flex items-center gap-2 bg-violet-100 text-violet-700 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-5 w-fit">
-                How EduStack Fixes It
-              </div>
-              <h3 className="text-3xl font-extrabold text-gray-900 mb-4">Marks go in. Results come out. Instantly.</h3>
-              <p className="text-gray-500 leading-relaxed mb-6">
-                Teachers enter marks per subject online. The system calculates grades, positions, and ranking automatically - zero errors.
-                Result card PDFs are ready the moment marks are submitted.
-              </p>
-              <ul className="space-y-2.5">
-                {['Custom grading config per class','Marks entry by subject teacher','Auto class position ranking','Printable result card PDF'].map(p => (
-                  <li key={p} className="flex items-center gap-2.5 text-sm text-gray-600">
-                    <CheckIcon className="w-4 h-4 text-violet-500 shrink-0" />{p}
-                  </li>
-                ))}
-              </ul>
+              <div className="text-xs text-blue-500 font-medium">Class Position</div>
+              <div className="text-xl font-black text-blue-700">3rd</div>
             </div>
-            <div className="bg-white rounded-2xl border border-violet-200 p-6 shadow-lg">
-              <div className="text-xs font-bold text-violet-600 uppercase tracking-wide mb-4">Result Card - Class 9A</div>
-              <div className="space-y-2 mb-4">
-                {[['Mathematics','92 / 100','A+'],['Physics','88 / 100','A'],['English','79 / 100','B+'],['Chemistry','85 / 100','A']].map(([sub,marks,grade]) => (
-                  <div key={sub} className="flex items-center justify-between text-xs py-1.5 border-b border-gray-50">
-                    <span className="text-gray-500">{sub}</span>
-                    <span className="text-gray-700 font-medium">{marks}</span>
-                    <span className="font-extrabold text-violet-600 w-8 text-right">{grade}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="bg-violet-50 rounded-xl p-3 flex items-center justify-between">
-                <div>
-                  <div className="text-xs text-violet-500 font-medium">Class Position</div>
-                  <div className="text-2xl font-black text-violet-700">3rd</div>
+            <div className="text-right">
+              <div className="text-xs text-blue-500 font-medium">Total Marks</div>
+              <div className="text-xl font-black text-blue-700">86%</div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    attendance: {
+      badge: 'Attendance & Timetables',
+      title: 'Digital registers. Conflict-free timetables.',
+      desc: 'Ditch manual paper registers. Mark daily or period-wise student attendance. Shortage alerts are triggered automatically. Run a conflict-free master timetable that alerts you of clashes before saving, and substitute absent teachers in a single tap.',
+      bullets: [
+        'Daily and period-wise digital register marking',
+        'Automatic shortage alerts sent directly to dashboards',
+        'Conflict-free timetable validator to prevent teacher clashes',
+        'One-tap teacher substitute allocation system'
+      ],
+      mockup: (
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-xl text-gray-800 w-72">
+          <div className="flex justify-between items-center border-b border-gray-100 pb-3 mb-4">
+            <div className="text-xs font-bold text-gray-400 uppercase">DIGITAL REGISTER</div>
+            <div className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold">Live</div>
+          </div>
+          <div className="space-y-3">
+            {[
+              { name: 'Ali Hassan', status: 'Present', time: '07:45 AM' },
+              { name: 'Zainab Bibi', status: 'Late', time: '08:02 AM' },
+              { name: 'Muhammad Ahmed', status: 'Absent', time: '--' }
+            ].map(s => (
+              <div key={s.name} className="flex items-center justify-between text-xs py-0.5">
+                <span className="text-gray-700 font-semibold">{s.name}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-400 text-[10px]">{s.time}</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${s.status === 'Present' ? 'bg-emerald-50 text-emerald-700' : s.status === 'Late' ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700'}`}>
+                    {s.status}
+                  </span>
                 </div>
-                <div className="text-right">
-                  <div className="text-xs text-violet-500 font-medium">Total Marks</div>
-                  <div className="text-2xl font-black text-violet-700">86%</div>
-                </div>
               </div>
-            </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center text-[10px] text-gray-400">
+            <span>Monthly Attendance Alerts</span>
+            <span className="font-bold text-rose-600">3 Shortages</span>
           </div>
         </div>
-      </div>
-    </section>
-  );
-}
-
-// 4. Timetable - before/after comparison
-
-function TimetableSection() {
-  return (
-    <section className="py-20 bg-white relative" style={DIAG_LINES}>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-purple-50 text-purple-700 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-4">
-            Timetable and Scheduling
-          </div>
-          <h2 className="text-4xl font-extrabold text-gray-900 mb-2">7:30 AM. A teacher calls in sick.</h2>
-          <p className="text-gray-500 text-lg max-w-xl mx-auto">
-            40 students are sitting in a classroom with no one. It happens every week. Monday morning is always chaos.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-2xl border-2 border-red-200 bg-red-50 p-7">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center">
-                <svg className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <span className="font-bold text-red-700 text-sm">The old way</span>
+      )
+    },
+    payroll: {
+      badge: 'Staff & Payroll',
+      title: 'One-click salary calculations. Payslips for all.',
+      desc: 'Setup salary allowances and deductions once. Late arrival or leave deductions apply automatically based on digital attendance records. Process monthly payroll securely and print payslips on demand.',
+      bullets: [
+        'Custom salary structures with allowances and deductions',
+        'Attendance-linked automated deductions and increments',
+        'On-demand payroll batch processing and approval',
+        'Printable monthly payslip PDF generation for staff'
+      ],
+      mockup: (
+        <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 text-gray-800 w-72">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
+            <div>
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">PAYSLIP - JUNE 2025</div>
+              <div className="font-bold text-gray-900 mt-0.5">Usman Ali - Teacher</div>
             </div>
-            <ul className="space-y-3 text-sm text-red-700">
-              {[
-                'Paper timetable covered in correction fluid',
-                'Teacher absent - scramble with no system',
-                'Period clashes discovered after they happen',
-                'Substitute found by walking the corridors',
-                'Timetable redrawn from scratch each term',
-              ].map(item => (
-                <li key={item} className="flex items-start gap-2.5">
-                  <span className="text-red-400 mt-0.5 shrink-0">x</span>{item}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-2xl border-2 border-purple-200 bg-purple-50 p-7">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center">
-                <CheckIcon className="w-4 h-4 text-purple-600" />
-              </div>
-              <span className="font-bold text-purple-700 text-sm">With EduStack PK</span>
+            <div className="text-right">
+              <div className="text-[10px] text-gray-400">Net Pay</div>
+              <div className="text-lg font-black text-blue-700">Rs 48,200</div>
             </div>
-            <ul className="space-y-3 text-sm text-purple-700">
-              {[
-                'Digital conflict-free timetable, validated live',
-                'Absent teacher - assign substitute in one click',
-                'Clashes caught before the timetable is saved',
-                'All staff notified automatically of changes',
-                'Printable timetable PDF for every class, always',
-              ].map(item => (
-                <li key={item} className="flex items-start gap-2.5">
-                  <CheckIcon className="w-4 h-4 text-purple-500 mt-0.5 shrink-0" />{item}
-                </li>
-              ))}
-            </ul>
+          </div>
+          <div className="space-y-2 text-[11px]">
+            {[
+              ['Basic Salary', 'Rs 40,000', ''],
+              ['House Allowance', 'Rs 8,000', ''],
+              ['Transport', 'Rs 2,000', ''],
+              ['Late Deduction', '- Rs 1,800', 'text-red-500']
+            ].map(([k, v, cls]) => (
+              <div key={k} className="flex justify-between">
+                <span className="text-gray-400">{k}</span>
+                <span className={`font-semibold ${cls || 'text-gray-700'}`}>{v}</span>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
-    </section>
-  );
-}
-
-// 5. Payroll - dark indigo, transformation visual
-
-function PayrollSection() {
-  return (
-    <section className="py-20 relative overflow-hidden" style={{ background:'linear-gradient(135deg,#1e1b4b,#312e81)' }}>
-      <div className="absolute inset-0 pointer-events-none" style={DOT_GRID_DARK} />
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-indigo-900/50 border border-indigo-700/40 text-indigo-300 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-8">
-            Payroll - The Problem
-          </div>
-          <div className="flex items-center justify-center gap-6 sm:gap-10 mb-8">
-            <div className="text-center">
-              <div className="text-5xl sm:text-7xl font-black text-white/20 leading-none">4</div>
-              <div className="text-sm font-bold text-red-400 mt-1">days wasted</div>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <svg className="w-10 h-6 text-indigo-400" fill="none" viewBox="0 0 40 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h30M25 6l10 6-10 6" />
+      )
+    },
+    admissions: {
+      badge: 'Admissions Portal',
+      title: 'Online applications. Seamless student onboarding.',
+      desc: 'Allow prospective parents to submit applications online at your custom subdomain. Manage applicant status, issue offer letters, and auto-generate student registration numbers.',
+      bullets: [
+        'Public admissions portal page at school subdomain',
+        'Centralized applicant tracking pipeline for school admins',
+        'Automated student ID card and offer letter PDF generation',
+        'Document attachments and parent communication logs'
+      ],
+      mockup: (
+        <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 text-gray-800 w-72">
+          <div className="flex items-center gap-2 mb-5 pb-4 border-b border-gray-100">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
               </svg>
-              <span className="text-indigo-400 text-xs font-bold">EduStack</span>
             </div>
-            <div className="text-center">
-              <div className="text-5xl sm:text-7xl font-black text-indigo-300 leading-none">1</div>
-              <div className="text-sm font-bold text-indigo-300 mt-1">click</div>
+            <div>
+              <div className="font-bold text-gray-900 text-sm">Online Admission</div>
+              <div className="text-xs text-gray-400">Al-Huda Academy, Lahore</div>
             </div>
           </div>
-          <p className="text-indigo-200/80 text-lg max-w-2xl mx-auto leading-relaxed">
-            Manual calculations. Attendance deductions done wrong. A teacher disputes their salary - and they are right.
-            There is no paper trail. Trust erodes. Your best teachers start looking elsewhere.
+          <div className="space-y-3 text-left">
+            {[
+              ['Student Full Name', 'Ahmad Hassan Khan'],
+              ['Class Applying For', 'Class 9'],
+              ['Parent Phone', '0300-1234567']
+            ].map(([label, val]) => (
+              <div key={label}>
+                <div className="text-[10px] text-gray-400 mb-0.5">{label}</div>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-700 font-semibold">{val}</div>
+              </div>
+            ))}
+            <div className="rounded-xl py-2.5 text-xs font-bold text-white text-center mt-2 bg-blue-600">
+              Submit Application
+            </div>
+          </div>
+        </div>
+      )
+    }
+  };
+
+  const activeData = tabData[activeTab];
+
+  return (
+    <section id="features" className="py-20 bg-slate-50 relative border-y border-gray-100">
+      <div className="absolute inset-0 pointer-events-none opacity-50" style={DOT_GRID} />
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-3">All-In-One School ERP</p>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+            One platform. Every operational need solved.
+          </h2>
+          <p className="mt-4 text-gray-500 max-w-xl mx-auto text-sm sm:text-base">
+            No more manual files or scattered WhatsApp groups. Select a module below to see how EduStack PK transforms your operations.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        {/* Tab Buttons */}
+        <div className="flex flex-wrap justify-center gap-2 mb-12 border-b border-gray-200 pb-5">
+          {(Object.keys(tabData) as Array<keyof typeof tabData>).map(tabKey => {
+            const data = tabData[tabKey];
+            const isActive = activeTab === tabKey;
+            return (
+              <button
+                key={tabKey}
+                onClick={() => setActiveTab(tabKey)}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/70'}`}
+              >
+                {tabKey === 'finance' && (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                )}
+                {tabKey === 'academics' && (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                )}
+                {tabKey === 'attendance' && (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                )}
+                {tabKey === 'payroll' && (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                )}
+                {tabKey === 'admissions' && (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                )}
+                {data.badge.split(' ')[0]}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tab Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center bg-white rounded-3xl p-8 lg:p-12 shadow-xl border border-gray-100 text-gray-900">
           <div>
-            <h3 className="text-2xl font-extrabold text-white mb-4">One click. Every salary correct. Every time.</h3>
-            <p className="text-indigo-200/70 leading-relaxed mb-6">
-              Salary structures, allowances, and deductions configured once.
-              Attendance-linked deductions apply automatically. Process payroll in one click. Print payslips. Staff disputes end permanently.
+            <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-6">
+              {activeData.badge}
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-4">
+              {activeData.title}
+            </h3>
+            <p className="text-gray-500 leading-relaxed mb-6 text-sm sm:text-base">
+              {activeData.desc}
             </p>
-            <ul className="space-y-2.5">
-              {['Salary structure with allowances and deductions','Attendance-linked auto-deduction','One-click payroll approval','Printable payslip PDF'].map(p => (
-                <li key={p} className="flex items-center gap-2.5 text-sm text-indigo-200">
-                  <CheckIcon className="w-4 h-4 text-indigo-400 shrink-0" />{p}
+            <ul className="space-y-3 mb-6">
+              {activeData.bullets.map(bullet => (
+                <li key={bullet} className="flex items-center gap-3 text-xs sm:text-sm text-gray-600">
+                  <CheckIcon className="w-4 h-4 text-blue-500 shrink-0" />
+                  {bullet}
                 </li>
               ))}
             </ul>
           </div>
-          <div className="bg-white rounded-2xl p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
-              <div>
-                <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">PAYSLIP - JUNE 2025</div>
-                <div className="font-bold text-gray-900 mt-0.5">Usman Ali - Teacher</div>
-              </div>
-              <div className="text-right">
-                <div className="text-xs text-gray-400">Net Pay</div>
-                <div className="text-xl font-black text-indigo-700">Rs 48,200</div>
-              </div>
-            </div>
-            <div className="space-y-2 text-xs">
-              {[['Basic Salary','Rs 40,000',''],['House Allowance','Rs 8,000',''],['Transport','Rs 2,000',''],['Late Deduction','- Rs 1,800','text-red-500']].map(([k,v,cls]) => (
-                <div key={k} className="flex justify-between">
-                  <span className="text-gray-400">{k}</span>
-                  <span className={`font-semibold ${cls || 'text-gray-700'}`}>{v}</span>
-                </div>
-              ))}
-            </div>
+          <div className="flex justify-center bg-slate-50 rounded-2xl py-12 px-6 border border-gray-50">
+            {activeData.mockup}
           </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// 6. Assignments - orange left / white right split
-
-function AssignmentsSection() {
-  return (
-    <section className="grid grid-cols-1 lg:grid-cols-2 min-h-120">
-      <div className="p-10 lg:p-14 flex flex-col justify-center relative overflow-hidden"
-        style={{ background:'linear-gradient(135deg,#c2410c,#ea580c)' }}>
-        <div className="absolute inset-0 pointer-events-none opacity-10" style={DOT_GRID_DARK} />
-        <div className="relative">
-          <div className="inline-flex items-center gap-2 bg-black/20 text-orange-100 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-6 w-fit">
-            Assignments - The Problem
-          </div>
-          <div className="text-3xl font-black text-white mb-4 leading-tight">"I submitted it. I swear."</div>
-          <p className="text-orange-100 leading-relaxed">
-            Some students hand in paper. Some WhatsApp a photo. One claims they submitted - you cannot find it.
-            Half the class gets credit, half does not, and nobody can prove anything.
-            Grading takes three evenings. You still have not given feedback.
-          </p>
-        </div>
-      </div>
-      <div className="bg-white p-10 lg:p-14 flex flex-col justify-center relative" style={DOT_GRID}>
-        <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-6 w-fit">
-          How EduStack Fixes It
-        </div>
-        <h3 className="text-3xl font-extrabold text-gray-900 mb-4">Every submission. Timestamped. Undeniable.</h3>
-        <p className="text-gray-500 leading-relaxed mb-6">
-          Students submit files online. The moment the deadline passes, late submissions are flagged automatically.
-          Teachers grade and write feedback from a single screen. Every submission stored permanently on S3.
-        </p>
-        <ul className="space-y-2.5">
-          {['Online file submission via S3','Deadline enforcement with auto late flag','Marks and written feedback per submission','Full submission history per student'].map(p => (
-            <li key={p} className="flex items-center gap-2.5 text-sm text-gray-600">
-              <CheckIcon className="w-4 h-4 text-orange-500 shrink-0" />{p}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-// 7. Notifications - dark with phone mockup
-
-function NotificationsSection() {
-  return (
-    <section className="py-20 relative overflow-hidden" style={{ background:'linear-gradient(135deg,#0f172a,#1c0a14)' }}>
-      <div className="absolute inset-0 pointer-events-none" style={DOT_GRID_DARK} />
-      <div className="absolute top-0 right-0 pointer-events-none"
-        style={{ width:'400px', height:'400px', background:'radial-gradient(ellipse,rgba(190,24,93,.12) 0%,transparent 65%)' }} />
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 bg-rose-900/40 border border-rose-800/40 text-rose-400 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-6">
-              Notifications - The Problem
-            </div>
-            <h2 className="text-4xl font-extrabold text-white mb-5 leading-tight">
-              You posted it in the WhatsApp group.
-            </h2>
-            <p className="text-gray-400 leading-relaxed mb-6">
-              It got buried under 200 voice notes. Three parents called in angry on the event day claiming they never saw it.
-              You are managing a dozen WhatsApp groups, spending 2 hours a day on a platform you were never supposed to run a school on.
-            </p>
-            <div className="border-l-4 border-rose-600 pl-5 my-8">
-              <p className="text-white text-lg font-semibold italic">
-                "One announcement. Every screen. Instantly."
-              </p>
-            </div>
-            <ul className="space-y-2.5">
-              {[
-                'Real-time notification bell (Socket.IO)',
-                'Role-targeted broadcasts - teachers, students, all',
-                'Unread count badge in every sidebar',
-                'Full notification history on every account',
-              ].map(p => (
-                <li key={p} className="flex items-center gap-2.5 text-sm text-gray-300">
-                  <CheckIcon className="w-4 h-4 text-rose-400 shrink-0" />{p}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="flex justify-center">
-            <div className="relative" style={{ width: 220 }}>
-              <div className="rounded-3xl p-3 shadow-2xl" style={{ background:'#1c1c1e' }}>
-                <div className="rounded-2xl overflow-hidden" style={{ background:'#000' }}>
-                  <div className="h-7 flex items-center justify-between px-4" style={{ background:'#1c1c1e' }}>
-                    <span className="text-white text-xs font-semibold">9:41</span>
-                    <div className="flex gap-1 items-center">
-                      <div className="w-3.5 h-1.5 rounded-sm bg-white opacity-70" />
-                      <div className="w-1 h-2 rounded-sm bg-white opacity-50" />
-                    </div>
-                  </div>
-                  <div className="p-3 space-y-2.5" style={{ background:'#0a0a0a' }}>
-                    <div className="text-xs text-gray-500 text-center mb-1">Notifications</div>
-                    {[
-                      { color:'bg-blue-600', title:'Principal', msg:'June fee challans are live. Pay via JazzCash.' },
-                      { color:'bg-violet-700', title:'Results Ready', msg:'Class 9 result cards are ready to download.' },
-                      { color:'bg-slate-700', title:'Attendance Alert', msg:'Ahmad Shah: shortage 72% this month.' },
-                    ].map((n, i) => (
-                      <div key={i} className={`${n.color} rounded-xl p-3 text-white`}>
-                        <div className="font-bold text-xs mb-0.5">{n.title}</div>
-                        <div className="text-xs opacity-80 leading-relaxed">{n.msg}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-rose-500 text-white text-xs font-black flex items-center justify-center shadow-lg">3</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// 8. Admissions - teal gradient with form mockup
-
-function AdmissionsSection() {
-  return (
-    <section className="py-20 relative overflow-hidden" style={{ background:'linear-gradient(135deg,#0d9488,#0f766e)' }}>
-      <div className="absolute inset-0 pointer-events-none opacity-10" style={DOT_GRID_DARK} />
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 bg-black/20 text-teal-100 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-6">
-              Admissions - The Problem
-            </div>
-            <h2 className="text-4xl font-extrabold text-white mb-5 leading-tight">
-              Admission season. Seats go unfilled that should not.
-            </h2>
-            <p className="text-teal-100/80 leading-relaxed mb-6">
-              Students coming in person just to collect a form. Applications on loose sheets stuffed in a drawer.
-              No way to know how many applied or who was approved. Every year you miss registrations. Every year you leave revenue on the table.
-            </p>
-            <h3 className="text-xl font-bold text-white mb-4">Apply online. Track every application. Fill every seat.</h3>
-            <ul className="space-y-2.5">
-              {[
-                'Public admission form at your school subdomain',
-                'Application tracking dashboard for staff',
-                'Approval workflow with status per applicant',
-                'Offer letter and student ID card PDF generation',
-              ].map(p => (
-                <li key={p} className="flex items-center gap-2.5 text-sm text-teal-100">
-                  <CheckIcon className="w-4 h-4 text-teal-200 shrink-0" />{p}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-2xl p-6 border border-teal-100">
-            <div className="flex items-center gap-2 mb-5 pb-4 border-b border-gray-100">
-              <div className="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
-                </svg>
-              </div>
-              <div>
-                <div className="font-bold text-gray-900 text-sm">Online Admission 2025-26</div>
-                <div className="text-xs text-gray-400">Al-Huda Academy, Lahore</div>
-              </div>
-            </div>
-            <div className="space-y-3">
-              {[['Student Full Name','Ahmad Hassan Khan'],['Class Applying For','Class 9'],['Previous Marks','78%'],['Parent Phone','0300-1234567']].map(([label,val]) => (
-                <div key={label}>
-                  <div className="text-xs text-gray-400 mb-1">{label}</div>
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 font-medium">{val}</div>
-                </div>
-              ))}
-              <div className="rounded-xl py-3 text-sm font-bold text-white text-center mt-2"
-                style={{ background:'linear-gradient(135deg,#0d9488,#0f766e)' }}>
-                Submit Application
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// Beyond the basics
-
-function BeyondSection() {
-  return (
-    <section className="py-24 bg-gray-50 relative" style={DOT_GRID}>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Also included</p>
-          <h2 className="text-4xl font-extrabold text-gray-900">Things your school never had but always needed.</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              icon: (
-                <svg className="w-8 h-8 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" />
-                </svg>
-              ),
-              badge: 'bg-violet-100 text-violet-700',
-              check: 'text-violet-500',
-              border: 'border-violet-200',
-              title: 'School Website - included.',
-              desc: "A competitor shows up on Google. Yours does not. Every school gets a live public website - 3 premium themes, click-to-edit, no coding.",
-              points: ['Classic, Modern and Minimal themes', 'Click-to-edit live preview', 'Public admission portal built in'],
-            },
-            {
-              icon: (
-                <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-              ),
-              badge: 'bg-blue-100 text-blue-700',
-              check: 'text-blue-500',
-              border: 'border-blue-200',
-              title: 'Flutter Mobile App.',
-              desc: 'Students check results at midnight. Teachers mark attendance on the way to class. Parents pay fees while standing in a shop. All from the app.',
-              points: ['Android and iOS via Flutter', 'Results, timetable, fee status', 'Real-time push notifications'],
-            },
-            {
-              icon: (
-                <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              ),
-              badge: 'bg-amber-100 text-amber-700',
-              check: 'text-amber-500',
-              border: 'border-amber-200',
-              title: '9 official documents.',
-              desc: 'Result cards, challans, payslips, attendance registers, offer letters, ID cards, transfer certificates, character certificates, timetables. All on demand.',
-              points: ['Professional PDF output', 'School letterhead and branding', 'One click, any document'],
-            },
-          ].map(c => (
-            <div key={c.title} className={`rounded-2xl border-2 ${c.border} bg-white p-7 flex flex-col shadow-sm hover:shadow-lg transition-shadow`}>
-              <div className="mb-4">{c.icon}</div>
-              <div className={`text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-full ${c.badge} w-fit mb-3`}>Included</div>
-              <div className="font-bold text-gray-900 mb-2">{c.title}</div>
-              <p className="text-gray-500 text-sm leading-relaxed mb-5 flex-1">{c.desc}</p>
-              <ul className="space-y-2">
-                {c.points.map(p => (
-                  <li key={p} className="flex items-center gap-2 text-xs text-gray-500">
-                    <CheckIcon className={`w-3.5 h-3.5 shrink-0 ${c.check}`} />{p}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
         </div>
       </div>
     </section>
@@ -878,28 +600,27 @@ function RolesSection() {
 
 function PaymentsSection() {
   return (
-    <section className="py-20 relative overflow-hidden" style={{ background:'linear-gradient(135deg,#047857,#065f46)' }}>
-      <div className="absolute inset-0 pointer-events-none opacity-10" style={DIAG_LINES} />
+    <section className="py-20 bg-white relative border-y border-gray-100" style={DIAG_LINES}>
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="text-5xl mb-5">&#127477;&#127472;</div>
-        <h2 className="text-4xl font-extrabold text-white mb-4">Built for the way Pakistan pays.</h2>
-        <p className="text-emerald-100 text-lg max-w-xl mx-auto mb-10 leading-relaxed">
+        <div className="text-4xl mb-4">&#127477;&#127472;</div>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">Built for the way Pakistan pays.</h2>
+        <p className="text-gray-500 text-base sm:text-lg max-w-xl mx-auto mb-10 leading-relaxed">
           Most parents do not have a credit card. They have JazzCash. They have EasyPaisa.
           Now they can pay school fees in under a minute - without leaving home.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           {[
-            { name:'JazzCash', sub:'Mobile wallet payment', icon: <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg> },
-            { name:'EasyPaisa', sub:'Mobile wallet payment', icon: <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg> },
-            { name:'Bank Challan', sub:'HBL/UBL format PDF', icon: <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" /></svg> },
-            { name:'Cash', sub:'With receipt record', icon: <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg> },
+            { name:'JazzCash', sub:'Mobile wallet payment', icon: <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg> },
+            { name:'EasyPaisa', sub:'Mobile wallet payment', icon: <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg> },
+            { name:'Bank Challan', sub:'HBL/UBL format PDF', icon: <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" /></svg> },
+            { name:'Cash', sub:'With receipt record', icon: <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg> },
           ].map(m => (
-            <div key={m.name} className="flex items-center gap-3 px-5 py-4 rounded-2xl"
-              style={{ background:'rgba(255,255,255,.12)', border:'1px solid rgba(255,255,255,.2)' }}>
+            <div key={m.name} className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-slate-50 border border-gray-150 shadow-sm"
+              style={{ minWidth: '200px' }}>
               <div className="shrink-0">{m.icon}</div>
               <div className="text-left">
-                <div className="text-white font-bold text-sm">{m.name}</div>
-                <div className="text-emerald-200 text-xs">{m.sub}</div>
+                <div className="text-gray-900 font-bold text-sm">{m.name}</div>
+                <div className="text-gray-500 text-xs">{m.sub}</div>
               </div>
             </div>
           ))}
@@ -913,23 +634,28 @@ function PaymentsSection() {
 
 function TestimonialsSection() {
   return (
-    <section className="py-24 bg-white relative" style={DOT_GRID}>
+    <section className="py-20 bg-slate-50 relative" style={DOT_GRID}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">From the field</p>
-          <h2 className="text-4xl font-extrabold text-gray-900">What actually changes when schools go live.</h2>
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-3">Trusted by School Leaders Across Pakistan</p>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">What actually changes when schools go live.</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {TESTIMONIALS.map(t => (
-            <div key={t.name} className="bg-white rounded-2xl border border-gray-200 p-7 flex flex-col shadow-sm hover:shadow-lg transition-shadow">
+            <div key={t.name} className="bg-white rounded-2xl border border-gray-100 p-7 flex flex-col shadow-sm hover:shadow-md transition-shadow">
               <StarRating />
-              <div className="mt-4 mb-3 text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full w-fit uppercase tracking-wide">
+              <div className="mt-4 mb-3 text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full w-fit uppercase tracking-wide">
                 {t.highlight}
               </div>
-              <p className="text-gray-600 text-sm leading-relaxed my-3 flex-1">&ldquo;{t.quote}&rdquo;</p>
-              <div className="border-t border-gray-50 pt-4">
-                <div className="font-bold text-gray-900 text-sm">{t.name}</div>
-                <div className="text-gray-400 text-xs mt-0.5">{t.role}</div>
+              <p className="text-gray-600 text-sm leading-relaxed my-3 flex-1 italic">&ldquo;{t.quote}&rdquo;</p>
+              <div className="border-t border-gray-100 pt-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-sm shrink-0 border border-blue-100">
+                  {t.initials}
+                </div>
+                <div>
+                  <div className="font-bold text-gray-900 text-sm">{t.name}</div>
+                  <div className="text-gray-400 text-xs mt-0.5">{t.role}</div>
+                </div>
               </div>
             </div>
           ))}
@@ -949,7 +675,7 @@ function PricingSection() {
           <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">Transparent Pricing</p>
           <h2 className="text-4xl font-extrabold text-white mb-4">Fair pricing in PKR.</h2>
           <p className="text-gray-400 text-lg max-w-lg mx-auto">
-            Start with a 7-day free trial. Then pay per active student - you only pay for what you use.
+            Start a free trial or book a demo. Then pay per active student - only pay for what you use.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
@@ -1009,7 +735,7 @@ function PricingSection() {
           </div>
         </div>
         <p className="text-center text-gray-600 text-sm mt-8">
-          7-day trial includes full access. Upgrade to Pro after it ends. Your data stays safe either way.
+          Trial includes full system access. Upgrade to Pro when you are ready. Your data stays safe.
         </p>
       </div>
     </section>
@@ -1055,31 +781,32 @@ function FAQSection({ openFaq, setOpenFaq }: { openFaq: number | null; setOpenFa
 
 function CTASection() {
   return (
-    <section className="py-28 relative overflow-hidden" style={{ background:'linear-gradient(150deg,#0a0e1a 0%,#0f1628 60%,#0c1420 100%)' }}>
+    <section className="py-24 bg-slate-950 relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none" style={DOT_GRID_DARK} />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-        style={{ width:'700px', height:'400px', background:'radial-gradient(ellipse,rgba(59,130,246,.18) 0%,transparent 65%)' }} />
+        style={{ width:'700px', height:'400px', background:'radial-gradient(ellipse,rgba(37,99,235,.15) 0%,transparent 65%)' }} />
       <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-5 leading-tight">
-          Your school deserves better<br />than a paper register.
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-5 leading-tight">
+          Ready to modernize your school?
         </h2>
-        <p className="text-xl mb-3 max-w-xl mx-auto" style={{ color:'rgba(191,219,254,.7)' }}>
-          Start your 7-day free trial. All modules, every feature, unlocked from day one.
-        </p>
-        <p className="text-sm mb-10" style={{ color:'rgba(147,197,253,.4)' }}>
-          5 minutes to set up &middot; No credit card &middot; No commitment
+        <p className="text-lg mb-8 max-w-lg mx-auto text-blue-200">
+          Get started with a free trial today, or schedule a personal live walkthrough demo with our team.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link to="/register"
-            className="px-10 py-4 rounded-2xl font-bold text-lg text-white transition-all hover:-translate-y-0.5"
-            style={{ background:'linear-gradient(135deg,#2563eb,#4f46e5)', boxShadow:'0 8px 32px rgba(37,99,235,.45)' }}>
-            Start Your 7-Day Free Trial
+            className="px-8 py-3.5 rounded-xl font-bold text-base text-white transition-all hover:-translate-y-0.5"
+            style={{ background:'linear-gradient(135deg,#2563eb,#4f46e5)', boxShadow:'0 8px 24px rgba(37,99,235,.4)' }}>
+            Start Free Trial
           </Link>
-          <a href="#modules"
-            className="px-10 py-4 rounded-2xl text-white font-semibold text-lg transition-all"
-            style={{ background:'rgba(255,255,255,.06)', border:'1px solid rgba(255,255,255,.1)' }}>
-            See How It Works
+          <a href="mailto:hello@wolfstack.io?subject=Book%20a%20Demo%20-%20EduStack%20PK"
+            className="px-8 py-3.5 rounded-xl text-white font-semibold text-base transition-all hover:bg-white/10"
+            style={{ background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.12)' }}>
+            Book a Live Demo
           </a>
         </div>
+        <p className="mt-6 text-xs text-gray-500">
+          No credit card required &middot; Full access &middot; Set up in 5 minutes
+        </p>
       </div>
     </section>
   );
@@ -1158,18 +885,10 @@ export default function LandingPage() {
       <Navbar scrolled={scrolled} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <HeroSection />
       <PainStatsSection />
-      <AttendanceSection />
-      <FeesSection />
-      <ExamsSection />
-      <TimetableSection />
-      <PayrollSection />
-      <AssignmentsSection />
-      <NotificationsSection />
-      <AdmissionsSection />
-      <BeyondSection />
+      <TestimonialsSection />
+      <FeaturesShowcase />
       <RolesSection />
       <PaymentsSection />
-      <TestimonialsSection />
       <PricingSection />
       <FAQSection openFaq={openFaq} setOpenFaq={setOpenFaq} />
       <CTASection />
