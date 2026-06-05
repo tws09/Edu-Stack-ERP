@@ -5,6 +5,9 @@ import { downloadOfferLetterPdf } from '../../lib/offerLetterPdf';
 import { downloadProvisionalCertPdf } from '../../lib/provisionalCertPdf';
 import { downloadStudentIdCardPdf } from '../../lib/studentIdCardPdf';
 import { useAuthStore } from '../../stores/authStore';
+import api from '../../services/api';
+import type { ApiResponse } from '../../types';
+import type { Branch } from '../../types';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -500,11 +503,20 @@ function MeritListTab() {
 
 function ProgramsTab() {
   const qc = useQueryClient();
+  const { user } = useAuthStore();
+  const isGroupAdmin = user?.role === 'group_admin';
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '', code: '', description: '', totalSeats: '', isOpen: true,
+    branchId: '',
     quotaSeats: { sports: '0', staff: '0', army: '0' },
+  });
+
+  const { data: branches = [] } = useQuery({
+    queryKey: ['branches-list'],
+    queryFn: () => api.get<ApiResponse<Branch[]>>('/branches').then(r => r.data.data ?? []),
+    enabled: isGroupAdmin,
   });
 
   const { data: programs = [] } = useQuery({
@@ -515,6 +527,7 @@ function ProgramsTab() {
   const createMut = useMutation({
     mutationFn: () => admissionService.createProgram({
       ...form, totalSeats: Number(form.totalSeats),
+      ...(isGroupAdmin && form.branchId ? { branchId: form.branchId } : {}),
       quotaSeats: {
         sports: Number(form.quotaSeats.sports),
         staff: Number(form.quotaSeats.staff),
@@ -543,10 +556,10 @@ function ProgramsTab() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admission-programs'] }),
   });
 
-  function resetForm() { setForm({ name: '', code: '', description: '', totalSeats: '', isOpen: true, quotaSeats: { sports: '0', staff: '0', army: '0' } }); setShowForm(false); setEditing(null); }
+  function resetForm() { setForm({ name: '', code: '', description: '', totalSeats: '', isOpen: true, branchId: '', quotaSeats: { sports: '0', staff: '0', army: '0' } }); setShowForm(false); setEditing(null); }
 
   function startEdit(p: (typeof programs)[0]) {
-    setForm({ name: p.name, code: p.code, description: p.description ?? '', totalSeats: String(p.totalSeats), isOpen: p.isOpen, quotaSeats: { sports: String(p.quotaSeats.sports), staff: String(p.quotaSeats.staff), army: String(p.quotaSeats.army) } });
+    setForm({ name: p.name, code: p.code, description: p.description ?? '', totalSeats: String(p.totalSeats), isOpen: p.isOpen, branchId: '', quotaSeats: { sports: String(p.quotaSeats.sports), staff: String(p.quotaSeats.staff), army: String(p.quotaSeats.army) } });
     setEditing(p._id);
     setShowForm(true);
   }
@@ -563,6 +576,12 @@ function ProgramsTab() {
         <div className="border border-blue-200 rounded-xl p-5 bg-blue-50 space-y-3">
           <h3 className="font-semibold text-gray-900">{editing ? 'Edit Program' : 'New Program'}</h3>
           <div className="grid grid-cols-2 gap-3">
+            {isGroupAdmin && !editing && (
+              <select className={`${inp} col-span-2`} value={form.branchId} onChange={(e) => setForm({ ...form, branchId: e.target.value })}>
+                <option value="">Select Branch *</option>
+                {branches.map((b) => <option key={b._id} value={b._id}>{b.name}</option>)}
+              </select>
+            )}
             <input className={inp} placeholder="Program Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             <input className={inp} placeholder="Code * (e.g. FSC-PREMED)" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} disabled={!!editing} />
             <input className={inp} placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
@@ -577,7 +596,7 @@ function ProgramsTab() {
           </div>
           <div className="flex gap-2">
             <button onClick={() => editing ? updateMut.mutate() : createMut.mutate()}
-              disabled={!form.name || !form.code || Number(form.totalSeats) < 1 || createMut.isPending || updateMut.isPending}
+              disabled={!form.name || !form.code || Number(form.totalSeats) < 1 || (isGroupAdmin && !editing && !form.branchId) || createMut.isPending || updateMut.isPending}
               className={btn('bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60')}>
               {editing ? 'Update Program' : 'Create Program'}
             </button>

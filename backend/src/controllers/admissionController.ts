@@ -227,7 +227,12 @@ export async function createProgram(req: Request, res: Response): Promise<void> 
   const errors = validationResult(req);
   if (!errors.isEmpty()) { res.status(422).json({ success: false, errors: errors.array() }); return; }
 
-  const { orgId, branchId } = req.user!;
+  const { orgId } = req.user!;
+  const resolvedBranchId = req.user!.branchId ?? req.body.branchId;
+  if (!resolvedBranchId) {
+    res.status(422).json({ success: false, message: 'branchId is required' });
+    return;
+  }
   const { name, code, description, totalSeats, quotaSeats, isOpen, sortOrder } = req.body;
 
   const existing = await AdmissionProgram.findOne({ orgId, code: code.toUpperCase() }).lean();
@@ -237,7 +242,7 @@ export async function createProgram(req: Request, res: Response): Promise<void> 
   }
 
   const program = await AdmissionProgram.create({
-    orgId, branchId, name, code, description,
+    orgId, branchId: resolvedBranchId, name, code, description,
     totalSeats: Number(totalSeats),
     quotaSeats: {
       sports: Number(quotaSeats?.sports ?? 0),
