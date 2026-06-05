@@ -157,96 +157,163 @@ function Navbar({ scrolled, menuOpen, setMenuOpen }: { scrolled: boolean; menuOp
 
 function HeroSection() {
   return (
-    <section style={{ background: 'linear-gradient(150deg,#0a0e1a 0%,#0f1628 55%,#0c1420 100%)' }} className="relative overflow-hidden">
+    <section className="relative overflow-hidden bg-[#070b19] pt-24 pb-20 lg:pt-32 lg:pb-28">
       <div className="absolute inset-0 pointer-events-none" style={DOT_GRID_DARK} />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-        style={{ width:'900px', height:'500px', background:'radial-gradient(ellipse,rgba(59,130,246,.18) 0%,transparent 68%)' }} />
-      <div className="absolute top-1/3 -right-32 pointer-events-none"
-        style={{ width:'500px', height:'500px', background:'radial-gradient(ellipse,rgba(139,92,246,.1) 0%,transparent 65%)' }} />
+      <div
+        className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full pointer-events-none opacity-40 blur-[100px] animate-glow"
+        style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.3) 0%, transparent 70%)' }}
+      />
+      <div
+        className="absolute top-[30%] -right-40 w-[600px] h-[600px] rounded-full pointer-events-none opacity-20 blur-[120px] animate-glow"
+        style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.3) 0%, transparent 70%)', animationDelay: '4s' }}
+      />
 
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24 lg:pt-36 lg:pb-32 text-center">
-        <div className="flex justify-center mb-10">
-          <div className="inline-flex items-center gap-2.5 rounded-full px-4 py-1.5"
-            style={{ background:'rgba(59,130,246,.1)', border:'1px solid rgba(59,130,246,.2)' }}>
-            <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shrink-0" />
-            <span className="text-sm font-medium text-blue-200">Built for Pakistani Schools and Colleges</span>
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="flex justify-center mb-8">
+          <div className="inline-flex items-center gap-2.5 rounded-full px-4.5 py-2 bg-blue-500/10 border border-blue-500/20 backdrop-blur-md transition-all duration-300 hover:border-blue-500/40">
+            <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping shrink-0" />
+            <span className="text-xs sm:text-sm font-semibold text-blue-200 tracking-wide font-display">Built for Pakistani Schools and Colleges</span>
           </div>
         </div>
 
-        <h1 className="font-extrabold tracking-tight leading-[1.07] mb-8 text-white" style={{ fontSize:'clamp(2.4rem,5.5vw,4rem)' }}>
+        <h1 className="font-extrabold tracking-tight leading-[1.08] mb-8 text-white font-display" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)' }}>
           Running a school on paper<br />
-          <span style={{ background:'linear-gradient(135deg,#f59e0b,#ef4444)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+          <span className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 bg-clip-text text-transparent">
             is costing you more
           </span><br />
           than you realise.
         </h1>
 
-        <div className="max-w-3xl mx-auto mb-10 rounded-2xl p-6 text-left"
-          style={{ background:'rgba(255,255,255,.04)', border:'1px solid rgba(255,255,255,.08)' }}>
-          <p className="text-base sm:text-lg leading-relaxed" style={{ color:'rgba(191,219,254,.8)' }}>
+        <div
+          className="max-w-3xl mx-auto mb-12 rounded-3xl p-8 text-left border border-white/[0.07] shadow-[0_25px_60px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all duration-500 hover:border-white/[0.12]"
+          style={{ background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%)' }}
+        >
+          <p className="text-base sm:text-[18px] leading-relaxed font-normal text-slate-300">
             Your accountant hand-writes 300 challans every month.{' '}
-            <span className="text-blue-300">A teacher called in sick and 40 students are sitting idle.</span>{' '}
-            It is 2 AM and the result cards are not ready.{' '}
-            <span className="text-blue-300">You posted an announcement - it got buried in the WhatsApp group.</span>{' '}
-            A parent is disputing attendance and you have no record to show.
+            <span className="text-blue-300/95 font-medium">A teacher called in sick and 40 students are sitting idle.</span>{' '}
+            It is 2 AM and result cards are not ready.{' '}
+            <span className="text-blue-300/95 font-medium">You posted an announcement - it got buried in the WhatsApp group.</span>{' '}
+            A parent is disputing attendance shortage, and you have no records.
           </p>
-          <p className="mt-4 text-base font-semibold" style={{ color:'rgba(251,191,36,.9)' }}>
-            This is what running a school without the right system looks like. It does not have to be this way.
-          </p>
+          <div className="mt-6 pt-5 border-t border-white/[0.06] flex items-center gap-2">
+            <span className="text-amber-400 text-lg">&#128161;</span>
+            <p className="text-sm sm:text-base font-semibold text-amber-300/90">
+              Running a school without the right system wastes time &amp; leaks revenue. We fix this.
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4.5 justify-center items-center">
           <Link to="/register"
-            className="px-9 py-4 rounded-2xl font-bold text-base text-white transition-all hover:-translate-y-0.5"
-            style={{ background:'linear-gradient(135deg,#2563eb,#4f46e5)', boxShadow:'0 8px 32px rgba(37,99,235,.45)' }}>
+            className="w-full sm:w-auto px-10 py-4.5 rounded-2xl font-bold text-base text-white transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98]"
+            style={{
+              background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+              boxShadow: '0 8px 30px rgba(37,99,235,0.4)'
+            }}
+          >
             Start Free Trial
           </Link>
           <a href="mailto:hello@wolfstack.io?subject=Book%20a%20Demo%20-%20EduStack%20PK"
-            className="px-9 py-4 rounded-2xl text-white font-semibold text-base transition-all hover:bg-white/10"
-            style={{ background:'rgba(255,255,255,.06)', border:'1px solid rgba(255,255,255,.1)' }}>
+            className="w-full sm:w-auto px-10 py-4.5 rounded-2xl text-white font-bold text-base transition-all duration-300 border border-white/10 backdrop-blur-sm hover:bg-white/5 hover:border-white/20 active:scale-[0.98]"
+          >
             Book a Live Demo
           </a>
         </div>
-        <p className="mt-5 text-sm" style={{ color:'rgba(147,197,253,.45)' }}>
-          <a href="#features" className="underline hover:text-white transition-colors">See features</a> &middot; No credit card &middot; 5 minutes to set up
+
+        <p className="mt-6 text-xs text-slate-500 tracking-wide font-medium">
+          <a href="#features" className="text-blue-400 underline hover:text-blue-300 transition-colors">Explore features</a> &middot; No credit card &middot; 5 mins to setup
         </p>
       </div>
 
-      <div className="h-16 pointer-events-none" style={{ background:'linear-gradient(to bottom,transparent,white)' }} />
+      <div className="h-12 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, #ffffff)' }} />
     </section>
   );
 }
 
-// Pain Stats - white + diagonal lines
-
 function PainStatsSection() {
   return (
-    <section id="problem" className="py-20 bg-white relative" style={DIAG_LINES}>
+    <section id="problem" className="py-24 bg-white relative" style={DIAG_LINES}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Sound familiar?</p>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+        <div className="text-center mb-16">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-3 font-display">Systemic Bottlenecks</p>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight font-display">
             Every school in Pakistan is running on the same broken system.
           </h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
           {[
-            { stat: '300', unit: 'challans', desc: "Written by hand every month. Then chased individually by phone. Reconciled at 10 PM." },
-            { stat: '2 AM', unit: 'result night', desc: "Staff still calculating grades on paper. One error undoes everything. Parents are waiting." },
-            { stat: '0', unit: 'records', desc: "To show a parent disputing their child's attendance shortage. Zero. None. Nowhere." },
+            { stat: '300', unit: 'Challans / Month', desc: "Written by hand every single month. Then chased individually by phone. Reconciled manually late at night." },
+            { stat: '2 AM', unit: 'Result Compilation', desc: "Staff manually calculating averages and rankings on paper. One arithmetic error invalidates the entire class register." },
+            { stat: '0', unit: 'Audit Trails', desc: "To present to a parent disputing their child's attendance shortage or cash payment. Zero records. Zero verification." },
           ].map(item => (
-            <div key={item.stat} className="bg-red-50 border border-red-100 rounded-2xl p-7 text-center">
-              <div className="text-6xl font-black text-red-600 mb-1 leading-none">{item.stat}</div>
-              <div className="text-sm font-bold text-red-700 uppercase tracking-wide mb-3">{item.unit}</div>
-              <div className="text-red-600/80 text-sm leading-relaxed">{item.desc}</div>
+            <div key={item.stat} className="bg-white border border-gray-150/70 border-t-4 border-t-red-500/80 rounded-2xl p-8 text-center shadow-[0_15px_40px_rgba(239,68,68,0.03)] hover:shadow-lg hover:scale-[1.01] hover:-translate-y-0.5 transition-all duration-300">
+              <div className="text-5xl sm:text-6xl font-black bg-gradient-to-r from-red-600 to-amber-600 bg-clip-text text-transparent mb-2 font-display leading-none">{item.stat}</div>
+              <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-4 font-display">{item.unit}</div>
+              <div className="text-gray-500 text-sm leading-relaxed">{item.desc}</div>
             </div>
           ))}
         </div>
-        <div className="mt-12 text-center">
-          <p className="text-gray-400 text-sm">
-            Manual registers. WhatsApp groups. Excel payroll. Paper challans.{' '}
-            <span className="font-semibold text-gray-600">It worked in 1995. Not anymore.</span>
+        <div className="mt-16 text-center">
+          <p className="text-gray-400 text-sm font-medium">
+            Manual registers &middot; Scattered WhatsApp groups &middot; Loose spreadsheet records &middot; Hand-written challans<br />
+            <span className="font-semibold text-gray-700 mt-2 block">It worked in 1995. It leaks administrative revenue today.</span>
           </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// How It Works
+
+function HowItWorksSection() {
+  return (
+    <section className="py-20 bg-slate-50 relative border-y border-gray-100" style={DOT_GRID}>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-3">Setup &amp; Onboarding</p>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-16">
+          Running in 5 minutes. Not 5 months.
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 relative">
+          <div className="hidden md:block absolute top-7 left-[calc(16.66%+2rem)] right-[calc(16.66%+2rem)] h-px bg-gradient-to-r from-blue-200 via-blue-300 to-blue-200" />
+          {[
+            {
+              step: '1',
+              color: 'from-blue-500 to-blue-600',
+              shadow: 'shadow-blue-500/25',
+              title: 'Register your school',
+              desc: 'Create your account, add branch details, configure classes and sections. Under 5 minutes — no technical knowledge required.',
+            },
+            {
+              step: '2',
+              color: 'from-indigo-500 to-violet-600',
+              shadow: 'shadow-indigo-500/25',
+              title: 'Invite your staff',
+              desc: 'Add teachers, accountants, and admins. Each person gets exactly the access their role requires — nothing more, nothing less.',
+            },
+            {
+              step: '3',
+              color: 'from-violet-500 to-purple-600',
+              shadow: 'shadow-violet-500/25',
+              title: 'Go live from day one',
+              desc: 'Mark attendance, generate challans, enter results. No migration, no training week. Your school is fully operational immediately.',
+            },
+          ].map(item => (
+            <div key={item.step} className="relative flex flex-col items-center text-center">
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.color} text-white text-xl font-black flex items-center justify-center mb-6 shadow-lg ${item.shadow} relative z-10`}>
+                {item.step}
+              </div>
+              <h3 className="font-extrabold text-gray-900 text-lg mb-3">{item.title}</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-14">
+          <Link to="/register"
+            className="inline-flex items-center gap-2 px-9 py-4 rounded-2xl text-white font-bold text-base transition-all hover:scale-[1.02] hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg,#2563eb,#4f46e5)', boxShadow: '0 8px 30px rgba(37,99,235,0.35)' }}>
+            Start Free Trial &mdash; No Credit Card
+          </Link>
         </div>
       </div>
     </section>
@@ -256,10 +323,11 @@ function PainStatsSection() {
 // Interactive Features Showcase
 
 function FeaturesShowcase() {
-  const [activeTab, setActiveTab] = useState<'finance' | 'academics' | 'attendance' | 'payroll' | 'admissions'>('finance');
+  const [activeTab, setActiveTab] = useState<'finance' | 'academics' | 'attendance' | 'payroll' | 'admissions' | 'website'>('finance');
 
   const tabData = {
     finance: {
+      label: 'Fee Management',
       badge: 'Fee Management & Payments',
       title: 'Challans generate themselves. Parents pay online.',
       desc: 'Tired of hand-writing 300 challans? Generate dual-copy PDF challans automatically. Parents pay instantly via JazzCash or EasyPaisa in under a minute, with real-time automatic ledger reconciliation.',
@@ -307,6 +375,7 @@ function FeaturesShowcase() {
       )
     },
     academics: {
+      label: 'Exams & Results',
       badge: 'Exams & Grading',
       title: 'Marks go in. Results come out. Instantly.',
       desc: 'Calculate class rankings, averages, subject totals, and grades instantly. Teachers enter marks from a single portal, eliminating human arithmetic errors. Printable result cards are ready immediately.',
@@ -347,6 +416,7 @@ function FeaturesShowcase() {
       )
     },
     attendance: {
+      label: 'Attendance',
       badge: 'Attendance & Timetables',
       title: 'Digital registers. Conflict-free timetables.',
       desc: 'Ditch manual paper registers. Mark daily or period-wise student attendance. Shortage alerts are triggered automatically. Run a conflict-free master timetable that alerts you of clashes before saving, and substitute absent teachers in a single tap.',
@@ -387,6 +457,7 @@ function FeaturesShowcase() {
       )
     },
     payroll: {
+      label: 'Payroll',
       badge: 'Staff & Payroll',
       title: 'One-click salary calculations. Payslips for all.',
       desc: 'Setup salary allowances and deductions once. Late arrival or leave deductions apply automatically based on digital attendance records. Process monthly payroll securely and print payslips on demand.',
@@ -425,6 +496,7 @@ function FeaturesShowcase() {
       )
     },
     admissions: {
+      label: 'Admissions',
       badge: 'Admissions Portal',
       title: 'Online applications. Seamless student onboarding.',
       desc: 'Allow prospective parents to submit applications online at your custom subdomain. Manage applicant status, issue offer letters, and auto-generate student registration numbers.',
@@ -464,13 +536,59 @@ function FeaturesShowcase() {
           </div>
         </div>
       )
+    },
+    website: {
+      label: 'Website Builder',
+      badge: 'School Website',
+      title: 'Your school gets its own website. Instantly.',
+      desc: 'Every school on EduStack PK gets a free public website at their own subdomain — with three professional themes. Edit all content live with a click-to-edit preview. Online admissions and announcements are built in. No developer, no hosting fees.',
+      bullets: [
+        'Free subdomain: yourschool.edustack.pk',
+        'Three themes: Classic, Modern, and Minimal',
+        'Live click-to-edit content — no coding required',
+        'Online admissions portal and announcements built in'
+      ],
+      mockup: (
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 text-gray-800 w-72">
+          <div className="bg-slate-800 px-4 py-2.5 flex items-center gap-2">
+            <div className="flex gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/80" />
+            </div>
+            <div className="flex-1 bg-slate-700/60 rounded text-[10px] text-slate-400 px-2 py-0.5 text-center">
+              alhuda-academy.edustack.pk
+            </div>
+          </div>
+          <div className="bg-gradient-to-br from-blue-700 to-indigo-800 px-5 py-6 text-white text-center">
+            <div className="text-[10px] text-blue-300 mb-1 uppercase tracking-widest font-bold">Est. 1998 &middot; Lahore</div>
+            <div className="text-base font-black mb-1">Al-Huda Academy</div>
+            <div className="text-xs text-blue-200 mb-4">Excellence in Education</div>
+            <div className="bg-amber-400 text-gray-900 text-[10px] font-bold px-3 py-1.5 rounded-lg inline-block">
+              Apply for Admission 2025
+            </div>
+          </div>
+          <div className="px-4 py-3 space-y-1.5">
+            {[['Announcements', '3 new'], ['Gallery', '24 photos'], ['Our Teachers', '18 staff']].map(([k, v]) => (
+              <div key={k} className="flex items-center justify-between text-xs py-1 border-b border-gray-50">
+                <span className="text-gray-600 font-medium">{k}</span>
+                <span className="text-blue-600 font-bold">{v}</span>
+              </div>
+            ))}
+          </div>
+          <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <div className="text-[10px] text-gray-400">3 themes &middot; No coding needed</div>
+          </div>
+        </div>
+      )
     }
   };
 
   const activeData = tabData[activeTab];
 
   return (
-    <section id="features" className="py-20 bg-slate-50 relative border-y border-gray-100">
+    <section id="features" className="py-20 bg-white relative border-y border-gray-100">
       <div className="absolute inset-0 pointer-events-none opacity-50" style={DOT_GRID} />
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
@@ -483,55 +601,61 @@ function FeaturesShowcase() {
           </p>
         </div>
 
-        {/* Tab Buttons */}
         <div className="flex flex-wrap justify-center gap-2 mb-12 border-b border-gray-200 pb-5">
           {(Object.keys(tabData) as Array<keyof typeof tabData>).map(tabKey => {
             const data = tabData[tabKey];
             const isActive = activeTab === tabKey;
+            const icons: Record<string, JSX.Element> = {
+              finance: (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              ),
+              academics: (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              ),
+              attendance: (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              ),
+              payroll: (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              ),
+              admissions: (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+              ),
+              website: (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+              ),
+            };
             return (
               <button
                 key={tabKey}
                 onClick={() => setActiveTab(tabKey)}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/70'}`}
+                className={`flex items-center gap-2 px-5 py-3.5 rounded-xl text-sm font-bold transition-all duration-300 ${isActive ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/25 scale-[1.02]' : 'text-gray-500 hover:text-gray-900 hover:bg-slate-100 border border-gray-100/40 hover:border-gray-200'}`}
               >
-                {tabKey === 'finance' && (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                )}
-                {tabKey === 'academics' && (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                )}
-                {tabKey === 'attendance' && (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                )}
-                {tabKey === 'payroll' && (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                )}
-                {tabKey === 'admissions' && (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                  </svg>
-                )}
-                {data.badge.split(' ')[0]}
+                {icons[tabKey]}
+                {data.label}
               </button>
             );
           })}
         </div>
 
-        {/* Tab Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center bg-white rounded-3xl p-8 lg:p-12 shadow-xl border border-gray-100 text-gray-900">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center bg-white rounded-3xl p-8 lg:p-12 shadow-[0_20px_50px_rgba(37,99,235,0.03)] border border-gray-150 text-gray-900">
           <div>
-            <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold uppercase tracking-widest rounded-full px-3 py-1 mb-6">
+            <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold uppercase tracking-widest rounded-full px-3.5 py-1.5 mb-6 font-display">
               {activeData.badge}
             </div>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-4">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-4 font-display tracking-tight leading-tight">
               {activeData.title}
             </h3>
             <p className="text-gray-500 leading-relaxed mb-6 text-sm sm:text-base">
@@ -546,7 +670,7 @@ function FeaturesShowcase() {
               ))}
             </ul>
           </div>
-          <div className="flex justify-center bg-slate-50 rounded-2xl py-12 px-6 border border-gray-50">
+          <div className="flex justify-center bg-slate-50 rounded-2xl py-12 px-6 border border-gray-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] animate-float">
             {activeData.mockup}
           </div>
         </div>
@@ -555,37 +679,40 @@ function FeaturesShowcase() {
   );
 }
 
-// Roles - dark slate
+// Roles
 
 function RolesSection() {
   return (
-    <section className="py-20 bg-gray-950 text-white">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-24 bg-[#070b19] text-white border-b border-white/[0.03] relative overflow-hidden">
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none opacity-20 blur-[130px] animate-glow"
+        style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)' }}
+      />
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-4">7 Roles - Complete Control</p>
-            <h2 className="text-4xl font-extrabold mb-5 leading-tight">Everyone sees exactly what they should. Nothing more.</h2>
-            <p className="text-gray-400 leading-relaxed">
+            <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-4 font-display">Access Control Matrix</p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold mb-5 leading-tight font-display tracking-tight">Everyone sees exactly what they should. Nothing more.</h2>
+            <p className="text-slate-400 leading-relaxed text-sm sm:text-base">
               Teachers do not see payroll. Students do not see staff records. Accountants do not get into exam settings.
-              Multi-branch? Group Admin sees across all campuses from one dashboard while each branch stays isolated.
+              Multi-campus? The Group Admin role aggregates analytics across all branches in real-time, while campus data remains completely isolated.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {[
-              { icon: <svg className="w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>, label:'Super Admin', desc:'Full platform control' },
-              { icon: <svg className="w-5 h-5 text-violet-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>, label:'Group Admin', desc:'All branches, one view' },
-              { icon: <svg className="w-5 h-5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>, label:'Principal', desc:'Branch oversight' },
-              { icon: <svg className="w-5 h-5 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>, label:'Teacher', desc:'Class and marks' },
-              { icon: <svg className="w-5 h-5 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 7l9-5-9-5-9 5 9 5z" /></svg>, label:'Student', desc:'Results and timetable' },
-              { icon: <svg className="w-5 h-5 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>, label:'Accountant', desc:'Fees and payroll' },
-              { icon: <svg className="w-5 h-5 text-rose-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>, label:'IT Admin', desc:'Users and settings' },
+              { icon: <svg className="w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>, label:'Super Admin', desc:'Platform administrative control' },
+              { icon: <svg className="w-5 h-5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>, label:'Group Admin', desc:'Multi-campus dashboard views' },
+              { icon: <svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>, label:'Principal', desc:'Single campus full oversight' },
+              { icon: <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>, label:'Teacher', desc:'Academic grade and attendance entry' },
+              { icon: <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 7l9-5-9-5-9 5 9 5z" /></svg>, label:'Student', desc:'Portal for schedules and results' },
+              { icon: <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>, label:'Accountant', desc:'Fee challans and staff payroll' },
             ].map(r => (
-              <div key={r.label} className="p-4 rounded-xl flex items-center gap-3"
-                style={{ background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,255,255,.08)' }}>
+              <div key={r.label} className="p-4 rounded-xl flex items-center gap-3 transition-all duration-300 hover:scale-[1.03] hover:bg-white/[0.08] hover:border-white/[0.15]"
+                style={{ background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.05)' }}>
                 <div className="shrink-0">{r.icon}</div>
                 <div>
-                  <div className="text-sm font-bold text-white">{r.label}</div>
-                  <div className="text-xs text-gray-500">{r.desc}</div>
+                  <div className="text-sm font-bold text-white font-display">{r.label}</div>
+                  <div className="text-xs text-slate-500 mt-0.5">{r.desc}</div>
                 </div>
               </div>
             ))}
@@ -596,7 +723,112 @@ function RolesSection() {
   );
 }
 
-// Payments - green gradient
+// Security Trust
+
+function SecurityTrustSection() {
+  const pillars = [
+    {
+      color: 'text-emerald-400',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      ),
+      title: 'Complete Tenant Isolation',
+      desc: "One school cannot access another school's data. Not just a policy — a hard architectural constraint enforced at the database and API layer on every single request.",
+    },
+    {
+      color: 'text-blue-400',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      ),
+      title: 'JWT Authentication',
+      desc: 'Every session is cryptographically signed. Expired tokens are rejected at the middleware layer automatically. No persistent cookies that can be stolen or replayed.',
+    },
+    {
+      color: 'text-violet-400',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+        </svg>
+      ),
+      title: 'Role-Based Access Control',
+      desc: "Seven roles, endpoint-level enforcement. A teacher cannot view payroll. An accountant cannot touch exam settings. Every API call is verified against the caller's role.",
+    },
+    {
+      color: 'text-amber-400',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      title: 'Full Audit Trails',
+      desc: 'Every fee payment, mark entry, and attendance change is timestamped and attributed to a user. When a parent disputes a record, you have proof — down to the second.',
+    },
+    {
+      color: 'text-sky-400',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+        </svg>
+      ),
+      title: 'Secure Document Storage',
+      desc: 'Student photos, assignment uploads, and documents are stored in isolated S3 buckets with signed URLs. No file is ever directly publicly accessible.',
+    },
+    {
+      color: 'text-rose-400',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      ),
+      title: 'Built for Pakistan',
+      desc: 'Deployed on infrastructure close to Pakistan. JazzCash and EasyPaisa are first-class integrations. Your student data does not travel across distant jurisdictions.',
+    },
+  ];
+
+  return (
+    <section className="py-24 bg-[#070b19] relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none" style={DOT_GRID_DARK} />
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full pointer-events-none opacity-10 blur-[140px]"
+        style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.4) 0%, transparent 70%)' }}
+      />
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-14">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3">Data Security</p>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight">
+            Your school's data is yours. Always.
+          </h2>
+          <p className="mt-4 text-slate-400 max-w-xl mx-auto text-sm sm:text-base">
+            Built with the same security standards as enterprise banking software — because your students' records deserve it.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {pillars.map(p => (
+            <div
+              key={p.title}
+              className="p-6 rounded-2xl transition-all duration-300 hover:bg-white/[0.05]"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+            >
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-4 ${p.color}`}
+                style={{ background: 'rgba(255,255,255,0.07)' }}>
+                {p.icon}
+              </div>
+              <div className="font-bold text-white mb-2 text-sm">{p.title}</div>
+              <div className="text-slate-500 text-xs leading-relaxed">{p.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Payments
 
 function PaymentsSection() {
   return (
@@ -665,7 +897,7 @@ function TestimonialsSection() {
   );
 }
 
-// Pricing - dark section
+// Pricing
 
 function PricingSection() {
   return (
@@ -742,7 +974,7 @@ function PricingSection() {
   );
 }
 
-// FAQ - light + diagonal lines
+// FAQ
 
 function FAQSection({ openFaq, setOpenFaq }: { openFaq: number | null; setOpenFaq: (i: number | null) => void }) {
   return (
@@ -777,7 +1009,7 @@ function FAQSection({ openFaq, setOpenFaq }: { openFaq: number | null; setOpenFa
   );
 }
 
-// CTA - dark with glow
+// CTA
 
 function CTASection() {
   return (
@@ -836,7 +1068,7 @@ function FooterSection() {
           <div>
             <div className="font-semibold text-white text-sm mb-5">Platform</div>
             <ul className="space-y-3 text-sm">
-              {[['#problem','The Problem'],['#modules','How We Fix It'],['#pricing','Pricing'],['#faq','FAQ']].map(([href,label]) => (
+              {[['#problem','The Problem'],['#features','How We Fix It'],['#pricing','Pricing'],['#faq','FAQ']].map(([href,label]) => (
                 <li key={href}><a href={href} className="hover:text-white transition-colors">{label}</a></li>
               ))}
             </ul>
@@ -885,10 +1117,12 @@ export default function LandingPage() {
       <Navbar scrolled={scrolled} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <HeroSection />
       <PainStatsSection />
-      <TestimonialsSection />
+      <HowItWorksSection />
       <FeaturesShowcase />
       <RolesSection />
+      <SecurityTrustSection />
       <PaymentsSection />
+      <TestimonialsSection />
       <PricingSection />
       <FAQSection openFaq={openFaq} setOpenFaq={setOpenFaq} />
       <CTASection />
