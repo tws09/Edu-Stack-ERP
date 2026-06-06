@@ -53,7 +53,7 @@ function computeMeritScore(app: { academic: { percentage: number }; sibling: { h
 
 export async function getAdmissionConfig(req: Request, res: Response): Promise<void> {
   const slug = String(req.params.slug).toLowerCase();
-  const org = await Organization.findOne({ slug, status: 'active' })
+  const org = await Organization.findOne({ slug, status: { $in: ['active', 'trial'] } })
     .select('name slug logoUrl primaryColor tagline _id')
     .lean();
 
@@ -97,7 +97,7 @@ export async function getAdmissionConfig(req: Request, res: Response): Promise<v
 
 export async function getPublicUploadUrl(req: Request, res: Response): Promise<void> {
   const slug = String(req.params.slug).toLowerCase();
-  const org = await Organization.findOne({ slug, status: 'active' }).select('_id').lean();
+  const org = await Organization.findOne({ slug, status: { $in: ['active', 'trial'] } }).select('_id').lean();
   if (!org) { res.status(404).json({ success: false, message: 'Institution not found' }); return; }
 
   const { filename, contentType } = req.body;
@@ -141,7 +141,7 @@ export async function submitApplication(req: Request, res: Response): Promise<vo
   if (!errors.isEmpty()) { res.status(422).json({ success: false, errors: errors.array() }); return; }
 
   const slug = String(req.params.slug).toLowerCase();
-  const org = await Organization.findOne({ slug, status: 'active' }).select('_id').lean();
+  const org = await Organization.findOne({ slug, status: { $in: ['active', 'trial'] } }).select('_id').lean();
   if (!org) { res.status(404).json({ success: false, message: 'Institution not found' }); return; }
 
   const orgId = String(org._id);
