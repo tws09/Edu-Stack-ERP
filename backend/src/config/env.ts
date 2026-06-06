@@ -28,10 +28,12 @@ export const env = {
   })(),
   jwtRefreshExpiresIn: optional('JWT_REFRESH_EXPIRES_IN', '7d'),
 
-  awsRegion: optional('AWS_REGION', 'ap-southeast-1'),
+  awsRegion: optional('AWS_REGION', 'us-west-004'),
   awsAccessKeyId: optional('AWS_ACCESS_KEY_ID', ''),
   awsSecretAccessKey: optional('AWS_SECRET_ACCESS_KEY', ''),
   awsS3Bucket: optional('AWS_S3_BUCKET', 'edustack-uploads'),
+  s3Endpoint: optional('S3_ENDPOINT', ''),      // e.g. https://s3.us-west-004.backblazeb2.com
+  s3PublicUrlBase: optional('S3_PUBLIC_URL_BASE', ''), // e.g. https://edustack-uploads.s3.us-west-004.backblazeb2.com
   s3Enabled: optional('AWS_ACCESS_KEY_ID', '') !== '',
 
   frontendUrl: optional('FRONTEND_URL', 'http://localhost:5173'),

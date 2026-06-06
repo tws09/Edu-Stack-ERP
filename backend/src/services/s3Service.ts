@@ -7,6 +7,7 @@ import path from 'path';
 const s3 = env.s3Enabled
   ? new S3Client({
       region: env.awsRegion,
+      ...(env.s3Endpoint ? { endpoint: env.s3Endpoint, forcePathStyle: false } : {}),
       credentials: {
         accessKeyId: env.awsAccessKeyId,
         secretAccessKey: env.awsSecretAccessKey,
@@ -39,6 +40,7 @@ export async function getUploadUrl(
 }
 
 export function getPublicUrl(key: string): string {
+  if (env.s3PublicUrlBase) return `${env.s3PublicUrlBase}/${key}`;
   return `https://${env.awsS3Bucket}.s3.${env.awsRegion}.amazonaws.com/${key}`;
 }
 
