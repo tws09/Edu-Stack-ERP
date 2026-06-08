@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
+import { Types } from 'mongoose';
 import { Branch } from '../models/Branch';
+import { Student } from '../models/Student';
+import { Challan } from '../models/Challan';
+import { User } from '../models/User';
 
 export const createBranchValidators = [
   body('name').trim().notEmpty(),
@@ -85,4 +89,69 @@ export async function deleteBranch(req: Request, res: Response): Promise<void> {
     return;
   }
   res.json({ success: true, message: 'Branch deactivated' });
+}
+
+export async function getBranchStats(req: Request, res: Response): Promise<void> {
+  const orgId = new Types.ObjectId(req.user!.orgId!);
+  const month = (req.query.month as string) ||
+    `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+
+  const [branches, studentAgg, feeAgg, staffAgg] = await Promise.all([
+    Branch.find({ orgId: req.user!.orgId }).sort({ name: 1 }).lean(),
+
+    Student.aggregate([
+      { $match: { orgId, status: 'active' } },
+      { $group: { _id: '$branchId', count: { $sum: 1 } } },
+    ]),
+
+    Challan.aggregate([
+      { $match: { orgId, month } },
+      { $group: { _id: { branchId: '$branchId', status: '$status' }, totalPaid: { $sum: '$paidAmount' }, totalNet: { $sum: '$netAmount' } } },
+    ]),
+
+    User.aggregate([
+      { $match: { orgId, active: true, role: { $in: ['branch_principal', 'teacher', 'coordinator', 'accountant', 'it_admin'] } } },
+      { $group: { _id: '$branchId', count: { $sum: 1 } } },
+    ]),
+  ]);
+
+  const studentMap = new Map<string, number>(
+    (studentAgg as { _id: Types.ObjectId; count: number }[]).map(s => [s._id.toString(), s.count])
+  );
+  const staffMap = new Map<string, number>(
+    (staffAgg as { _id: Types.ObjectId | null; count: number }[])
+      .filter(s => s._id != null)
+      .map(s => [s._id!.toString(), s.count])
+  );
+
+  const feeByBranch = new Map<string, { collected: number; pending: number }>();
+  for (const f of feeAgg as { _id: { branchId: Types.ObjectId; status: string }; totalPaid: number; totalNet: number }[]) {
+    const bid = f._id.branchId?.toString();
+    if (!bid) continue;
+    if (!feeByBranch.has(bid)) feeByBranch.set(bid, { collected: 0, pending: 0 });
+    const entry = feeByBranch.get(bid)!;
+    if (f._id.status === 'paid') {
+      entry.collected += f.totalPaid;
+    } else if (['unpaid', 'partial', 'overdue'].includes(f._id.status)) {
+      entry.pending += (f.totalNet - f.totalPaid);
+    }
+  }
+
+  const data = (branches as (typeof branches[0] & { _id: Types.ObjectId })[]).map(b => {
+    const bid = b._id.toString();
+    const fees = feeByBranch.get(bid) ?? { collected: 0, pending: 0 };
+    return {
+      _id: b._id,
+      name: b.name,
+      code: b.code,
+      city: b.city,
+      status: b.status,
+      studentCount: studentMap.get(bid) ?? 0,
+      staffCount: staffMap.get(bid) ?? 0,
+      feeCollected: fees.collected,
+      feePending: fees.pending,
+    };
+  });
+
+  res.json({ success: true, data });
 }

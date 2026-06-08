@@ -21,6 +21,7 @@ import BillingPage from './pages/admin/BillingPage';
 import AdminUsersPage from './pages/admin/UsersPage';
 import AdminSettingsPage from './pages/admin/SettingsPage';
 import BranchDashboard from './pages/dashboard/BranchDashboard';
+import GroupAdminDashboard from './pages/dashboard/GroupAdminDashboard';
 import StudentDashboard from './pages/dashboard/StudentDashboard';
 import TeacherDashboard from './pages/dashboard/TeacherDashboard';
 import ClassFellowsPage from './pages/classFellows/ClassFellowsPage';
@@ -239,7 +240,7 @@ function TenantRouter() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<BranchDashboard />} />
+        <Route index element={<GroupAdminDashboard />} />
         <Route path="branches"       element={<BranchesPage />} />
         <Route path="staff"          element={<StaffPage />} />
         <Route path="students"       element={<StudentsPage />} />
