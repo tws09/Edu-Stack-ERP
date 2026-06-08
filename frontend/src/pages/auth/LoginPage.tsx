@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheck, BookOpenText, GraduationCap } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
-import { useThemeStore } from '../../stores/themeStore';
 import { getOrgBranding } from '../../services/authService';
 import { getOrgSlug } from '../../utils/tenant';
 import { cn } from '../../lib/utils';
@@ -31,7 +30,6 @@ export default function LoginPage() {
   const slug = getOrgSlug();
   const login = useAuthStore((s) => s.login);
   const user = useAuthStore((s) => s.user);
-  const { isDark, toggle } = useThemeStore();
 
   const { data: branding } = useQuery({
     queryKey: ['org-branding', slug],
@@ -114,27 +112,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
 
-      {/* Dark mode toggle */}
-      <button
-        onClick={toggle}
-        className={cn(
-          'fixed top-4 right-4 w-9 h-9 rounded-xl z-50 flex items-center justify-center transition-colors',
-          'bg-white/10 hover:bg-white/20 text-white',
-          'lg:bg-gray-100 lg:hover:bg-gray-200 lg:text-gray-600'
-        )}
-        title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      >
-        {isDark ? (
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M18.364 18.364l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
-        ) : (
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-          </svg>
-        )}
-      </button>
-
       {/* ── LEFT PANEL — desktop only ── */}
       <div className="hidden lg:flex w-1/2 bg-white border-r border-gray-100 flex-col items-center justify-center px-16 relative">
         <div className="text-center">
@@ -170,21 +147,7 @@ export default function LoginPage() {
       </div>
 
       {/* ── RIGHT PANEL ── */}
-      <div
-        className="flex-1 flex items-center justify-center px-4 py-12 relative bg-navy-950 lg:bg-gray-50"
-        style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(96,165,250,0.08) 1px, transparent 0)',
-          backgroundSize: '36px 36px',
-        }}
-      >
-        {/* Desktop: hide dot pattern */}
-        <div className="hidden lg:block absolute inset-0 bg-gray-50 pointer-events-none" />
-
-        {/* Mobile decorative blobs */}
-        <div className="lg:hidden pointer-events-none fixed inset-0 overflow-hidden">
-          <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-700/20 blur-3xl" />
-          <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-amber-600/10 blur-3xl" />
-        </div>
+      <div className="flex-1 flex items-center justify-center px-4 py-12 relative bg-gray-50">
 
         <div className="relative w-full max-w-md">
 
@@ -194,22 +157,22 @@ export default function LoginPage() {
               <img
                 src={branding.logoUrl}
                 alt={schoolName}
-                className="h-16 w-auto object-contain mb-4 drop-shadow-lg"
+                className="h-24 w-auto object-contain mx-auto mb-5"
               />
             ) : (
-              <div className="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/30 mb-4">
-                <svg className="w-9 h-9 text-navy-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <div className="w-24 h-24 bg-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-xl shadow-blue-600/20">
+                <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                 </svg>
               </div>
             )}
-            <h1 className="text-2xl font-extrabold text-white tracking-tight">{schoolName}</h1>
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">{schoolName}</h1>
             {branding?.tagline && (
-              <p className="text-sm font-semibold mt-1 italic" style={{ color: primaryColor }}>
+              <p className="text-sm font-semibold mt-1.5 italic" style={{ color: primaryColor }}>
                 {branding.tagline}
               </p>
             )}
-            <p className="text-blue-300 text-sm mt-1 font-medium">
+            <p className="text-gray-400 text-base mt-2 font-medium">
               {branding?.welcomeMessage || 'School Management System'}
             </p>
           </div>
@@ -352,7 +315,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <p className="text-center text-xs text-blue-400/60 mt-6 lg:hidden">
+          <p className="text-center text-xs text-gray-300 mt-6 lg:hidden">
             EduStack PK &copy; {new Date().getFullYear()} — WolfStack
           </p>
         </div>
