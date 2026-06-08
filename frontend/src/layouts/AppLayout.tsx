@@ -130,7 +130,7 @@ const FallbackLogo = ({ size = 'sm' }: { size?: 'sm' | 'md' }) => (
   </div>
 );
 
-const OrgLogo = ({ logoUrl, name, size = 'sm' }: { logoUrl?: string; name?: string; size?: 'sm' | 'md' }) => {
+const OrgLogo = ({ logoUrl, name, size = 'sm' }: { logoUrl?: string | null; name?: string; size?: 'sm' | 'md' }) => {
   if (logoUrl) {
     return (
       <img
