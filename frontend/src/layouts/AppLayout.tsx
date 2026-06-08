@@ -9,6 +9,8 @@ import { cn, roleLabel, getInitials } from '../lib/utils';
 import { setLanguage } from '../i18n';
 import { notificationService } from '../services/notificationService';
 import { useSocket } from '../hooks/useSocket';
+import { getOrgBranding } from '../services/authService';
+import { getOrgSlug } from '../utils/tenant';
 
 interface NavItem {
   label: string;
@@ -117,7 +119,7 @@ const ALL_NAV: NavItem[] = [
   },
 ];
 
-const BrandLogo = ({ size = 'sm' }: { size?: 'sm' | 'md' }) => (
+const FallbackLogo = ({ size = 'sm' }: { size?: 'sm' | 'md' }) => (
   <div className={cn(
     'bg-amber-500 rounded-xl flex items-center justify-center text-navy-950 shrink-0',
     size === 'sm' ? 'w-8 h-8' : 'w-9 h-9'
@@ -127,6 +129,22 @@ const BrandLogo = ({ size = 'sm' }: { size?: 'sm' | 'md' }) => (
     </svg>
   </div>
 );
+
+const OrgLogo = ({ logoUrl, name, size = 'sm' }: { logoUrl?: string; name?: string; size?: 'sm' | 'md' }) => {
+  if (logoUrl) {
+    return (
+      <img
+        src={logoUrl}
+        alt={name ?? 'School Logo'}
+        className={cn(
+          'object-contain rounded-lg shrink-0 bg-white',
+          size === 'sm' ? 'w-8 h-8' : 'w-9 h-9'
+        )}
+      />
+    );
+  }
+  return <FallbackLogo size={size} />;
+};
 
 const BellIcon = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -153,11 +171,22 @@ export default function AppLayout() {
 
   useSocket();
 
+  const slug = getOrgSlug();
+
   const { data: unreadCount = 0 } = useQuery({
     queryKey: ['notif-count'],
     queryFn: notificationService.getUnreadCount,
     refetchInterval: 60_000,
   });
+
+  const { data: branding } = useQuery({
+    queryKey: ['org-branding', slug],
+    queryFn: () => getOrgBranding(slug!),
+    enabled: !!slug,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const schoolName = branding?.name ?? 'EduStack PK';
 
   const navItems = ALL_NAV.filter((n) => user?.role && n.roles.includes(user.role));
   const primaryTabs = navItems.slice(0, 4);
@@ -186,10 +215,10 @@ export default function AppLayout() {
           'flex items-center h-16 px-4 border-b border-white/6 gap-3',
           !sidebarOpen && 'justify-center'
         )}>
-          <BrandLogo />
+          <OrgLogo logoUrl={branding?.logoUrl} name={schoolName} />
           {sidebarOpen && (
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-white text-sm leading-none">EduStack PK</p>
+              <p className="font-bold text-white text-sm leading-none truncate">{schoolName}</p>
               <p className="text-blue-200 text-[10px] mt-0.5 font-medium">School Management</p>
             </div>
           )}
@@ -355,8 +384,7 @@ export default function AppLayout() {
           </button>
 
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
-            <BrandLogo />
-            <span className="font-bold text-white text-sm truncate">EduStack PK</span>
+            <OrgLogo logoUrl={branding?.logoUrl} name={schoolName} size="md" />
           </div>
 
           <Link
@@ -465,10 +493,10 @@ export default function AppLayout() {
           <div className="relative w-72 max-w-[85vw] bg-navy-950 flex flex-col h-full shadow-2xl">
             {/* Drawer header */}
             <div className="flex items-center justify-between h-14 px-4 border-b border-white/6 shrink-0">
-              <div className="flex items-center gap-2.5">
-                <BrandLogo />
-                <div>
-                  <p className="font-bold text-white text-sm leading-none">EduStack PK</p>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <OrgLogo logoUrl={branding?.logoUrl} name={schoolName} size="md" />
+                <div className="min-w-0">
+                  <p className="font-bold text-white text-sm leading-none truncate">{schoolName}</p>
                   <p className="text-blue-200 text-[10px] mt-0.5">School Management</p>
                 </div>
               </div>
