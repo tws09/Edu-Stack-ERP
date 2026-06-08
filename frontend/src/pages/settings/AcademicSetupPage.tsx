@@ -6,6 +6,7 @@ import PageHeader from '../../components/ui/PageHeader';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import { cn } from '../../lib/utils';
+import AcademicSetupWizard from './AcademicSetupWizard';
 
 const CLASS_LEVELS = [
   { value: 'grade_9', label: 'Grade 9' },
@@ -24,11 +25,23 @@ export default function AcademicSetupPage() {
   const [modal, setModal] = useState<{ type: string; data?: Record<string, unknown> } | null>(null);
   const [selectedYearId, setSelectedYearId] = useState('');
   const [selectedClassId, setSelectedClassId] = useState('');
+  const [wizardDismissed, setWizardDismissed] = useState(false);
 
-  const { data: years = [] } = useQuery({ queryKey: ['years'], queryFn: academicService.getYears });
+  const { data: years = [], isLoading: yearsLoading } = useQuery({ queryKey: ['years'], queryFn: academicService.getYears });
   const { data: classes = [] } = useQuery({ queryKey: ['classes', selectedYearId], queryFn: () => academicService.getClasses(selectedYearId || undefined) });
   const { data: sections = [] } = useQuery({ queryKey: ['sections', selectedClassId], queryFn: () => academicService.getSections(selectedClassId || undefined) });
   const { data: subjects = [] } = useQuery({ queryKey: ['subjects'], queryFn: () => academicService.getSubjects() });
+
+  // Show wizard on first-time setup (no years configured yet)
+  const showWizard = !yearsLoading && years.length === 0 && !wizardDismissed;
+  if (showWizard) {
+    return (
+      <AcademicSetupWizard
+        years={years} classes={classes} sections={sections} subjects={subjects}
+        onExit={() => setWizardDismissed(true)}
+      />
+    );
+  }
 
   const createYear = useMutation({ mutationFn: academicService.createYear, onSuccess: () => { qc.invalidateQueries({ queryKey: ['years'] }); setModal(null); } });
   const createClass = useMutation({ mutationFn: academicService.createClass, onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); setModal(null); } });
