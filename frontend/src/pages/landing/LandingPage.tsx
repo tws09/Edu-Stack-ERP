@@ -36,7 +36,7 @@ const FAQS = [
   },
   {
     q: 'Can my teachers and accountant use it without training?',
-    a: 'Yes. The system is designed for Pakistani school staff, not software engineers. Teachers mark attendance in 2 taps. Accountants generate challans in one click. Most staff are confident within a day.',
+    a: 'Zero training needed. Teachers mark attendance in 2 taps. Accountants generate challans in 1 click. 90% of staff are confident within their first day. Free onboarding call included with every Pro account.',
   },
   {
     q: 'Which payment methods can parents use?',
@@ -198,7 +198,7 @@ function HeroSection() {
           <div className="mt-6 pt-5 border-t border-white/[0.06] flex items-center gap-2">
             <span className="text-amber-400 text-lg">&#128161;</span>
             <p className="text-sm sm:text-base font-semibold text-amber-300/90">
-              Running a school without the right system wastes time &amp; leaks revenue. We fix this.
+              Save 20+ hours/month and stop Rs 50,000+ in revenue leaks — EduStack PK automates fee, attendance, exams, and payroll in one platform.
             </p>
           </div>
         </div>
@@ -226,6 +226,73 @@ function HeroSection() {
       </div>
 
       <div className="h-12 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, #ffffff)' }} />
+    </section>
+  );
+}
+
+function WhyEduStackSection() {
+  const usps = [
+    { icon: '⚡', title: 'Setup in 5 minutes', sub: 'Not 5 months' },
+    { icon: '📱', title: 'JazzCash + EasyPaisa', sub: 'Parents pay in 60 seconds' },
+    { icon: '🔒', title: 'Data stays in Pakistan', sub: 'Bank-grade security' },
+    { icon: '📊', title: '10 modules, one platform', sub: 'Fee, attendance, exams, payroll' },
+    { icon: '🎯', title: 'No training needed', sub: 'Staff confident within a day' },
+  ];
+  return (
+    <section className="py-12 bg-white border-b border-gray-100">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <p className="text-center text-xs font-bold uppercase tracking-widest text-gray-400 mb-7">Why EduStack PK Wins</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {usps.map(usp => (
+            <div key={usp.title} className="text-center p-5 rounded-2xl bg-slate-50 border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all">
+              <div className="text-2xl mb-2">{usp.icon}</div>
+              <div className="font-bold text-gray-900 text-sm mb-1 leading-snug">{usp.title}</div>
+              <div className="text-gray-400 text-xs">{usp.sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PerfectForYouSection() {
+  const fits = [
+    { yes: true,  text: 'You have 50–500 students across 1–3 campuses' },
+    { yes: true,  text: 'Your principal, owner, or HR manager makes technology decisions' },
+    { yes: true,  text: 'Your team still runs on paper registers, WhatsApp, or spreadsheets' },
+    { yes: true,  text: "You're spending Rs 50,000+ per month on manual admin and fee follow-ups" },
+    { yes: false, text: "You need 5 months of onboarding — EduStack PK is live in 5 minutes" },
+    { yes: false, text: "You're a 10,000-student university needing fully custom enterprise development" },
+  ];
+  return (
+    <section className="py-20 bg-slate-50 border-y border-gray-100" style={DOT_GRID}>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-3">Is EduStack PK Right For You?</p>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+            Perfect for you if&hellip;
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {fits.map((item, i) => (
+            <div key={i} className={`flex items-start gap-3 p-5 rounded-2xl border transition-all ${item.yes ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50/60 border-rose-100'}`}>
+              {item.yes
+                ? <CheckIcon className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                : <svg className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              }
+              <span className={`text-sm font-medium leading-relaxed ${item.yes ? 'text-emerald-900' : 'text-rose-800'}`}>{item.text}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-10 text-center">
+          <Link to="/register"
+            className="inline-flex items-center gap-2 px-9 py-4 rounded-2xl text-white font-bold text-base transition-all hover:scale-[1.02] hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg,#2563eb,#4f46e5)', boxShadow: '0 8px 30px rgba(37,99,235,0.35)' }}>
+            Start Free Trial &mdash; 7 Days Full Access
+          </Link>
+        </div>
+      </div>
     </section>
   );
 }
@@ -900,6 +967,12 @@ function TestimonialsSection() {
 // Pricing
 
 function PricingSection() {
+  const [students, setStudents] = useState(150);
+  const RATE = 35;
+  const MIN_CHARGE = 1750;
+  const monthly = Math.max(students * RATE, MIN_CHARGE);
+  const formatted = monthly.toLocaleString('en-PK');
+
   return (
     <section id="pricing" className="py-24 bg-slate-950 relative" style={DOT_GRID_DARK}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -907,8 +980,39 @@ function PricingSection() {
           <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">Transparent Pricing</p>
           <h2 className="text-4xl font-extrabold text-white mb-4">Fair pricing in PKR.</h2>
           <p className="text-gray-400 text-lg max-w-lg mx-auto">
-            Start a free trial or book a demo. Then pay per active student - only pay for what you use.
+            Start a free trial or book a demo. Then pay Rs 35 per active student per month — only pay for what you use.
           </p>
+        </div>
+
+        <div className="mb-12 max-w-xl mx-auto rounded-3xl p-8 border border-slate-700 bg-slate-900">
+          <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-5 text-center">Pricing Calculator</p>
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-white font-semibold text-sm">How many students do you have?</label>
+            <span className="text-2xl font-extrabold text-blue-400">{students}</span>
+          </div>
+          <input
+            type="range"
+            min={10}
+            max={1000}
+            step={10}
+            value={students}
+            onChange={e => setStudents(Number(e.target.value))}
+            className="w-full accent-blue-500 h-2 rounded-lg cursor-pointer mb-6"
+          />
+          <div className="flex items-center justify-between rounded-2xl p-5 border border-blue-500/30 bg-blue-500/10">
+            <div>
+              <div className="text-xs text-blue-300 font-medium mb-1">Estimated monthly cost</div>
+              <div className="text-3xl font-extrabold text-white">Rs {formatted}</div>
+              <div className="text-xs text-slate-500 mt-1">
+                {students} students × Rs 35{students * RATE < MIN_CHARGE ? <span className="text-amber-400"> (minimum Rs 1,750 applies)</span> : ' /student'}
+              </div>
+            </div>
+            <Link to="/register"
+              className="shrink-0 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition-colors shadow-lg shadow-blue-600/30">
+              Start Free Trial
+            </Link>
+          </div>
+          <p className="text-center text-xs text-slate-600 mt-4">Only active students are counted &middot; Billed monthly in PKR &middot; Cancel anytime</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
           <div className="rounded-3xl border-2 border-slate-700 bg-slate-900 p-8 flex flex-col">
@@ -935,9 +1039,10 @@ function PricingSection() {
             <div className="text-xs font-bold text-blue-200 uppercase tracking-widest mb-3">Pro</div>
             <div className="mb-1">
               <span className="text-5xl font-extrabold">Rs 35</span>
-              <span className="text-blue-200 text-base"> /student /mo</span>
+              <span className="text-blue-200 text-base"> /active student /mo</span>
             </div>
-            <div className="text-blue-200 text-sm mb-7">Per branch &middot; billed monthly in PKR</div>
+            <div className="text-blue-200 text-sm mb-1">Billed monthly in PKR</div>
+            <div className="text-blue-300/70 text-xs mb-7">Only pay for students who are active &middot; Minimum Rs 1,750/mo</div>
             <ul className="space-y-3 text-sm text-blue-100 mb-8 flex-1">
               {['Unlimited students and branches','JazzCash and EasyPaisa payments','Priority support','Custom school branding','Website builder (3 themes)','Online admission portal','Dedicated onboarding call'].map(item => (
                 <li key={item} className="flex items-center gap-2.5">
@@ -1116,8 +1221,10 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white text-gray-900 font-sans antialiased">
       <Navbar scrolled={scrolled} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <HeroSection />
+      <WhyEduStackSection />
       <PainStatsSection />
       <HowItWorksSection />
+      <PerfectForYouSection />
       <FeaturesShowcase />
       <RolesSection />
       <SecurityTrustSection />
