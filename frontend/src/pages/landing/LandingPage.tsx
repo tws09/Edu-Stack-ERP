@@ -966,64 +966,104 @@ function TestimonialsSection() {
 
 // Pricing
 
+const ADDONS = [
+  { id: 'backup',     label: 'Daily Backup',                            desc: 'Daily backup of your data.',                                                rate: 500,   type: 'monthly'      as const, icon: '💾' },
+  { id: 'sms',        label: 'SMS Notifications',                       desc: 'Send important updates to parents via SMS.',                                rate: 20,    type: 'per-student'  as const, icon: '📲' },
+  { id: 'apps',       label: 'Mobile Apps (Student, Teacher, Parent)',  desc: 'EduStack branded apps for the whole community on iOS & Android.',          rate: 25,    type: 'per-student'  as const, icon: '📱' },
+  { id: 'whitelabel', label: 'Whitelabel App Customization',            desc: 'Your branding on the App Store & Play Store.',                             rate: 45000, type: 'one-time'     as const, icon: '🏷️' },
+  { id: 'biometric',  label: 'Biometric Integration',                   desc: 'ZKTeco/Hikvision devices for staff attendance & payroll.',                 rate: 45000, type: 'one-time'     as const, icon: '🔐' },
+] as const;
+
 function PricingSection() {
-  const [students, setStudents] = useState(150);
-  const RATE = 35;
-  const MIN_CHARGE = 1750;
-  const monthly = Math.max(students * RATE, MIN_CHARGE);
-  const formatted = monthly.toLocaleString('en-PK');
+  // ── state ────────────────────────────────────────────────────────────
+  const [students, setStudents]   = useState(150);
+  const [selected, setSelected]   = useState<Set<string>>(new Set());
+  const [showContact, setShowContact] = useState(false);
+  const [cStep, setCStep]         = useState<1 | 2>(1);
+  const [showPdf, setShowPdf]     = useState(false);
+  const [pdfSent, setPdfSent]     = useState(false);
+  const [cf, setCf] = useState({ name: '', email: '', type: 'School', school: '', message: '' });
+  const [pf, setPf] = useState({ school: '', name: '', email: '', phone: '' });
+
+  // ── calculations ──────────────────────────────────────────────────
+  const BASE = 35;
+  const MIN  = 1750;
+  const baseMonthly = Math.max(students * BASE, MIN);
+  let addMonthly = 0;
+  let addOneTime = 0;
+  for (const id of selected) {
+    const a = ADDONS.find(x => x.id === id);
+    if (!a) continue;
+    if (a.type === 'monthly')     addMonthly += a.rate;
+    if (a.type === 'per-student') addMonthly += a.rate * students;
+    if (a.type === 'one-time')    addOneTime += a.rate;
+  }
+  const totalMonthly = baseMonthly + addMonthly;
+  const totalOneTime = addOneTime;
+
+  const fmt = (n: number) => n.toLocaleString('en-PK');
+  const toggleAddon = (id: string) =>
+    setSelected(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+  const addonRateLabel = (a: typeof ADDONS[number]) =>
+    a.type === 'monthly' ? `Rs ${fmt(a.rate)}/mo`
+    : a.type === 'per-student' ? `Rs ${a.rate}/student/mo`
+    : `Rs ${fmt(a.rate)} once`;
+
+  const canDownload = !!(pf.email.trim() || pf.phone.trim());
+
+  function downloadEstimate() {
+    const picked = ADDONS.filter(a => selected.has(a.id));
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>EduStack PK — Cost Estimate</title>
+<style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;color:#1e293b;padding:0 20px}
+h1{color:#2563eb;font-size:22px;margin-bottom:2px}.sub{color:#64748b;font-size:12px;margin-bottom:24px;padding-bottom:14px;border-bottom:2px solid #e2e8f0}
+table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px}th{text-align:left;padding:8px 12px;background:#f1f5f9;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#64748b}
+td{padding:10px 12px;border-bottom:1px solid #f1f5f9}.total td{background:#eff6ff;font-weight:700;color:#1e40af}.once td{background:#fefce8;font-weight:700;color:#92400e}
+.footer{margin-top:24px;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:14px}</style>
+</head><body>
+<h1>EduStack PK — Official Cost Estimate</h1>
+<div class="sub">For: <strong>${pf.school || 'Your Institution'}</strong> &nbsp;|&nbsp; ${pf.name} &nbsp;|&nbsp; ${pf.email || pf.phone}<br>
+Generated: ${new Date().toLocaleDateString('en-PK', { year:'numeric', month:'long', day:'numeric' })}</div>
+<table><tr><th>Monthly Plan</th><th>Details</th><th style="text-align:right">Amount</th></tr>
+<tr><td>EduStack PK Pro</td><td>${students} students × Rs ${BASE}/student${students * BASE < MIN ? ' (minimum applies)' : ''}</td><td style="text-align:right">Rs ${fmt(baseMonthly)}</td></tr>
+${picked.filter(a => a.type !== 'one-time').map(a =>
+  `<tr><td>${a.label}</td><td>${a.type === 'per-student' ? `${students} × Rs ${a.rate}` : 'Flat monthly'}</td><td style="text-align:right">Rs ${fmt(a.type === 'per-student' ? a.rate * students : a.rate)}</td></tr>`
+).join('')}
+<tr class="total"><td colspan="2"><strong>Total Monthly</strong></td><td style="text-align:right"><strong>Rs ${fmt(totalMonthly)}/mo</strong></td></tr></table>
+${totalOneTime > 0 ? `<table><tr><th>One-Time Setup</th><th>Details</th><th style="text-align:right">Amount</th></tr>
+${picked.filter(a => a.type === 'one-time').map(a =>
+  `<tr><td>${a.label}</td><td>${a.desc}</td><td style="text-align:right">Rs ${fmt(a.rate)}</td></tr>`
+).join('')}
+<tr class="once"><td colspan="2"><strong>Total One-Time</strong></td><td style="text-align:right"><strong>Rs ${fmt(totalOneTime)}</strong></td></tr></table>` : ''}
+<div class="footer">EduStack PK · WolfStack · hello@wolfstack.io · Valid 30 days from today.</div>
+</body></html>`;
+    const w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 300); }
+  }
+
+  const inp = 'w-full rounded-xl border border-slate-700 bg-slate-800 text-white text-sm px-4 py-3 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors';
 
   return (
     <section id="pricing" className="py-24 bg-slate-950 relative" style={DOT_GRID_DARK}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* header */}
         <div className="text-center mb-14">
           <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">Transparent Pricing</p>
           <h2 className="text-4xl font-extrabold text-white mb-4">Fair pricing in PKR.</h2>
           <p className="text-gray-400 text-lg max-w-lg mx-auto">
-            Start a free trial or book a demo. Then pay Rs 35 per active student per month — only pay for what you use.
+            Start free, then pay Rs 35 per active student per month. Enhance with optional add-ons below.
           </p>
         </div>
 
-        <div className="mb-12 max-w-xl mx-auto rounded-3xl p-8 border border-slate-700 bg-slate-900">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-5 text-center">Pricing Calculator</p>
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-white font-semibold text-sm">How many students do you have?</label>
-            <span className="text-2xl font-extrabold text-blue-400">{students}</span>
-          </div>
-          <input
-            type="range"
-            min={10}
-            max={1000}
-            step={10}
-            value={students}
-            onChange={e => setStudents(Number(e.target.value))}
-            className="w-full accent-blue-500 h-2 rounded-lg cursor-pointer mb-6"
-          />
-          <div className="flex items-center justify-between rounded-2xl p-5 border border-blue-500/30 bg-blue-500/10">
-            <div>
-              <div className="text-xs text-blue-300 font-medium mb-1">Estimated monthly cost</div>
-              <div className="text-3xl font-extrabold text-white">Rs {formatted}</div>
-              <div className="text-xs text-slate-500 mt-1">
-                {students} students × Rs 35{students * RATE < MIN_CHARGE ? <span className="text-amber-400"> (minimum Rs 1,750 applies)</span> : ' /student'}
-              </div>
-            </div>
-            <Link to="/register"
-              className="shrink-0 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition-colors shadow-lg shadow-blue-600/30">
-              Start Free Trial
-            </Link>
-          </div>
-          <p className="text-center text-xs text-slate-600 mt-4">Only active students are counted &middot; Billed monthly in PKR &middot; Cancel anytime</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
+        {/* pricing cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-7 mb-16">
           <div className="rounded-3xl border-2 border-slate-700 bg-slate-900 p-8 flex flex-col">
             <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Trial</div>
             <div className="text-5xl font-extrabold text-white mb-1">7 Days</div>
             <div className="text-gray-500 text-sm mb-7">Full access &middot; No commitment</div>
             <ul className="space-y-3 text-sm text-gray-400 mb-8 flex-1">
               {['All 10 modules unlocked','All branches and students','JazzCash and EasyPaisa','Mobile app included','9-document PDF suite','Email support'].map(item => (
-                <li key={item} className="flex items-center gap-2.5">
-                  <CheckIcon className="w-4 h-4 text-emerald-500 shrink-0" />{item}
-                </li>
+                <li key={item} className="flex items-center gap-2.5"><CheckIcon className="w-4 h-4 text-emerald-500 shrink-0" />{item}</li>
               ))}
             </ul>
             <Link to="/register" className="block text-center px-6 py-3.5 rounded-xl border-2 border-blue-600 text-blue-400 font-bold hover:bg-blue-600 hover:text-white transition-colors">
@@ -1045,9 +1085,7 @@ function PricingSection() {
             <div className="text-blue-300/70 text-xs mb-7">Only pay for students who are active &middot; Minimum Rs 1,750/mo</div>
             <ul className="space-y-3 text-sm text-blue-100 mb-8 flex-1">
               {['Unlimited students and branches','JazzCash and EasyPaisa payments','Priority support','Custom school branding','Website builder (3 themes)','Online admission portal','Dedicated onboarding call'].map(item => (
-                <li key={item} className="flex items-center gap-2.5">
-                  <CheckIcon className="w-4 h-4 text-amber-400 shrink-0" />{item}
-                </li>
+                <li key={item} className="flex items-center gap-2.5"><CheckIcon className="w-4 h-4 text-amber-400 shrink-0" />{item}</li>
               ))}
             </ul>
             <Link to="/register" className="block text-center px-6 py-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold transition-colors">
@@ -1061,9 +1099,7 @@ function PricingSection() {
             <div className="text-slate-500 text-sm mb-7">Large institution chains</div>
             <ul className="space-y-3 text-sm text-slate-300 mb-8 flex-1">
               {['On-premise deployment','SLA agreement','Dedicated account manager','Custom integrations','White-label branding','Staff training sessions'].map(item => (
-                <li key={item} className="flex items-center gap-2.5">
-                  <CheckIcon className="w-4 h-4 text-blue-400 shrink-0" />{item}
-                </li>
+                <li key={item} className="flex items-center gap-2.5"><CheckIcon className="w-4 h-4 text-blue-400 shrink-0" />{item}</li>
               ))}
             </ul>
             <a href="mailto:hello@wolfstack.io" className="block text-center px-6 py-3.5 rounded-xl border-2 border-slate-600 text-white font-bold hover:bg-slate-800 transition-colors">
@@ -1071,10 +1107,254 @@ function PricingSection() {
             </a>
           </div>
         </div>
-        <p className="text-center text-gray-600 text-sm mt-8">
-          Trial includes full system access. Upgrade to Pro when you are ready. Your data stays safe.
-        </p>
+
+        {/* build your plan */}
+        <div className="rounded-3xl border border-slate-700 bg-slate-900 p-8">
+          <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-7 text-center">Build Your Plan</p>
+
+          {/* student slider */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-white font-semibold text-sm">How many students do you have?</label>
+              <span className="text-2xl font-extrabold text-blue-400">{students}</span>
+            </div>
+            <input type="range" min={10} max={1000} step={10} value={students}
+              onChange={e => setStudents(Number(e.target.value))}
+              className="w-full accent-blue-500 cursor-pointer" />
+            <div className="flex justify-between text-xs text-slate-600 mt-1"><span>10</span><span>1,000</span></div>
+          </div>
+
+          {/* add-ons */}
+          <div className="mb-8">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">
+              Add-ons &mdash; Enhance Your Ecosystem
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {ADDONS.map(a => {
+                const on = selected.has(a.id);
+                return (
+                  <button key={a.id} onClick={() => toggleAddon(a.id)}
+                    className={`text-left p-4 rounded-2xl border-2 transition-all duration-200 ${on ? 'border-blue-500 bg-blue-500/10' : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'}`}>
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-base leading-none">{a.icon}</span>
+                          <span className="text-white font-semibold text-sm leading-snug">{a.label}</span>
+                        </div>
+                        <p className="text-slate-500 text-xs leading-relaxed">{a.desc}</p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <div className={`text-xs font-bold ${a.type === 'one-time' ? 'text-amber-400' : 'text-blue-400'}`}>
+                          {addonRateLabel(a)}
+                        </div>
+                        <div className={`text-[10px] mt-0.5 font-medium ${a.type === 'one-time' ? 'text-amber-600' : 'text-slate-600'}`}>
+                          {a.type === 'one-time' ? 'one-time setup' : 'monthly'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${on ? 'border-blue-500 bg-blue-500' : 'border-slate-600'}`}>
+                      {on && <CheckIcon className="w-3 h-3 text-white" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* final calculation */}
+          <div className="rounded-2xl border border-slate-700 overflow-hidden">
+            <div className="px-5 py-3 bg-slate-800/60 border-b border-slate-700">
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-500">Final Calculation</p>
+            </div>
+            <div className="p-5 space-y-2.5">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-400">EduStack PK Pro ({students} students{students * BASE < MIN ? ', min. applies' : ''})</span>
+                <span className="text-white font-medium">Rs {fmt(baseMonthly)}<span className="text-slate-500 text-xs">/mo</span></span>
+              </div>
+              {ADDONS.filter(a => selected.has(a.id) && a.type === 'monthly').map(a => (
+                <div key={a.id} className="flex justify-between text-sm">
+                  <span className="text-slate-400">{a.label}</span>
+                  <span className="text-blue-300 font-medium">Rs {fmt(a.rate)}<span className="text-slate-500 text-xs">/mo</span></span>
+                </div>
+              ))}
+              {ADDONS.filter(a => selected.has(a.id) && a.type === 'per-student').map(a => (
+                <div key={a.id} className="flex justify-between text-sm">
+                  <span className="text-slate-400">{a.label} ({students} × Rs {a.rate})</span>
+                  <span className="text-blue-300 font-medium">Rs {fmt(a.rate * students)}<span className="text-slate-500 text-xs">/mo</span></span>
+                </div>
+              ))}
+              <div className="pt-3 border-t border-slate-700 flex justify-between items-center">
+                <span className="text-white font-bold text-sm">Total Monthly</span>
+                <span className="text-2xl font-extrabold text-blue-400">Rs {fmt(totalMonthly)}<span className="text-sm font-medium text-slate-500">/mo</span></span>
+              </div>
+              {totalOneTime > 0 && (
+                <>
+                  <div className="pt-2 border-t border-slate-700/50">
+                    {ADDONS.filter(a => selected.has(a.id) && a.type === 'one-time').map(a => (
+                      <div key={a.id} className="flex justify-between text-sm mb-2">
+                        <span className="text-slate-400">{a.label}</span>
+                        <span className="text-amber-400 font-medium">Rs {fmt(a.rate)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-700">
+                    <span className="text-white font-bold text-sm">One-Time Setup</span>
+                    <span className="text-2xl font-extrabold text-amber-400">Rs {fmt(totalOneTime)}</span>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="px-5 py-4 bg-slate-800/40 border-t border-slate-700 flex flex-col sm:flex-row gap-3">
+              <button onClick={() => { setShowContact(true); setCStep(1); }}
+                className="flex-1 py-3.5 rounded-xl font-bold text-sm text-white transition-all hover:scale-[1.02]"
+                style={{ background: 'linear-gradient(135deg,#2563eb,#4f46e5)', boxShadow: '0 4px 20px rgba(37,99,235,.3)' }}>
+                Secure This Rate →
+              </button>
+              <button onClick={() => { setShowPdf(true); setPdfSent(false); }}
+                className="flex-1 py-3.5 rounded-xl font-bold text-sm text-white border border-slate-600 hover:bg-slate-800 transition-colors">
+                ⬇ Download Estimate PDF
+              </button>
+            </div>
+          </div>
+
+          <p className="text-center text-xs text-slate-600 mt-4">
+            Only active students are counted &middot; Billed monthly in PKR &middot; Cancel anytime
+          </p>
+        </div>
       </div>
+
+      {/* ── Contact modal ───────────────────────────────────────────── */}
+      {showContact && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto"
+          onClick={() => setShowContact(false)}>
+          <div className="relative w-full max-w-md bg-slate-900 rounded-3xl border border-slate-700 p-8 shadow-2xl my-8"
+            onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowContact(false)}
+              className="absolute top-5 right-5 text-slate-500 hover:text-white transition-colors">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+
+            {cStep === 1 ? (
+              <>
+                <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-1">Step 1 of 2</p>
+                <h3 className="text-xl font-extrabold text-white mb-1">Send a message</h3>
+                <p className="text-slate-500 text-sm mb-6">We usually reply within one business day.</p>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-400 block mb-1.5">Full Name</label>
+                    <input className={inp} placeholder="Your name" value={cf.name}
+                      onChange={e => setCf(p => ({...p, name: e.target.value}))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-400 block mb-1.5">Work Email</label>
+                    <input className={inp} type="email" placeholder="you@institution.edu.pk" value={cf.email}
+                      onChange={e => setCf(p => ({...p, email: e.target.value}))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-400 block mb-1.5">Institution Type</label>
+                    <select className={inp} value={cf.type} onChange={e => setCf(p => ({...p, type: e.target.value}))}>
+                      {['School','College','University','Institute','Other'].map(t => <option key={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-400 block mb-1.5">Institution Name</label>
+                    <input className={inp} placeholder="e.g. Springfield Academy or NUST" value={cf.school}
+                      onChange={e => setCf(p => ({...p, school: e.target.value}))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-400 block mb-1.5">How can we help?</label>
+                    <textarea className={`${inp} resize-none`} rows={3}
+                      placeholder="Campus size, current systems, timeline…" value={cf.message}
+                      onChange={e => setCf(p => ({...p, message: e.target.value}))} />
+                  </div>
+                  <button onClick={() => setCStep(2)} disabled={!cf.name.trim() || !cf.email.trim()}
+                    className="w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02]"
+                    style={{ background: 'linear-gradient(135deg,#2563eb,#4f46e5)' }}>
+                    Continue →
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-6">
+                <div className="w-16 h-16 rounded-full bg-emerald-500/15 flex items-center justify-center mx-auto mb-5">
+                  <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-extrabold text-white mb-2">Message Sent!</h3>
+                <p className="text-slate-400 text-sm mb-2">
+                  Thanks, <strong className="text-white">{cf.name}</strong>. We'll reply to <strong className="text-white">{cf.email}</strong> within one business day.
+                </p>
+                <p className="text-slate-600 text-xs mb-6">
+                  Your quote: Rs {fmt(totalMonthly)}/mo{totalOneTime > 0 ? ` + Rs ${fmt(totalOneTime)} one-time` : ''}
+                </p>
+                <button onClick={() => setShowContact(false)}
+                  className="px-6 py-3 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 text-sm font-semibold transition-colors">
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── PDF modal ───────────────────────────────────────────────── */}
+      {showPdf && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto"
+          onClick={() => setShowPdf(false)}>
+          <div className="relative w-full max-w-md bg-slate-900 rounded-3xl border border-slate-700 p-8 shadow-2xl my-8"
+            onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowPdf(false)}
+              className="absolute top-5 right-5 text-slate-500 hover:text-white transition-colors">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/15 flex items-center justify-center mb-5">
+              <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-extrabold text-white mb-1">Final Step</h3>
+            <p className="text-slate-400 text-sm mb-6">Tell us where to send your official estimate.</p>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-1.5">Institution Name</label>
+                <input className={inp} placeholder="Springfield Academy" value={pf.school}
+                  onChange={e => setPf(p => ({...p, school: e.target.value}))} />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-1.5">Your Name</label>
+                <input className={inp} placeholder="Your name" value={pf.name}
+                  onChange={e => setPf(p => ({...p, name: e.target.value}))} />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-1.5">Email Address</label>
+                <input className={inp} type="email" placeholder="you@school.edu.pk" value={pf.email}
+                  onChange={e => setPf(p => ({...p, email: e.target.value}))} />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-1.5">Phone Number</label>
+                <input className={inp} type="tel" placeholder="0300-0000000" value={pf.phone}
+                  onChange={e => setPf(p => ({...p, phone: e.target.value}))} />
+              </div>
+              <p className="text-xs text-slate-600">* Please provide at least an email or phone number to unlock the PDF.</p>
+              <button onClick={() => { if (canDownload) { downloadEstimate(); setPdfSent(true); } }}
+                disabled={!canDownload}
+                className="w-full py-3.5 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02]"
+                style={{ background: 'linear-gradient(135deg,#2563eb,#4f46e5)' }}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Unlock &amp; Download Estimate
+              </button>
+              {pdfSent && (
+                <p className="text-center text-emerald-400 text-xs font-medium">
+                  PDF opened in a new tab — use your browser's print dialog to save as PDF.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
