@@ -9,7 +9,8 @@ import { downloadCharacterCertPdf } from '../../lib/characterCertPdf';
 import PageHeader from '../../components/ui/PageHeader';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
-import { formatDate } from '../../lib/utils';
+import { formatDate, formatCurrency } from '../../lib/utils';
+import { cn } from '../../lib/utils';
 import { useAuthStore } from '../../stores/authStore';
 
 const STATUS_VARIANTS = { applied: 'warning', enrolled: 'info', active: 'success', leaving: 'warning', graduated: 'default', transferred: 'purple', withdrawn: 'danger' } as const;
@@ -94,6 +95,8 @@ function StaffStudentsView() {
   const [statusFilter, setStatusFilter] = useState('');
   const [addResult, setAddResult] = useState<{ tempPassword: string; admissionNo: string } | null>(null);
   const [leavingStudent, setLeavingStudent] = useState<import('../../services/studentService').StudentDoc | null>(null);
+  const [editingFeeId, setEditingFeeId] = useState<string | null>(null);
+  const [editingFeeValue, setEditingFeeValue] = useState('');
 
   const { data: branchHeader } = useQuery({ queryKey: ['branch-header'], queryFn: branchHeaderService.get });
   const orgName = branchHeader?.schoolName ?? orgSlug ?? 'School';
@@ -125,6 +128,11 @@ function StaffStudentsView() {
       setShowAdd(false);
       if (data) setAddResult({ tempPassword: data.tempPassword, admissionNo: data.student.admissionNo });
     },
+  });
+
+  const updateFee = useMutation({
+    mutationFn: ({ id, fee }: { id: string; fee: number | null }) => studentService.updateMonthlyFee(id, fee),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['students'] }); setEditingFeeId(null); },
   });
 
   return (
@@ -166,15 +174,16 @@ function StaffStudentsView() {
               <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Guardian</th>
               <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Admitted</th>
               <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Monthly Fee</th>
               <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
             {isLoading && (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">Loading...</td></tr>
+              <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">Loading...</td></tr>
             )}
             {!isLoading && students.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">No students found.</td></tr>
+              <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400 dark:text-slate-500">No students found.</td></tr>
             )}
             {students.map((s) => (
               <tr key={s._id} className="hover:bg-gray-50 dark:hover:bg-slate-700/40 transition-colors">
@@ -193,6 +202,38 @@ function StaffStudentsView() {
                   <Badge variant={STATUS_VARIANTS[s.status as keyof typeof STATUS_VARIANTS] ?? 'default'}>
                     {s.status}
                   </Badge>
+                </td>
+                <td className="px-4 py-3">
+                  {editingFeeId === s._id ? (
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="number"
+                        className="w-24 text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-2 py-1 bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100"
+                        value={editingFeeValue}
+                        onChange={e => setEditingFeeValue(e.target.value)}
+                        placeholder="0"
+                        autoFocus
+                        min={0}
+                      />
+                      <button
+                        onClick={() => updateFee.mutate({ id: s._id, fee: editingFeeValue ? Number(editingFeeValue) : null })}
+                        disabled={updateFee.isPending}
+                        className="text-xs px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {updateFee.isPending ? '...' : '✓'}
+                      </button>
+                      <button onClick={() => setEditingFeeId(null)} className="text-xs px-1.5 py-1 rounded border border-gray-200 dark:border-slate-600 text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-700">✕</button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { setEditingFeeId(s._id); setEditingFeeValue(s.monthlyFee ? String(s.monthlyFee) : ''); }}
+                      className={cn('text-sm group flex items-center gap-1.5 hover:text-blue-600 transition-colors', s.monthlyFee ? 'text-gray-800 dark:text-slate-200 font-medium' : 'text-gray-400 dark:text-slate-500 italic')}
+                      title="Click to edit monthly fee"
+                    >
+                      {s.monthlyFee ? formatCurrency(s.monthlyFee) : 'Per structure'}
+                      <svg className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    </button>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-center">
                   <div className="flex items-center justify-center gap-1.5">
@@ -275,13 +316,15 @@ function AdmissionForm({ classes, sections, years, selectedClassId, onClassChang
     sectionId: '',
     academicYearId: years.find(y => y.isCurrent)?._id ?? years[0]?._id ?? '',
     previousSchool: '',
+    monthlyFee: '',
     profile: { name: '', dateOfBirth: '', gender: 'male' as 'male' | 'female' | 'other', cnicOrBForm: '', address: '' },
     guardianInfo: { fatherName: '', fatherPhone: '', fatherCnic: '', motherName: '', motherPhone: '' },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(form);
+    const { monthlyFee, ...rest } = form;
+    onSubmit({ ...rest, ...(monthlyFee ? { monthlyFee: Number(monthlyFee) } : {}) });
   };
 
   return (
@@ -322,6 +365,19 @@ function AdmissionForm({ classes, sections, years, selectedClassId, onClassChang
             <option value="">Select section...</option>
             {sections.map(s => <option key={s._id} value={s._id}>Section {s.name}</option>)}
           </select>
+        </div>
+
+        <div className="col-span-2">
+          <label className="label">Monthly Fee (PKR)</label>
+          <input
+            type="number"
+            className="input"
+            value={form.monthlyFee}
+            onChange={e => setForm(f => ({ ...f, monthlyFee: e.target.value }))}
+            placeholder="Leave blank to use class fee structure"
+            min={0}
+          />
+          <p className="text-xs text-gray-400 mt-1">Optional — overrides the class fee structure for this student only (e.g. scholarship, sibling concession).</p>
         </div>
 
         <div className="col-span-2 border-t border-gray-100 dark:border-slate-700 pt-4"><p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">Guardian Information</p></div>

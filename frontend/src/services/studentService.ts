@@ -11,6 +11,7 @@ export interface StudentDoc {
   profile: { name: string; dateOfBirth: string; gender: string; cnicOrBForm: string; photoUrl?: string; address?: string; };
   guardianInfo: { fatherName: string; fatherPhone: string; fatherCnic?: string; };
   admissionDate: string;
+  monthlyFee?: number;
 }
 
 export interface CreateStudentPayload {
@@ -21,6 +22,7 @@ export interface CreateStudentPayload {
   profile: StudentDoc['profile'];
   guardianInfo: StudentDoc['guardianInfo'];
   previousSchool?: string;
+  monthlyFee?: number;
 }
 
 export const studentService = {
@@ -34,6 +36,9 @@ export const studentService = {
 
   update: (id: string, data: Partial<StudentDoc>) =>
     api.put<ApiResponse<StudentDoc>>(`/students/${id}`, data).then(r => r.data.data!),
+
+  updateMonthlyFee: (id: string, monthlyFee: number | null) =>
+    api.put<ApiResponse<StudentDoc>>(`/students/${id}`, { monthlyFee: monthlyFee ?? 0 }).then(r => r.data.data!),
 
   getMe: () => api.get<ApiResponse<StudentDoc>>('/students/me').then(r => r.data.data!),
 

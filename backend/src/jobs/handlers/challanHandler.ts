@@ -46,27 +46,34 @@ export async function generateMonthlyChallans(opts?: {
       const dueDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), dueDay);
 
       const toCreate = students
-        .filter(s => !existingSet.has(s._id.toString()) && structureMap.has(s.classId.toString()))
+        .filter(s => !existingSet.has(s._id.toString()) && (structureMap.has(s.classId.toString()) || s.monthlyFee))
         .map(s => {
-          const structure = structureMap.get(s.classId.toString())!;
+          const structure = structureMap.get(s.classId.toString());
           const challanNo = `${String(org._id).slice(-4).toUpperCase()}-${String(branch._id).slice(-4).toUpperCase()}-${month}-${String(s._id).slice(-6).toUpperCase()}`;
+
+          // Per-student fee override: replace tuition item, keep other structure items
+          if (s.monthlyFee && s.monthlyFee > 0) {
+            const otherItems = structure
+              ? structure.items.filter(i => i.isOptional).map(i => ({ name: i.name, amount: i.amount }))
+              : [];
+            const items = [{ name: 'Monthly Fee', amount: s.monthlyFee }, ...otherItems];
+            const total = items.reduce((sum, i) => sum + i.amount, 0);
+            return {
+              orgId: org._id, branchId: branch._id, studentId: s._id, classId: s.classId,
+              ...(structure ? { feeStructureId: structure._id } : {}),
+              month, challanNo, items, totalAmount: total,
+              discount: 0, waiver: 0, netAmount: total, paidAmount: 0, dueDate, status: 'unpaid', payments: [],
+            };
+          }
+
+          // Standard: use class fee structure
+          const std = structure!;
           return {
-            orgId: org._id,
-            branchId: branch._id,
-            studentId: s._id,
-            classId: s.classId,
-            feeStructureId: structure._id,
-            month,
-            challanNo,
-            items: structure.items.map(i => ({ name: i.name, amount: i.amount })),
-            totalAmount: structure.totalAmount,
-            discount: 0,
-            waiver: 0,
-            netAmount: structure.totalAmount,
-            paidAmount: 0,
-            dueDate,
-            status: 'unpaid',
-            payments: [],
+            orgId: org._id, branchId: branch._id, studentId: s._id, classId: s.classId,
+            feeStructureId: std._id, month, challanNo,
+            items: std.items.map(i => ({ name: i.name, amount: i.amount })),
+            totalAmount: std.totalAmount,
+            discount: 0, waiver: 0, netAmount: std.totalAmount, paidAmount: 0, dueDate, status: 'unpaid', payments: [],
           };
         });
 

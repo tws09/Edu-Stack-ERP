@@ -40,6 +40,7 @@ export interface IStudent extends Document {
   }[];
   status: StudentStatus;
   previousSchool?: string;
+  monthlyFee?: number;
   admissionDate: Date;
   leavingInfo?: {
     initiatedAt: Date;
@@ -99,6 +100,7 @@ const studentSchema = new Schema<IStudent>(
       default: 'applied',
     },
     previousSchool: String,
+    monthlyFee: { type: Number, min: 0 },
     admissionDate: { type: Date, default: Date.now },
     leavingInfo: {
       initiatedAt:       Date,

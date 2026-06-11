@@ -47,7 +47,7 @@ export async function createStudent(req: Request, res: Response): Promise<void> 
   if (!errors.isEmpty()) { res.status(422).json({ success: false, errors: errors.array() }); return; }
 
   const { orgId, branchId } = req.user!;
-  const { profile, guardianInfo, classId, sectionId, academicYearId, email, previousSchool, admissionDate } = req.body;
+  const { profile, guardianInfo, classId, sectionId, academicYearId, email, previousSchool, monthlyFee, admissionDate } = req.body;
 
   const existing = await User.findOne({ email, orgId });
   if (existing) { res.status(409).json({ success: false, message: 'Email already in use' }); return; }
@@ -84,6 +84,7 @@ export async function createStudent(req: Request, res: Response): Promise<void> 
         guardianInfo,
         status: 'enrolled',
         previousSchool,
+        ...(monthlyFee != null && monthlyFee > 0 ? { monthlyFee: Number(monthlyFee) } : {}),
         admissionDate: admissionDate ?? new Date(),
       }], { session });
 
@@ -141,7 +142,7 @@ export async function getStudent(req: Request, res: Response): Promise<void> {
 
 export async function updateStudent(req: Request, res: Response): Promise<void> {
   const { orgId } = req.user!;
-  const allowed = ['profile', 'guardianInfo', 'classId', 'sectionId', 'status', 'previousSchool'];
+  const allowed = ['profile', 'guardianInfo', 'classId', 'sectionId', 'status', 'previousSchool', 'monthlyFee'];
   const update: Record<string, unknown> = {};
   for (const k of allowed) if (req.body[k] !== undefined) update[k] = req.body[k];
 
