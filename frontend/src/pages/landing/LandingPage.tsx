@@ -155,6 +155,34 @@ function Navbar({ scrolled, menuOpen, setMenuOpen }: { scrolled: boolean; menuOp
 
 // Hero
 
+const HERO_PAINS = [
+  {
+    icon: '📋',
+    bold: '300 challans hand-written every month.',
+    rest: 'Then chased one by one by phone. Reconciled manually at midnight.',
+  },
+  {
+    icon: '🏫',
+    bold: 'A teacher called in sick — 40 students are sitting idle.',
+    rest: 'No substitute system. No coverage. No record of who handled it.',
+  },
+  {
+    icon: '⏰',
+    bold: 'It\'s 2 AM and result cards are still not ready.',
+    rest: 'Staff averaging marks manually on paper. One arithmetic error means starting over.',
+  },
+  {
+    icon: '📢',
+    bold: 'You posted an important announcement.',
+    rest: 'It got buried under 200 messages in the school WhatsApp group within the hour.',
+  },
+  {
+    icon: '📂',
+    bold: 'A parent is challenging their child\'s attendance record.',
+    rest: 'You have no digital timestamps, no audit trail — no way to prove it.',
+  },
+];
+
 function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-[#070b19] pt-24 pb-20 lg:pt-32 lg:pb-28">
@@ -184,21 +212,35 @@ function HeroSection() {
           than you realise.
         </h1>
 
+        {/* Story card — individual pain points */}
         <div
-          className="max-w-3xl mx-auto mb-12 rounded-3xl p-8 text-left border border-white/[0.07] shadow-[0_25px_60px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all duration-500 hover:border-white/[0.12]"
-          style={{ background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%)' }}
+          className="max-w-3xl mx-auto mb-12 rounded-3xl overflow-hidden border border-white/[0.07] shadow-[0_25px_60px_rgba(0,0,0,0.4)] backdrop-blur-xl"
+          style={{ background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.75) 0%, rgba(15, 23, 42, 0.85) 100%)' }}
         >
-          <p className="text-base sm:text-[18px] leading-relaxed font-normal text-slate-300">
-            Your accountant hand-writes 300 challans every month.{' '}
-            <span className="text-blue-300/95 font-medium">A teacher called in sick and 40 students are sitting idle.</span>{' '}
-            It is 2 AM and result cards are not ready.{' '}
-            <span className="text-blue-300/95 font-medium">You posted an announcement - it got buried in the WhatsApp group.</span>{' '}
-            A parent is disputing attendance shortage, and you have no records.
-          </p>
-          <div className="mt-6 pt-5 border-t border-white/[0.06] flex items-center gap-2">
-            <span className="text-amber-400 text-lg">&#128161;</span>
-            <p className="text-sm sm:text-base font-semibold text-amber-300/90">
-              Save 20+ hours/month and stop Rs 50,000+ in revenue leaks — EduStack PK automates fee, attendance, exams, and payroll in one platform.
+          {/* Card header */}
+          <div className="px-6 pt-5 pb-4 border-b border-white/[0.05] flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+            <p className="text-[10.5px] font-bold uppercase tracking-widest text-slate-500">Does this sound familiar?</p>
+          </div>
+
+          {/* Pain rows */}
+          <div className="divide-y divide-white/[0.04]">
+            {HERO_PAINS.map((p, i) => (
+              <div key={i} className="flex items-start gap-3.5 px-6 py-3.5 hover:bg-white/[0.02] transition-colors">
+                <span className="text-xl leading-none mt-0.5 shrink-0">{p.icon}</span>
+                <p className="text-sm sm:text-[15px] leading-relaxed text-left">
+                  <span className="font-semibold text-white">{p.bold}</span>{' '}
+                  <span className="text-slate-500">{p.rest}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Solution bar */}
+          <div className="px-6 py-4 flex items-start gap-3 bg-amber-500/[0.08] border-t border-amber-500/20">
+            <span className="text-amber-400 text-lg shrink-0 mt-0.5">💡</span>
+            <p className="text-sm sm:text-base font-semibold text-amber-300/90 text-left leading-snug">
+              Save 20+ hours/month and recover Rs 50,000+ in revenue leaks — EduStack PK automates fee, attendance, exams, and payroll in one platform.
             </p>
           </div>
         </div>
@@ -226,6 +268,84 @@ function HeroSection() {
       </div>
 
       <div className="h-12 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, #ffffff)' }} />
+    </section>
+  );
+}
+
+function ImpactStatsSection() {
+  const stats = [
+    {
+      value: '20+',
+      label: 'Hours saved per school, per month',
+      sub: 'No more manual registers, challan runs, or mark averaging',
+      color: 'text-blue-400',
+      glow: 'rgba(37,99,235,0.15)',
+    },
+    {
+      value: 'Rs 50K+',
+      label: 'Revenue leaks recovered monthly',
+      sub: 'Fee defaults caught early, disputes resolved with audit trails',
+      color: 'text-emerald-400',
+      glow: 'rgba(16,185,129,0.12)',
+    },
+    {
+      value: '10',
+      label: 'Modules in one platform',
+      sub: 'Fees, exams, attendance, payroll, admissions, website & more',
+      color: 'text-violet-400',
+      glow: 'rgba(139,92,246,0.12)',
+    },
+    {
+      value: '5 min',
+      label: 'Time to go live',
+      sub: 'Not 5 months — same-day setup, no technical knowledge needed',
+      color: 'text-amber-400',
+      glow: 'rgba(245,158,11,0.12)',
+    },
+    {
+      value: '7',
+      label: 'Role-based access levels',
+      sub: 'Principal, teacher, accountant, student — everyone sees exactly what they need',
+      color: 'text-sky-400',
+      glow: 'rgba(14,165,233,0.12)',
+    },
+    {
+      value: '300',
+      label: 'Challans automated monthly',
+      sub: 'Batch-generated PDFs — JazzCash and EasyPaisa ready from day one',
+      color: 'text-rose-400',
+      glow: 'rgba(244,63,94,0.12)',
+    },
+  ];
+
+  return (
+    <section className="py-16 bg-[#070b19] border-b border-white/[0.04] relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none" style={DOT_GRID_DARK} />
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-10">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-600 mb-2">By The Numbers</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
+            The impact is measurable. The relief is immediate.
+          </h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {stats.map(s => (
+            <div
+              key={s.value}
+              className="relative flex flex-col items-center text-center p-5 rounded-2xl transition-all duration-300 hover:scale-[1.03] group"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <div
+                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                style={{ background: `radial-gradient(circle at center, ${s.glow}, transparent 70%)` }}
+              />
+              <div className={`text-3xl sm:text-4xl font-black mb-1.5 leading-none ${s.color}`}>{s.value}</div>
+              <div className="text-[11px] font-bold text-slate-300 mb-1.5 leading-snug">{s.label}</div>
+              <div className="text-[10px] text-slate-600 leading-relaxed hidden sm:block">{s.sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }
@@ -1501,6 +1621,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white text-gray-900 font-sans antialiased">
       <Navbar scrolled={scrolled} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <HeroSection />
+      <ImpactStatsSection />
       <WhyEduStackSection />
       <PainStatsSection />
       <HowItWorksSection />
