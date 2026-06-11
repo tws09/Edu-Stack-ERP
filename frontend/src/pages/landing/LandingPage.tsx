@@ -188,11 +188,11 @@ function HeroSection() {
     <section className="relative overflow-hidden bg-[#070b19] pt-24 pb-20 lg:pt-32 lg:pb-28">
       <div className="absolute inset-0 pointer-events-none" style={DOT_GRID_DARK} />
       <div
-        className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full pointer-events-none opacity-40 blur-[100px] animate-glow"
+        className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full pointer-events-none opacity-40 blur-[60px] animate-glow"
         style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.3) 0%, transparent 70%)' }}
       />
       <div
-        className="absolute top-[30%] -right-40 w-[600px] h-[600px] rounded-full pointer-events-none opacity-20 blur-[120px] animate-glow"
+        className="absolute top-[30%] -right-40 w-[600px] h-[600px] rounded-full pointer-events-none opacity-20 blur-[70px] animate-glow"
         style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.3) 0%, transparent 70%)', animationDelay: '4s' }}
       />
 
@@ -214,7 +214,7 @@ function HeroSection() {
 
         {/* Story card — individual pain points */}
         <div
-          className="max-w-3xl mx-auto mb-12 rounded-3xl overflow-hidden border border-white/[0.07] shadow-[0_25px_60px_rgba(0,0,0,0.4)] backdrop-blur-xl"
+          className="max-w-3xl mx-auto mb-12 rounded-3xl overflow-hidden border border-white/[0.07] shadow-[0_25px_60px_rgba(0,0,0,0.4)]"
           style={{ background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.75) 0%, rgba(15, 23, 42, 0.85) 100%)' }}
         >
           {/* Card header */}
@@ -872,7 +872,7 @@ function RolesSection() {
   return (
     <section className="py-24 bg-[#070b19] text-white border-b border-white/[0.03] relative overflow-hidden">
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none opacity-20 blur-[130px] animate-glow"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none opacity-20 blur-[80px]"
         style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)' }}
       />
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1536,8 +1536,8 @@ function CTASection() {
             Start Free Trial
           </Link>
           <a href="mailto:hello@wolfstack.io?subject=Book%20a%20Demo%20-%20EduStack%20PK"
-            className="px-8 py-3.5 rounded-xl text-white font-semibold text-base transition-all hover:bg-white/10"
-            style={{ background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.12)' }}>
+            className="px-8 py-3.5 rounded-xl text-white font-semibold text-base transition-all hover:bg-white/10 bg-white/[0.08] border border-white/[0.12]"
+            >
             Book a Live Demo
           </a>
         </div>
