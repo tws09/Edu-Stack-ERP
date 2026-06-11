@@ -34,6 +34,7 @@ import examPaperDraftRoutes from './routes/examPaperDrafts';
 import branchHeaderRoutes from './routes/branchHeader';
 import examScheduleRoutes from './routes/examSchedules';
 import admissionRoutes from './routes/admission';
+import paymentGatewaySettingsRoutes from './routes/paymentGatewaySettings';
 
 const app = express();
 
@@ -90,6 +91,7 @@ app.use('/api/exam-paper-drafts', examPaperDraftRoutes);
 app.use('/api/branch-header', branchHeaderRoutes);
 app.use('/api/exam-schedules', examScheduleRoutes);
 app.use('/api/admission', admissionRoutes);
+app.use('/api/gateway-settings', paymentGatewaySettingsRoutes);
 
 app.use(notFoundHandler);
 app.use(globalErrorHandler);

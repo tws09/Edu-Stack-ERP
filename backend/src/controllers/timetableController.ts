@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Types } from 'mongoose';
 import { Timetable } from '../models/Timetable';
+import { Student } from '../models/Student';
 
 export const createTimetableValidators = [
   body('classId').isMongoId(),
@@ -81,6 +82,28 @@ async function detectConflicts(
     }
   }
   return conflicts;
+}
+
+export async function getMyTimetable(req: Request, res: Response): Promise<void> {
+  const { orgId, branchId, id: userId } = req.user!;
+
+  const student = await Student.findOne({ orgId, userId }).select('classId sectionId academicYearId').lean();
+  if (!student) { res.status(404).json({ success: false, message: 'Student record not found' }); return; }
+
+  const timetable = await Timetable.findOne({
+    orgId,
+    branchId,
+    classId: student.classId,
+    sectionId: student.sectionId,
+    isActive: true,
+  })
+    .populate('classId', 'name level')
+    .populate('sectionId', 'name')
+    .populate('slots.subjectId', 'name code')
+    .populate('slots.teacherId', 'name')
+    .lean();
+
+  res.json({ success: true, data: timetable ?? null });
 }
 
 export async function getTimetable(req: Request, res: Response): Promise<void> {

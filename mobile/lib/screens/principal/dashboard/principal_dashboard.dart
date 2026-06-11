@@ -46,6 +46,11 @@ class PrincipalDashboard extends ConsumerWidget {
                 ],
               ),
               actions: [
+                IconButton(
+                  icon: const Icon(Icons.person_rounded),
+                  tooltip: 'Profile',
+                  onPressed: () => context.push('/profile'),
+                ),
                 _UnreadBadge(),
                 const SizedBox(width: 8),
               ],

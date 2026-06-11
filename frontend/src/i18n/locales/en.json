@@ -59,7 +59,9 @@
     "resources": "Learning Resources",
     "staff": "Staff",
     "examPaper": "Exam Papers",
-    "classFellows": "Class Fellows"
+    "classFellows": "Class Fellows",
+    "profile": "My Profile",
+    "roles": "Roles"
   },
   "dashboard": {
     "title": "Dashboard",

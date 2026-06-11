@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../providers/theme_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../core/storage/local_storage.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -90,6 +91,19 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
+
+          const SizedBox(height: 20),
+
+          // ── Account ───────────────────────────────────────────
+          Text('Account', style: tt.labelLarge?.copyWith(color: cs.onSurfaceVariant)),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: Icon(Icons.logout_rounded, color: cs.error),
+              title: Text('Sign Out', style: TextStyle(color: cs.error, fontWeight: FontWeight.w600)),
+              onTap: () => _confirmSignOut(context, ref),
+            ),
+          ),
         ],
       ),
     );
@@ -100,6 +114,32 @@ class SettingsScreen extends ConsumerWidget {
     ThemeMode.light  => 'Light',
     ThemeMode.dark   => 'Dark',
   };
+
+  void _confirmSignOut(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ref.read(authProvider.notifier).logout();
+            },
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _showThemePicker(BuildContext context, WidgetRef ref, ThemeMode current) {
     showModalBottomSheet(

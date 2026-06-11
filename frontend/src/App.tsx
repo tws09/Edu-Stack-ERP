@@ -44,6 +44,7 @@ import ResourcesPage from './pages/resources/ResourcesPage';
 import ExamPaperPage from './pages/examPaper/ExamPaperPage';
 import RolesHierarchyPage from './pages/roles/RolesHierarchyPage';
 import MobileDevicesPage from './pages/admin/MobileDevicesPage';
+import StudentProfilePage from './pages/profile/StudentProfilePage';
 import LandingPage from './pages/landing/LandingPage';
 import PlanBuilderPage from './pages/landing/PlanBuilderPage';
 import PortfolioPage from './pages/portfolio/PortfolioPage';
@@ -213,6 +214,7 @@ function TenantRouter() {
       >
         <Route index element={<StudentDashboard />} />
         <Route path="class-fellows"  element={<ClassFellowsPage />} />
+        <Route path="attendance"     element={<AttendancePage />} />
         <Route path="timetable"      element={<TimetablePage />} />
         <Route path="exams"          element={<ExamsPage />} />
         <Route path="assignments"    element={<AssignmentsPage />} />
@@ -220,6 +222,7 @@ function TenantRouter() {
         <Route path="fees"           element={<FeesPage />} />
         <Route path="resources"      element={<ResourcesPage />} />
         <Route path="sops"           element={<SopsPage />} />
+        <Route path="profile"        element={<StudentProfilePage />} />
       </Route>
 
       {/* Group admin — full-screen website editor (no AppLayout) */}

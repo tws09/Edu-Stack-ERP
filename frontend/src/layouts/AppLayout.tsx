@@ -58,6 +58,11 @@ const ALL_NAV: NavItem[] = [
     icon: <SvgIcon d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm-9 8a3 3 0 100-6 3 3 0 000 6z" />,
   },
   {
+    label: 'nav.profile', path: 'profile',
+    roles: ['student'],
+    icon: <SvgIcon d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />,
+  },
+  {
     label: 'nav.attendance', path: 'attendance',
     roles: ['group_admin', 'branch_principal', 'coordinator', 'teacher', 'student'],
     icon: <SvgIcon d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />,
@@ -302,6 +307,17 @@ export default function AppLayout() {
         <div className="border-t border-white/6 p-3 shrink-0">
           {sidebarOpen ? (
             <>
+              {user?.role === 'student' ? (
+              <Link to={`${base}/profile`} className="flex items-center gap-3 mb-3 rounded-xl hover:bg-white/5 transition-colors p-1 -m-1">
+                <div className="shrink-0 w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center text-navy-950 text-xs font-bold">
+                  {getInitials(user?.name ?? '?')}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{user.name}</p>
+                  <p className="text-xs text-blue-200 truncate">{roleLabel(user.role)}</p>
+                </div>
+              </Link>
+            ) : (
               <div className="flex items-center gap-3 mb-3">
                 <div className="shrink-0 w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center text-navy-950 text-xs font-bold">
                   {getInitials(user?.name ?? '?')}
@@ -311,6 +327,7 @@ export default function AppLayout() {
                   <p className="text-xs text-blue-200 truncate">{roleLabel(user?.role ?? '')}</p>
                 </div>
               </div>
+            )}
               <div className="flex gap-2">
                 <button
                   onClick={toggleLang}
@@ -400,9 +417,15 @@ export default function AppLayout() {
             )}
           </Link>
 
-          <div className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center text-navy-950 text-xs font-bold shrink-0">
-            {getInitials(user?.name ?? '?')}
-          </div>
+          {user?.role === 'student' ? (
+            <Link to={`${base}/profile`} className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center text-navy-950 text-xs font-bold shrink-0 hover:opacity-90 transition-opacity" title="My Profile">
+              {getInitials(user.name ?? '?')}
+            </Link>
+          ) : (
+            <div className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center text-navy-950 text-xs font-bold shrink-0">
+              {getInitials(user?.name ?? '?')}
+            </div>
+          )}
         </header>
 
         {/* ACTIVE BRANCH CONTEXT BANNER */}

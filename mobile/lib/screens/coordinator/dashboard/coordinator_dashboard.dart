@@ -42,6 +42,14 @@ class CoordinatorDashboard extends ConsumerWidget {
                   Text(org?.name ?? 'EduStack', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
                 ],
               ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.person_rounded),
+                  tooltip: 'Profile',
+                  onPressed: () => context.push('/profile'),
+                ),
+                const SizedBox(width: 8),
+              ],
             ),
 
             SliverToBoxAdapter(

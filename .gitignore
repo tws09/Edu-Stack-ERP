@@ -28,3 +28,8 @@ Thumbs.db
 # Coverage
 coverage/
 backend/coverage/
+
+# Local dev artifacts
+CREDENTIALS.md
+EduStack_Upgraded_Brochure.html
+scratch/

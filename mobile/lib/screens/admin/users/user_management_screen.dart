@@ -125,10 +125,23 @@ class _UserList extends ConsumerWidget {
                       Switch.adaptive(
                         value: isActive,
                         onChanged: (v) async {
-                          final id = u['_id'] as String? ?? '';
+                          final id = u['_id'] as String?
+                              ?? u['id'] as String?
+                              ?? '';
                           if (id.isEmpty) return;
-                          await ref.read(adminServiceProvider).toggleUserStatus(id, v);
-                          ref.invalidate(usersListProvider(role));
+                          try {
+                            await ref.read(adminServiceProvider).toggleUserStatus(id, v);
+                            ref.invalidate(usersListProvider(role));
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to update status: $e'),
+                                  backgroundColor: Theme.of(context).colorScheme.error,
+                                ),
+                              );
+                            }
+                          }
                         },
                       ),
                     ],

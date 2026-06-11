@@ -171,7 +171,7 @@ class _OrgStatsCards extends ConsumerWidget {
           mainAxisSpacing: 12,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          childAspectRatio: 1.6,
+          childAspectRatio: 1.5,
           children: items.map((item) => Card(
             child: Padding(
               padding: const EdgeInsets.all(12),
@@ -183,8 +183,8 @@ class _OrgStatsCards extends ConsumerWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.value, style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w800, color: item.color)),
-                      Text(item.label, style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                      Text(item.value, style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w800, color: item.color), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(item.label, style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ],

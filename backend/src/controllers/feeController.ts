@@ -6,8 +6,13 @@ import { FeeStructure } from '../models/FeeStructure';
 import { Challan } from '../models/Challan';
 import { Student } from '../models/Student';
 import { AppError } from '../utils/errorHandler';
-import { initiateJazzCash, initiateEasypaisa } from '../services/paymentGatewayService';
-import { env } from '../config/env';
+import {
+  loadTenantGateway,
+  initiateJazzCash,
+  initiateEasypaisa,
+  JazzCashCreds,
+  EasypaisaCreds,
+} from '../services/paymentGatewayService';
 
 export const createFeeStructureValidators = [
   body('name').trim().notEmpty().withMessage('Name is required'),
@@ -241,23 +246,20 @@ export async function initiateOnlinePayment(req: Request, res: Response, next: N
     if (amount <= 0) throw new AppError('No outstanding balance', 400);
 
     if (gateway === 'jazzcash') {
-      if (!env.jazzCashEnabled) throw new AppError('JazzCash payments are not configured', 503);
-      const result = await initiateJazzCash({
-        amount,
-        mobileNumber,
-        cnic,
-        challanNo: challan.challanNo,
-        description: `EduStack fee payment — ${challan.challanNo}`,
-      });
+      const creds = await loadTenantGateway(req.orgId!, 'jazzcash');
+      if (!creds) throw new AppError('JazzCash is not configured for your organization', 503);
+      const result = await initiateJazzCash(
+        { amount, mobileNumber, cnic, challanNo: challan.challanNo, description: `EduStack fee payment — ${challan.challanNo}` },
+        creds as JazzCashCreds
+      );
       res.json({ success: result.success, data: { txnRefNo: result.txnRefNo, responseCode: result.responseCode, responseDesc: result.responseDesc } });
     } else {
-      if (!env.easypaisaEnabled) throw new AppError('EasyPaisa payments are not configured', 503);
-      const result = await initiateEasypaisa({
-        amount,
-        mobileNumber,
-        challanNo: challan.challanNo,
-        description: `EduStack fee payment — ${challan.challanNo}`,
-      });
+      const creds = await loadTenantGateway(req.orgId!, 'easypaisa');
+      if (!creds) throw new AppError('EasyPaisa is not configured for your organization', 503);
+      const result = await initiateEasypaisa(
+        { amount, mobileNumber, challanNo: challan.challanNo, description: `EduStack fee payment — ${challan.challanNo}` },
+        creds as EasypaisaCreds
+      );
       res.json({ success: result.success, data: { txnRefNo: result.txnRefNo, responseCode: result.responseCode, responseDesc: result.responseDesc } });
     }
   } catch (err) { next(err); }

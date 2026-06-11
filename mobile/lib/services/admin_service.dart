@@ -29,7 +29,7 @@ class AdminService {
   }
 
   Future<void> toggleUserStatus(String userId, bool active) async {
-    await _dio.patch('/users/$userId/status', data: {'isActive': active});
+    await _dio.put('/users/$userId', data: {'active': active});
   }
 
   // ── QR code ───────────────────────────────────────────────
@@ -38,7 +38,7 @@ class AdminService {
     final res  = await _dio.post('${ApiConstants.generateQr}/$orgId/generate-qr');
     final data = res.data as Map<String, dynamic>;
     if (data['success'] != true) throw Exception('Failed to generate QR');
-    return data['data']['qrPayload'] as String;
+    return data['data']['qrData'] as String;
   }
 
   // ── Branches ─────────────────────────────────────────────

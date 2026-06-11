@@ -49,6 +49,11 @@ class StudentDashboard extends ConsumerWidget {
                 ],
               ),
               actions: [
+                IconButton(
+                  icon: const Icon(Icons.person_rounded),
+                  tooltip: 'Profile',
+                  onPressed: () => context.push('/profile'),
+                ),
                 _UnreadBadge(),
                 const SizedBox(width: 8),
               ],
@@ -194,7 +199,7 @@ class _StatCards extends ConsumerWidget {
       mainAxisSpacing: 12,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.5,
+      childAspectRatio: 1.4,
       children: [
         _StatCard(
           icon: Icons.check_circle_outline_rounded,
@@ -295,8 +300,8 @@ class _StatCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: cs.onSurface)),
-                Text(label, style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant, fontWeight: FontWeight.w500)),
+                Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: cs.onSurface), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(label, style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
           ],
