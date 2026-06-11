@@ -884,10 +884,25 @@ export default function GroupSettingsPage() {
                         <div className="px-6 py-4 flex items-center justify-between gap-4">
                           <div className="flex items-center gap-3">
                             <div className={cn(
-                              'w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0',
+                              'w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden p-1',
                               gw.id === 'jazzcash' ? 'bg-[#d50000]' : 'bg-[#00a651]',
                             )}>
-                              {gw.id === 'jazzcash' ? 'JC' : 'EP'}
+                              <img
+                                src={gw.id === 'jazzcash'
+                                  ? 'https://commons.wikimedia.org/wiki/Special:FilePath/JazzCash_logo_(2025).png'
+                                  : 'https://commons.wikimedia.org/wiki/Special:FilePath/Easypaisa_Digital_Bank_logo.png'
+                                }
+                                alt={gw.id === 'jazzcash' ? 'JazzCash' : 'EasyPaisa'}
+                                className="w-full h-full object-contain"
+                                onError={(e) => {
+                                  const el = e.currentTarget;
+                                  el.style.display = 'none';
+                                  const parent = el.parentElement;
+                                  if (parent) {
+                                    parent.innerHTML = `<span class="text-white text-xs font-bold">${gw.id === 'jazzcash' ? 'JC' : 'EP'}</span>`;
+                                  }
+                                }}
+                              />
                             </div>
                             <div>
                               <p className="text-sm font-semibold text-gray-900 dark:text-slate-50">{gw.label}</p>
