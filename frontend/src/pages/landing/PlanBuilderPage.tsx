@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -19,13 +19,7 @@ type Step = 1 | 2 | 3 | 4 | 5;
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
 
-const CapSVG = ({ size = 20, color = 'white' }: { size?: number; color?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
-    <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z" />
-  </svg>
-);
-
-const stepIcons: Record<number, (dim: boolean) => JSX.Element> = {
+const stepIcons: Record<number, (dim: boolean) => ReactNode> = {
   1: (d) => <svg className={`w-5 h-5 ${d ? 'text-slate-600' : 'text-slate-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" /></svg>,
   2: (d) => <svg className={`w-5 h-5 ${d ? 'text-slate-600' : 'text-slate-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>,
   3: (d) => <svg className={`w-5 h-5 ${d ? 'text-slate-600' : 'text-slate-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>,
@@ -70,7 +64,7 @@ function ProgressBar({ step }: { step: Step }) {
 // ─── Selection Card ───────────────────────────────────────────────────────────
 
 function SelectCard({ selected, onClick, icon, title, subtitle }: {
-  selected: boolean; onClick: () => void; icon: JSX.Element; title: string; subtitle: string;
+  selected: boolean; onClick: () => void; icon: ReactNode; title: string; subtitle: string;
 }) {
   return (
     <button onClick={onClick}
@@ -187,8 +181,8 @@ function ScaleStep({ students, onChange }: { students: number; onChange: (v: num
   );
 }
 
-function AddonsStep({ students, selected, toggle }: {
-  students: number; selected: Set<string>; toggle: (id: string) => void;
+function AddonsStep({ selected, toggle }: {
+  selected: Set<string>; toggle: (id: string) => void;
 }) {
   return (
     <div className="w-full max-w-3xl mx-auto">
@@ -739,7 +733,7 @@ export default function PlanBuilderPage() {
         {step === 1 && <InstitutionStep value={institutionType} onChange={v => { setType(v); }} />}
         {step === 2 && <ModelStep value={campusModel} onChange={v => { setModel(v); }} />}
         {step === 3 && <ScaleStep students={students} onChange={setStudents} />}
-        {step === 4 && <AddonsStep students={students} selected={selected} toggle={toggleAddon} />}
+        {step === 4 && <AddonsStep selected={selected} toggle={toggleAddon} />}
         {step === 5 && (
           <EstimateStep
             estimateId={estimateId}
