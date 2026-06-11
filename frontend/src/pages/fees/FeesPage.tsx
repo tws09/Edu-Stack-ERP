@@ -24,7 +24,7 @@ export default function FeesPage() {
   const user    = useAuthStore(s => s.user);
   const orgSlug = useAuthStore(s => s.orgSlug);
   const qc = useQueryClient();
-  const isAccountant = user?.role === 'accountant' || user?.role === 'branch_principal';
+  const isAccountant = ['accountant', 'branch_principal', 'group_admin'].includes(user?.role ?? '');
 
   const [tab, setTab] = useState<Tab>('challans');
   const [challanMonth, setChallanMonth] = useState(currentMonth);

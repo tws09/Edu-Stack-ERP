@@ -115,8 +115,8 @@ export const PERMISSIONS: Record<Module, PermissionRule[]> = {
 
   fee_management: [
     { roles: ['super_admin'], actions: ['read'] },
-    { roles: ['group_admin'], actions: ['read'] },
-    { roles: ['branch_principal'], actions: ['read'] },
+    { roles: ['group_admin'], actions: ['create', 'read', 'update', 'delete'] },
+    { roles: ['branch_principal'], actions: ['create', 'read', 'update', 'delete'] },
     { roles: ['accountant'], actions: ['create', 'read', 'update', 'delete'] },
     { roles: ['student'], actions: ['read'], own: true },
   ],
