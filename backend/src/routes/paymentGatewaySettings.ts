@@ -12,9 +12,9 @@ import {
 const router = Router();
 router.use(authenticate);
 
-router.get('/',               authorize('fee_management', 'read'),   listGatewayConfigs);
-router.post('/',              authorize('fee_management', 'update'),  upsertGatewayValidators, upsertGatewayConfig);
-router.delete('/:gateway',    authorize('fee_management', 'update'),  removeGatewayConfig);
-router.post('/:gateway/test', authorize('fee_management', 'read'),   testGatewayConfig);
+router.get('/',               authorize('system_settings', 'read'),   listGatewayConfigs);
+router.post('/',              authorize('system_settings', 'update'),  upsertGatewayValidators, upsertGatewayConfig);
+router.delete('/:gateway',    authorize('system_settings', 'update'),  removeGatewayConfig);
+router.post('/:gateway/test', authorize('system_settings', 'read'),   testGatewayConfig);
 
 export default router;
