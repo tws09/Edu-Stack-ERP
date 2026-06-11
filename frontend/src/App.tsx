@@ -45,6 +45,7 @@ import ExamPaperPage from './pages/examPaper/ExamPaperPage';
 import RolesHierarchyPage from './pages/roles/RolesHierarchyPage';
 import MobileDevicesPage from './pages/admin/MobileDevicesPage';
 import LandingPage from './pages/landing/LandingPage';
+import PlanBuilderPage from './pages/landing/PlanBuilderPage';
 import PortfolioPage from './pages/portfolio/PortfolioPage';
 import SchoolSitePage from './pages/public/SchoolSitePage';
 import WebsiteEditorPage from './pages/settings/WebsiteEditorPage';
@@ -272,6 +273,7 @@ function EduRouter() {
   return (
     <Routes>
       <Route path="/"         element={<LandingPage />} />
+      <Route path="/plan"     element={<PlanBuilderPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="*"         element={<NotFoundPage />} />
     </Routes>

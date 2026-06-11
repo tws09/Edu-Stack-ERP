@@ -1205,11 +1205,11 @@ ${picked.filter(a => a.type === 'one-time').map(a =>
               )}
             </div>
             <div className="px-5 py-4 bg-slate-800/40 border-t border-slate-700 flex flex-col sm:flex-row gap-3">
-              <button onClick={() => { setShowContact(true); setCStep(1); }}
-                className="flex-1 py-3.5 rounded-xl font-bold text-sm text-white transition-all hover:scale-[1.02]"
+              <Link to="/plan"
+                className="flex-1 py-3.5 rounded-xl font-bold text-sm text-white text-center transition-all hover:scale-[1.02] flex items-center justify-center"
                 style={{ background: 'linear-gradient(135deg,#2563eb,#4f46e5)', boxShadow: '0 4px 20px rgba(37,99,235,.3)' }}>
-                Secure This Rate →
-              </button>
+                Build My Plan →
+              </Link>
               <button onClick={() => { setShowPdf(true); setPdfSent(false); }}
                 className="flex-1 py-3.5 rounded-xl font-bold text-sm text-white border border-slate-600 hover:bg-slate-800 transition-colors">
                 ⬇ Download Estimate PDF
