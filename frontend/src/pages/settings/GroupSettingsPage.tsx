@@ -8,10 +8,11 @@ import { useAuthStore } from '../../stores/authStore';
 import PageHeader from '../../components/ui/PageHeader';
 import { cn } from '../../lib/utils';
 import WebsiteBuilderTab from './WebsiteBuilderTab';
+import { gatewayService, type GatewayConfig, type TestResult } from '../../services/gatewayService';
 
 // ── Tab definitions ────────────────────────────────────────
 
-type Tab = 'profile' | 'branding' | 'website' | 'mobile' | 'subscription' | 'danger';
+type Tab = 'profile' | 'branding' | 'website' | 'mobile' | 'subscription' | 'gateways' | 'danger';
 
 type BrandState = {
   logoUrl: string;
@@ -50,6 +51,11 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode; danger?: boolean }[
     id: 'subscription',
     label: 'Subscription',
     icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>,
+  },
+  {
+    id: 'gateways',
+    label: 'Payment Gateways',
+    icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>,
   },
   {
     id: 'danger',
@@ -211,6 +217,14 @@ export default function GroupSettingsPage() {
   // Danger zone
   const [resetConfirm, setResetConfirm] = useState(false);
 
+  // ── Gateway settings state ──
+  type GwId = 'jazzcash' | 'easypaisa';
+  const [openGw, setOpenGw]           = useState<GwId | null>(null);
+  const [gwTestResult, setGwTestResult] = useState<Record<string, TestResult | null>>({});
+  const [gwTesting, setGwTesting]       = useState<Record<string, boolean>>({});
+  const [jcForm, setJcForm] = useState({ merchantId: '', password: '', integritySalt: '', isSandbox: true });
+  const [epForm, setEpForm] = useState({ merchantId: '', storeId: '', hashKey: '', isSandbox: true });
+
   // ── Fetch org ──
   const { data: org, isLoading } = useQuery({
     queryKey: ['org', user?.orgId],
@@ -241,6 +255,38 @@ export default function GroupSettingsPage() {
     mutationFn: (body: typeof brand) => api.put(`/organizations/${user!.orgId}`, body),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['org'] }); setBrandSaved(true); setTimeout(() => setBrandSaved(false), 3000); },
   });
+
+  // ── Gateway queries / mutations ──
+  const { data: gwConfigs = [] } = useQuery<GatewayConfig[]>({
+    queryKey: ['gateway-configs'],
+    queryFn: gatewayService.list,
+    enabled: activeTab === 'gateways',
+  });
+
+  const gwConfigMap = gwConfigs.reduce<Record<string, GatewayConfig>>((acc, c) => { acc[c.gateway] = c; return acc; }, {});
+
+  const upsertGateway = useMutation({
+    mutationFn: gatewayService.upsert,
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['gateway-configs'] }); setOpenGw(null); },
+  });
+
+  const removeGateway = useMutation({
+    mutationFn: gatewayService.remove,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['gateway-configs'] }),
+  });
+
+  async function handleTestGateway(gw: GwId) {
+    setGwTesting(t => ({ ...t, [gw]: true }));
+    setGwTestResult(r => ({ ...r, [gw]: null }));
+    try {
+      const result = await gatewayService.test(gw);
+      setGwTestResult(r => ({ ...r, [gw]: result }));
+    } catch {
+      setGwTestResult(r => ({ ...r, [gw]: { reachable: false, responseCode: 'ERR', responseDesc: 'Request failed' } }));
+    } finally {
+      setGwTesting(t => ({ ...t, [gw]: false }));
+    }
+  }
 
   // ── Logo upload ──
   const processLogoFile = useCallback(async (file: File) => {
@@ -792,6 +838,202 @@ export default function GroupSettingsPage() {
                 </p>
               </SectionCard>
             )}
+
+            {/* ════ PAYMENT GATEWAYS TAB ════ */}
+            {activeTab === 'gateways' && (() => {
+              const gateways: { id: GwId; label: string; fields: { key: string; label: string; placeholder: string; type?: string }[] }[] = [
+                {
+                  id: 'jazzcash',
+                  label: 'JazzCash',
+                  fields: [
+                    { key: 'merchantId',    label: 'Merchant ID',     placeholder: 'MC54996' },
+                    { key: 'password',      label: 'API Password',    placeholder: '••••••••', type: 'password' },
+                    { key: 'integritySalt', label: 'Integrity Salt',  placeholder: '••••••••', type: 'password' },
+                  ],
+                },
+                {
+                  id: 'easypaisa',
+                  label: 'EasyPaisa',
+                  fields: [
+                    { key: 'merchantId', label: 'Merchant ID',  placeholder: 'Your merchant ID' },
+                    { key: 'storeId',    label: 'Store ID',     placeholder: 'Your store ID' },
+                    { key: 'hashKey',    label: 'Hash Key',     placeholder: '••••••••', type: 'password' },
+                  ],
+                },
+              ];
+
+              return (
+                <div className="space-y-4">
+                  <p className="text-xs text-gray-400 dark:text-slate-500">
+                    Each gateway uses your own merchant credentials — fees go directly to your account. Credentials are AES-256 encrypted at rest.
+                  </p>
+                  {gateways.map(gw => {
+                    const config = gwConfigMap[gw.id];
+                    const isOpen = openGw === gw.id;
+                    const form = gw.id === 'jazzcash' ? jcForm : epForm;
+                    const setForm = gw.id === 'jazzcash'
+                      ? (fn: (f: typeof jcForm) => typeof jcForm) => setJcForm(fn)
+                      : (fn: (f: typeof epForm) => typeof epForm) => setEpForm(fn as any);
+                    const testResult = gwTestResult[gw.id];
+                    const isTesting  = gwTesting[gw.id] ?? false;
+
+                    return (
+                      <div key={gw.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.06)] dark:shadow-none overflow-hidden">
+
+                        {/* Header row */}
+                        <div className="px-6 py-4 flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className={cn(
+                              'w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0',
+                              gw.id === 'jazzcash' ? 'bg-[#d50000]' : 'bg-[#00a651]',
+                            )}>
+                              {gw.id === 'jazzcash' ? 'JC' : 'EP'}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900 dark:text-slate-50">{gw.label}</p>
+                              {config ? (
+                                <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                  Configured · {config.isSandbox ? 'Sandbox' : 'Live'}
+                                </span>
+                              ) : (
+                                <span className="text-[10.5px] text-gray-400 dark:text-slate-500">Not configured</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {config && !isOpen && (
+                              <button
+                                type="button"
+                                onClick={() => handleTestGateway(gw.id)}
+                                disabled={isTesting}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                              >
+                                {isTesting
+                                  ? <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                  : <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                }
+                                Test
+                              </button>
+                            )}
+                            {config && !isOpen && (
+                              <button
+                                type="button"
+                                onClick={() => removeGateway.mutate(gw.id)}
+                                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-red-200 dark:border-red-700/50 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                              >
+                                Remove
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenGw(isOpen ? null : gw.id);
+                                setGwTestResult(r => ({ ...r, [gw.id]: null }));
+                              }}
+                              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-[0_1px_4px_-1px_rgba(59,130,246,0.5)]"
+                            >
+                              {isOpen ? 'Cancel' : config ? 'Update Keys' : 'Configure'}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Test result banner */}
+                        {testResult && !isOpen && (
+                          <div className={cn(
+                            'mx-6 mb-4 px-4 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2',
+                            testResult.reachable
+                              ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40'
+                              : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800/40',
+                          )}>
+                            {testResult.reachable
+                              ? <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                              : <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            }
+                            <span>
+                              {testResult.reachable ? 'Gateway reachable' : 'Connection failed'} — code <code className="font-mono">{testResult.responseCode}</code>
+                              {testResult.responseDesc ? ` · ${testResult.responseDesc}` : ''}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Credential form */}
+                        {isOpen && (
+                          <div className="px-6 pb-6 border-t border-gray-100 dark:border-slate-700/60 pt-5">
+                            <form
+                              onSubmit={e => {
+                                e.preventDefault();
+                                const { isSandbox, ...credentials } = form;
+                                upsertGateway.mutate({ gateway: gw.id, isSandbox, credentials });
+                              }}
+                              className="space-y-4"
+                            >
+                              {/* Sandbox toggle */}
+                              <div className="flex items-center justify-between rounded-xl bg-gray-50 dark:bg-slate-700/40 border border-gray-100 dark:border-slate-700 px-4 py-3">
+                                <div>
+                                  <p className="text-sm font-medium text-gray-800 dark:text-slate-100">Sandbox Mode</p>
+                                  <p className="text-[10.5px] text-gray-400 dark:text-slate-500 mt-0.5">Use test environment — no real payments processed</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setForm((f: any) => ({ ...f, isSandbox: !f.isSandbox }))}
+                                  className={cn(
+                                    'relative w-11 h-6 rounded-full transition-colors flex-shrink-0',
+                                    form.isSandbox ? 'bg-blue-500' : 'bg-gray-300 dark:bg-slate-600',
+                                  )}
+                                >
+                                  <span className={cn(
+                                    'absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform',
+                                    form.isSandbox ? 'translate-x-5' : 'translate-x-0.5',
+                                  )} />
+                                </button>
+                              </div>
+
+                              {/* Credential fields */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {gw.fields.map(f => (
+                                  <div key={f.key}>
+                                    <FieldLabel required>{f.label}</FieldLabel>
+                                    <input
+                                      type={f.type ?? 'text'}
+                                      className={inputCls}
+                                      placeholder={f.placeholder}
+                                      value={(form as any)[f.key]}
+                                      onChange={e => setForm((prev: any) => ({ ...prev, [f.key]: e.target.value }))}
+                                      required
+                                      autoComplete="off"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+
+                              {upsertGateway.isError && (
+                                <p className="text-xs text-red-500">
+                                  {(upsertGateway.error as any)?.response?.data?.message ?? 'Failed to save credentials'}
+                                </p>
+                              )}
+
+                              <div className="flex items-center gap-3 pt-1">
+                                <button
+                                  type="submit"
+                                  disabled={upsertGateway.isPending}
+                                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl disabled:opacity-50 transition-all shadow-[0_2px_8px_-2px_rgba(59,130,246,0.5)]"
+                                >
+                                  {upsertGateway.isPending ? 'Saving...' : 'Save Credentials'}
+                                </button>
+                                <p className="text-[10.5px] text-gray-400 dark:text-slate-500">Encrypted with AES-256 before storage</p>
+                              </div>
+                            </form>
+                          </div>
+                        )}
+
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
 
             {/* ════ DANGER ZONE TAB ════ */}
             {activeTab === 'danger' && (
