@@ -175,6 +175,7 @@ export async function resetUserPassword(req: Request, res: Response): Promise<vo
 
   user.passwordHash = await hashPassword(newPassword);
   user.passwordChangedAt = new Date();
+  user.mustChangePassword = false;
   await user.save();
 
   res.json({ success: true, message: 'Password reset successfully' });
