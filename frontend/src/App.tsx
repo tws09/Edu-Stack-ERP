@@ -52,6 +52,8 @@ import SchoolSitePage from './pages/public/SchoolSitePage';
 import WebsiteEditorPage from './pages/settings/WebsiteEditorPage';
 import AdmissionPortalPage from './pages/public/AdmissionPortalPage';
 import AdmissionPage from './pages/admission/AdmissionPage';
+import DeleteAccountPage from './pages/legal/DeleteAccountPage';
+import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -275,10 +277,12 @@ function TenantRouter() {
 function EduRouter() {
   return (
     <Routes>
-      <Route path="/"         element={<LandingPage />} />
-      <Route path="/plan"     element={<PlanBuilderPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="*"         element={<NotFoundPage />} />
+      <Route path="/"                element={<LandingPage />} />
+      <Route path="/plan"            element={<PlanBuilderPage />} />
+      <Route path="/register"        element={<RegisterPage />} />
+      <Route path="/delete-account"  element={<DeleteAccountPage />} />
+      <Route path="/privacy"         element={<PrivacyPolicyPage />} />
+      <Route path="*"                element={<NotFoundPage />} />
     </Routes>
   );
 }
