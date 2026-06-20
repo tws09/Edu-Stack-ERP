@@ -2,7 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 import mongoose from 'mongoose';
 import { env } from './config/env';
 import { extractTenant } from './middleware/tenant/extractTenant';
@@ -38,6 +40,11 @@ import paymentGatewaySettingsRoutes from './routes/paymentGatewaySettings';
 
 const app = express();
 
+// Legal pages served before helmet so inline styles render correctly
+app.use(express.static(path.join(__dirname, '../public')));
+app.get('/privacy', (_req, res) => res.sendFile(path.join(__dirname, '../public/privacy.html')));
+app.get('/delete-account', (_req, res) => res.sendFile(path.join(__dirname, '../public/delete-account.html')));
+
 app.use(helmet());
 app.use(cors({
   origin: (origin, cb) => {
@@ -53,6 +60,15 @@ app.use(cors({
 }));
 
 if (env.isDev) app.use(morgan('dev'));
+
+const globalLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many requests. Please slow down.' },
+});
+app.use('/api/', globalLimiter);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
